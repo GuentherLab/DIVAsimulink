@@ -150,7 +150,7 @@ t=t+1;
   % system output
   x=block.InputPort(1).Data;
   %if all(x==0)&~isempty(lastx), x=lastx; end
-  [y,z]=diva_vocaltractcompute(x,~rem(t,2));
+  [y,z]=diva_vocaltractcompute(x,rem(t,10)==1);
   lastx=x;
 
   block.OutputPort(1).Data = y;
@@ -181,7 +181,8 @@ if nargin<2, dodisp=0; end
               axis equal; 
               set(gca,'xcolor','w','ycolor','w','xtick',[],'ytick',[],'xdir','reverse');
           end
-          set(DIVA_x.figure.handles.h1,'xdata',real(Outline),'ydata',imag(Outline));
+          Outline([353 354])=nan;
+          set(DIVA_x.figure.handles.h1,'xdata',real([Outline;Outline(1)]),'ydata',imag([Outline;Outline(1)]));
           drawnow;
       end
   else

@@ -9,8 +9,8 @@ fs=4*11025;
 switch(lower(option))
     case 'explicit' 
         [Aud,Som,Outline,af,d]=diva_synth_sample(Art);
-        %filt=a2h(max(0,af),d,1000,fs);
-        filt=a2h(max(0,af),d,fs,fs);
+        filt=a2h(max(0,af),d,fs/10,fs);
+        %filt=a2h(max(0,af),d,fs,fs);
     case 'sound' % outputs soundwave associated with sequence of articulatory states
         Aud=diva_synth_sound(Art);
         Som=fs;
@@ -49,7 +49,7 @@ if isempty(vt)
 end
 
 synth=struct('fs',4*11025,'update_fs',200); 
-synth.f0=120;
+synth.f0=100;
 synth.samplesperperiod=ceil(synth.fs/synth.f0);
 synth.glottalsource=glotlf(0,(0:1/synth.samplesperperiod:1-1/synth.samplesperperiod)');
 synth.f=[0,1];
@@ -66,13 +66,13 @@ synth.samplesoutput=0;
 
 vt.idx=1:10;
 vt.pressure=0;
-vt.f0=120;
+vt.f0=100;
 vt.closed=0;
 vt.closure_time=0;
 vt.closure_position=0;
 vt.opening_time=0;
 
-voices=struct('F0',{120,340},'size',{1,.7});
+voices=struct('F0',{100,340},'size',{1,.7});
 opt.voices=1;
 
 ndata=size(Art,2);
@@ -154,7 +154,7 @@ while time<(ndata+1)*dt;
     
     % computes sound signal
     w=linspace(0,1,synth.samplesperperiod)';
-    if release>0,%&&synth.pressure>.01,
+    if release>0&&synth.pressure>.01,
         u=synth.voicing*1*.010*(synth.pressure+20*synth.pressurebuildup)*synth.glottalsource + (1-synth.voicing)*1*.010*(synth.pressure+20*synth.pressurebuildup)*randn(synth.samplesperperiod,1);
 %         if release_closure_time<40
 %             u=1*.010*synth.pressure*synth.glottalsource;%.*(0.25+.025*randn(synth.samplesperperiod,1)); % vocal tract filter
@@ -203,7 +203,7 @@ while time<(ndata+1)*dt;
     synth.pressure=synth.pressure+alpha*(vt.pressure*(max(1,1.5-vt.opening_time/beta))-synth.pressure);
     alpha=min(1,.5*synth.numberofperiods);beta=100/synth.numberofperiods;
     synth.f0=synth.f0+0*sqrt(alpha)*randn+alpha*(vt.f0*max(1,1.25-vt.opening_time/beta)-synth.f0);%147;%120;
-    synth.voicing=max(0,min(1, synth.voicing+.5*(vt.voicing-synth.voicing) ));
+    synth.voicing=max(0,min(.75, synth.voicing+.5*(vt.voicing-synth.voicing) ));
     %synth.modulation=max(0,min(1, synth.modulation+.1*(2*(vt.pressure>0&&minaf>-k)-1) ));
     alpha=min(1,.1*synth.numberofperiods);
     synth.pressurebuildup=max(0,min(1, synth.pressurebuildup+alpha*(2*(vt.pressure>0&minaf<0)-1) ));
@@ -282,7 +282,7 @@ if isempty(ab_alpha),
         ab_alpha=1./df;
         %ab_alpha=ab_alpha.^ab_beta;
         %h=hanning(51)/sum(hanning(51));ab_alpha=convn(ab_alpha([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');ab_beta=convn(ab_beta([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');
-    elseif 1
+    elseif 0
         amax=220;amin=-60;
         alpha=[0.4595 1.512 1.027 0.7941 3.13 4.867 1.913 1.913 1.913 1.913];
         beta=[0.6021 0.909 1.327 1.469 0.8994 1.695 0.633 0.633 0.633 0.633];
@@ -290,7 +290,7 @@ if isempty(ab_alpha),
         ab_alpha=zeros(amax-amin,1);ab_beta=zeros(amax-amin,1);for n1=1:numel(idx),ab_alpha(idx{n1})=alpha(n1);ab_beta(idx{n1})=beta(n1);end; h=hanning(51)/sum(hanning(51));ab_alpha=convn(ab_alpha([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');ab_beta=convn(ab_beta([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');
     elseif 1
         amax=220;amin=-60;
-        alpha=4*[.25, 1, 3, 3, 1, 1, 1];
+        alpha=4*[.25, 1, 2, 2, 1, 1, 1];
         beta=[1.25, 1.25, 1.25, 1.5, 1.5 1.5 1.5];
         idx={}; for n1=1:numel(alpha), idx{end+1}=round((n1-1)*(amax-amin+1)/numel(alpha))+1:round(n1*(amax-amin+1)/numel(alpha)); end
         ab_alpha=zeros(amax-amin,1);ab_beta=zeros(amax-amin,1);for n1=1:numel(idx),ab_alpha(idx{n1})=alpha(n1);ab_beta(idx{n1})=beta(n1);end; h=hanning(51)/sum(hanning(51));ab_alpha=convn(ab_alpha([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');ab_beta=convn(ab_beta([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');
@@ -312,7 +312,7 @@ x0=45;%90;      % quarter circle center
 y0=-100;%-60;   
 r=60;%30;       % quarter circle radius
 k=pi*r/2;
-d=1*.75/10;%unitstocm
+d=1.25*.75/10;%unitstocm
 
 a=zeros(size(x));
 b=zeros(size(x));
@@ -438,7 +438,8 @@ c=34326;% speed of sound (cm/s)
 m=ceil(n/2)+1;
 f=fs*(0:ceil(n/2))'/n;
 t=l/c;
-Rrad=.9./(1+0.25*f/1000);% reflection at lips (low pass)
+RC=.75;
+Rrad=.99./(1+0.25*(f./4000).^4);% reflection at lips (low pass)
 %Rrad=.9*exp(-(abs(f)/16e3).^2);% reflection at lips (low pass)
 H=zeros(m,M);%H=zeros(n,M);
 Hc=zeros(m,M);
@@ -455,7 +456,7 @@ for nM=1:M,
             h1=ones(m,1);                                               % signal at glottis
             h2=zeros(m,1);
             for nN=1:N-1,
-                RnN=-R(nN);%./(1+0*f/fs);
+                RnN=-RC*R(nN);%./(1+0*f/fs);
                 u=h1+RnN.*h2; v=h2+RnN.*h1;    % reflection
                 if closure==nN, Hc(:,nM)=u-v; end
                 if NL==1, h1=U.*u; h2=V.*v;        % delay
@@ -487,7 +488,7 @@ for nM=1:M,
                 if closure==nN, Hc(:,nM)=(1+Rrad).*prod(1+R(nN:N))./h(:,1); end
             end
         end
-        H(:,nM)=(1+Rrad).*prod(1+R)./h(:,1);
+        H(:,nM)=(.01+Rrad).*prod(1+R)./h(:,1);
         %H(:,nM)=abs(1+Rrad).*prod(1+R)./h(:,1);
         if closure>0, Hc(:,nM)=(1+Rrad).*prod(1+R(closure+1:N)).*Hc(:,nM)./h(:,1); end
     end
