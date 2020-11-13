@@ -1,4 +1,9 @@
 .DS_Store
 *.asv
 *.m~
+*.mat
+*.wav
+*.autosave
+~*
+diva_targets/
 slprj/
