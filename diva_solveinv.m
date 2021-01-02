@@ -12,6 +12,7 @@ function x = diva_solveinv(x,y_target,style,varargin)
 % defines additional solver settings:
 % eps           pseudoinverse step-size [.05]
 % lambda        pseudoinverse regularization strength [.05]
+% beta          null-space relaxation strength [.05]
 % maxiter       maximum number of iterations [100]
 % maxerr        target error tolerance [.01]
 % 
@@ -34,6 +35,7 @@ params=struct('eps',.05,...     % pseudoinverse step-size
     'lambda',.05,...            % pseudoinverse regularization strength
     'maxiter',100,...           % if number of iterations above this, stop
     'maxerr',.01,...0           % if error below this, stop
+    'center',[],...              % center position (for regularization)
     'dodisp',false); 
 for n1=1:2:numel(varargin)-1, if ~isfield(params,lower(varargin{n1})), error('unknown option %s',lower(varargin{n1})); else params.(lower(varargin{n1}))=varargin{n1+1}; end; end
 
@@ -45,13 +47,17 @@ switch(lower(style))
         
         %[Aud,Som,Outline,af,filt]=diva_synth(x,'explicit'); y=Outline;
         y=ComputeOutline(x);
+        if ~isempty(params.center), y_target(~valid)=params.center(~valid); 
+        else y_target(~valid)=y(~valid); 
+        end            
         N=numel(x);
         M=numel(y);
         Iy=eye(M);
 
         for niter=1:params.maxiter
             dy=y_target-y;
-            dy(~valid)=0;
+            %dy(~valid)=0.5*dy(~valid);
+            %dy(~valid)=0;
             err=mean(abs(dy(valid)));
             if err<params.maxerr, break; end
             if params.dodisp, disp(err); end
@@ -63,9 +69,9 @@ switch(lower(style))
                 ty=ComputeOutline(tx);
                 DY(:,ndim)=ty-y;
             end
-            if 0, % slower
-                JJ=DY*DY';
-                iJ=params.eps*DY'*pinv(JJ+params.lambda*params.eps^2*Iy); % computes pseudoinverse
+            if 0||params.lambda==0, % slower
+                JJ=DY'*DY;
+                iJ=params.eps*pinv(JJ+params.lambda*params.eps^2*Iy)*DY'; % computes pseudoinverse
                 dx=iJ*dy;
             else % faster
                 dx=params.eps*([DY; eye(N)*sqrt(params.lambda)*params.eps]\[dy; zeros(N,1)]);
