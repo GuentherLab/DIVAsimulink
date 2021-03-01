@@ -252,6 +252,7 @@ if ~isempty(fmfit)&&nargout>1&&nargout<=3,
     Som(1:6)=fmfit.beta_som*px(:);
     Som(7:8)=Art(end-1:end);
 end
+%disp(Art); disp(Aud);
 end
 
 % computes area function

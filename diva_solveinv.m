@@ -104,6 +104,8 @@ switch(lower(style))
             x=x+dx;
             y=Compute(x);
         end
+        %disp(x); disp(y)
+        %disp(niter)
     otherwise
         error('unknown option %s',style)
 end
@@ -117,6 +119,7 @@ if isempty(vt)
     [filepath,filename]=fileparts(mfilename);
     load(fullfile(filepath,'diva_synth.mat'),'vt','fmfit');
 end
+idx=1:10;
 x=vt.Scale(idx).*Art(idx);
 outline=vt.Average+vt.Base(:,idx)*x;
 outline=[real(outline);imag(outline)];
