@@ -46,10 +46,14 @@ switch(lower(option))
         data.handles.hax2=axes('units','norm','position',[.1 .1 .3 .15],'color',.85*[1 1 1]);
         data.handles.h2=patch(nan,nan,'k','facecolor',1*[1 1 1],'edgecolor','k','linewidth',2,'parent',data.handles.hax2);
         xlabel(data.handles.hax2,'distance to glottis (cm)'); ylabel(data.handles.hax2,'Area (cm^2)');
+        
         % plotting frequency spectrum
         data.handles.hax3=axes('units','norm','position',[.6 .1 .3 .15],'box','off');
         data.handles.h3=plot(nan,nan,'k','color','k','linewidth',2,'parent',data.handles.hax3);
         %hold on; data.handles.h6=plot(nan,nan,'co','markerfacecolor','c'); hold off; If I wanted to add cyan markers on the plot 
+        hold on; data.handles.h3F1=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
+        hold on; data.handles.h3F2=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
+        hold on; data.handles.h3F3=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
         xlabel(data.handles.hax3,'Frequency (Hz)');
         ylabel(data.handles.hax3,'VT filter (dB)');
         
@@ -148,16 +152,30 @@ switch(lower(option))
     case 'updsliders'
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
-        %stateData = varargin{2};
-        %x = varargin{1};
-        newVals = varargin{1}';
-        % for main articulators
-        set(data.handles.hplot4, 'YData', newVals(1:10));
-        set(data.handles.hplot5, 'XData', newVals(1:10));
-        % for supp articulators
-        set(data.handles.hplot4b, 'YData', newVals(11:13));
-        set(data.handles.hplot5b, 'YData', newVals(11:13));
-        set(data.handles.hfig,'userdata',data);
+        
+        % added the following to check for breaks before updating the
+        % sliders, look into doing this earlier in a more elegant way
+        x = varargin{1}; 
+        x=repmat(x,[1,100]);
+        n=[1:9:size(x,2)-1,size(x,2)];
+        n=n(end);
+        [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
+        
+        if sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
+            disp('reached breaking point 1')
+            return
+        else
+            %stateData = varargin{2};
+            %x = varargin{1};
+            newVals = varargin{1}';
+            % for main articulators
+            set(data.handles.hplot4, 'YData', newVals(1:10));
+            set(data.handles.hplot5, 'XData', newVals(1:10));
+            % for supp articulators
+            set(data.handles.hplot4b, 'YData', newVals(11:13));
+            set(data.handles.hplot5b, 'YData', newVals(11:13));
+            set(data.handles.hfig,'userdata',data);
+        end
         
     case 'update'
         %if numel(varargin)> 1
@@ -209,7 +227,7 @@ switch(lower(option))
         % user and also not update the sliders / revert them to the last
         % config that worked.
          if sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-             disp('reached breaking point')
+             disp('reached breaking point 2')
              return
          end
         
@@ -258,21 +276,27 @@ switch(lower(option))
         set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
         %set(data.handles.h6, 'XData', i, 'YData', peakVals); If I wanted to add markers on each peak
         % figure out position of each Formant txt box       
-        Fpos = cell(3);
+        Fpos = cell(3,1);
         for j = 1:3
             Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03];       
         end
         if data.setup
-            data.handles.f0txt = uicontrol('Style','edit','Tag','f0txt','String',string(audPeaks(1)),'Units','normalized','Position', Fpos{1},'Callback', @FboxEdited); 
-            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(2)),'Units','normalized','Position', Fpos{2},'Callback', @FboxEdited);
-            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(3)),'Units','normalized','Position', Fpos{3},'Callback', @FboxEdited);
+            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','normalized','Position', Fpos{1},'Callback', @FboxEdited);
+            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','normalized','Position', Fpos{2},'Callback', @FboxEdited);
+            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','normalized','Position', Fpos{3},'Callback', @FboxEdited);
+            set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
+            set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
+            set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
             %data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(i(4)),'Units','normalized','Position', Fpos{4},'Callback', @FboxEdited);
             data.setup = 0;
             set(data.handles.hfig,'userdata',data);
         else
-            set(data.handles.f0txt,'String',string(audPeaks(1)),'Position',Fpos{1});
-            set(data.handles.f1txt,'String',string(audPeaks(2)),'Position',Fpos{2});
-            set(data.handles.f2txt,'String',string(audPeaks(3)),'Position',Fpos{3});
+            set(data.handles.f1txt,'String',string(audPeaks(1)),'Position',Fpos{1});
+            set(data.handles.f2txt,'String',string(audPeaks(2)),'Position',Fpos{2});
+            set(data.handles.f3txt,'String',string(audPeaks(3)),'Position',Fpos{3});
+            set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
+            set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
+            set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
             %set(data.handles.f3txt,'String',string(i(4)),'Position',Fpos{4}); 
         end
         
@@ -299,7 +323,7 @@ end
 %              disp('reached breaking point')
 %              return
 %          end
-    end
+%    end
 
     function FboxEdited(ObjH, EventData)
         if isempty(hfig), hfig=gcf; end
@@ -310,13 +334,13 @@ end
         %turns out the limitsare variable bc it depends on the solveinv
         %output.
         switch ObjH.Tag
-            case 'f0txt'
-                currFidx = 2;
             case 'f1txt'
-                currFidx = 3;
+                currFidx = 2;
             case 'f2txt'
+                currFidx = 3;
+            case 'f3txt'
                 currFidx = 4;
-           %case 'f3txt'
+           %case 'f4txt'
            %currFidx = 4;
         end
         allF = str2double(data.handles.hax3.XTickLabel);
@@ -451,6 +475,13 @@ end
             set(data.handles.hfig,'userdata',data);
             drawnow;
         end
+        if isfield(data, 'curFpoint')
+            set(data.handles.h3F1, 'color', 'b');
+            set(data.handles.h3F2, 'color', 'b');
+            set(data.handles.h3F3, 'color', 'b');
+            set(data.handles.hfig,'userdata',data);
+            drawnow;
+        end
         % could add a block here to turn the appropriate formant cyan?
         if isfield(data, 'vCordPos')
             data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
@@ -517,6 +548,14 @@ end
                             
                             availableF = str2double(data.handles.hax3.XTickLabel);
                             [~,curFidx] = min(abs(availableF-data.curFpoint(1)));
+                            switch curFidx
+                                case 1
+                                    set(data.handles.h3F1, 'color', 'c');
+                                case 2
+                                    set(data.handles.h3F2, 'color', 'c');
+                                case 3
+                                    set(data.handles.h3F3, 'color', 'c');
+                            end
                             curFidx = curFidx+1; % add 1 to pass f0
                             f0 = 100; % may need to derive this based on tension in the future
                             curFtarget = [f0;availableF(1:3)];
