@@ -71,6 +71,9 @@ switch(lower(option))
         data.handles.hax4 = axes('units','norm','position',[.525 .325 .25 .625]);
         data.handles.hplot4 = barh(zeros(1,10), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
         hold on; data.handles.hplot5=plot(zeros(10,1),1:10,'ko','markerfacecolor','k'); hold off
+        %%% adding bar values to main articulators 
+        data.handles.h4text = text(zeros(10,1),1:10,num2str(zeros(10,1)),'Color','black','vert','middle','horiz','center');
+        % when adding values per bar should do so here
         labels = diva_vocaltract();
         data.handles.hplot4.FaceColor = 'flat';
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 10.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
@@ -171,6 +174,22 @@ switch(lower(option))
             % for main articulators
             set(data.handles.hplot4, 'YData', newVals(1:10));
             set(data.handles.hplot5, 'XData', newVals(1:10));
+            for i = 1:10
+                set(data.handles.h4text(i),'String', round(newVals(i),3,'significant'));
+                if newVals(i) > 0
+                    if newVals(i) > 0.5
+                        set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
+                    else
+                        set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
+                    end
+                else
+                    if newVals(i) < -0.5
+                        set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
+                    else
+                        set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
+                    end
+                end
+            end 
             % for supp articulators
             set(data.handles.hplot4b, 'YData', newVals(11:13));
             set(data.handles.hplot5b, 'YData', newVals(11:13));
@@ -609,7 +628,25 @@ end
                             %disp(pos2(1,2));
                             data.handles.hplot4.YData = newY;
                             data.handles.hplot5.XData = newY;
-                            
+                            for k = 1:10
+                                set(data.handles.h4text(k),'String', round(newY(k),3,'significant'));
+                                if newY(k) > 0
+                                    if newY(k) > 0.5
+                                        set(data.handles.h4text(k),'horiz','right','Position', [newY(k)-0.1,k,0], 'Color', 'White');
+                                    else
+                                        set(data.handles.h4text(k),'horiz','left','Position', [newY(k)+0.1,k,0],'Color', 'Black');
+                                    end
+                                else
+                                    if newY(k) < -0.5
+                                        set(data.handles.h4text(k),'horiz','left','Position', [newY(k)+0.1,k,0],'Color', 'White');
+                                    else
+                                        set(data.handles.h4text(k),'horiz','right','Position', [newY(k)-0.1,k,0],'Color', 'Black');
+                                    end
+                                end
+                            end
+                            %for k = 1:10
+                            %    data.handles.h4text(k).Position = [ newY(k) k 0 ];
+                            %end
                             data.ready2play = false;
                             set(data.handles.hfig,'userdata',data);
                             diva_vtdisp_Ricky(data.handles.hfig,'setslider',data);
