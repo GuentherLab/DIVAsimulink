@@ -72,7 +72,7 @@ switch(lower(option))
         data.handles.hplot4 = barh(zeros(1,10), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
         hold on; data.handles.hplot5=plot(zeros(10,1),1:10,'ko','markerfacecolor','k'); hold off
         %%% adding bar values to main articulators 
-        data.handles.h4text = text(zeros(10,1),1:10,num2str(zeros(10,1)),'Color','black','vert','middle','horiz','center');
+        data.handles.h4text = text((zeros(10,1)-0.1),1:10,num2str(zeros(10,1)),'Color','black','vert','middle','horiz','right');
         labels = diva_vocaltract();
         data.handles.hplot4.FaceColor = 'flat';
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 10.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
@@ -86,12 +86,16 @@ switch(lower(option))
         data.handles.hplot4b.FaceColor = 'flat';
         hold on; data.handles.hplot5b=plot(11:13,[0 .5 .5],'ko','markerfacecolor','k'); hold off
         set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [10.5 13.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
-        data.handles.h4btext = text(11:13,[0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
+        data.handles.h4btext = text(11:13,[-0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
+        set(data.handles.h4btext(1),'String',round(0,2,'significant'),'vert','top','horiz','center');
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
         %for n1=1:13 % this is where the sliders are created, need to replace these with bars (for now)
         %    data.handles.hslider(n1)=uicontrol('units','norm','position',[.6 .90-(n1-1)*.05 .3 .05],'style','slider','min',-3,'max',3,'callback',@(varargin)diva_vtdisp(data.handles.hfig,'setslider',n1));
         %end
+        
+        % reset button
+        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
         
         % flag for first time setup
         data.setup = 1;
@@ -165,6 +169,7 @@ switch(lower(option))
         
         if sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
             disp('reached breaking point 1')
+            
             return
         else
             %stateData = varargin{2};
@@ -192,19 +197,19 @@ switch(lower(option))
             % for supp articulators
             set(data.handles.hplot4b, 'YData', newVals(11:13));
             set(data.handles.hplot5b, 'YData', newVals(11:13));
-            for i = 1:3
-                set(data.handles.h4btext(i),'String', round(newVals(i+10),2,'significant'));
+            for i = 11:13
+                set(data.handles.h4btext(i-10),'String', round(newVals(i),2,'significant'));
                 if newVals(i) > 0
                     if newVals(i) > 0.5
-                        set(data.handles.h4btext(i),'vert','top','Position', [i+10,newVals(i+10)-0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-10),'vert','top','Position', [i,newVals(i)-0.025,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i),'vert','bottom','Position', [i+10,newVals(i+10)+0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-10),'vert','bottom','Position', [i,newVals(i)+0.05,0],'Color', 'Black');
                     end
                 else
                     if newVals(i) < -0.5
-                        set(data.handles.h4btext(i),'vert','bottom','Position', [i+10,newVals(i+10)+0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-10),'vert','bottom','Position', [i,newVals(i)+0.025,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i),'vert','top','Position', [i+10,newVals(i+10)-0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-10),'vert','top','Position', [i,newVals(i)-0.05,0],'Color', 'Black');
                     end
                 end
             end
@@ -417,6 +422,15 @@ end
         else
             currAxis = '0';
         end
+    end
+
+    function resetPushed(PushButton, EventData)
+        data.setup = 1;
+        data.ready2play = 0;
+        set(data.handles.hfig,'userdata',data);
+        diva_vtdisp_Ricky(hfig,'updsliders',[zeros(10,1);0;.5;.5],data);
+        diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(10,1);0;.5;.5]); % uses 'update' case to initialize default plots
+        drawnow;
     end
 
     function downcallback(varargin)
