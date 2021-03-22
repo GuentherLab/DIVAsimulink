@@ -658,7 +658,7 @@ end
                         pos=get(data.handles.hax4b,'currentpoint');
                         data.handles.hplot4b.CData(data.curBar-10,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4b.XData);
-                        if data.curBar <= barLim && data.curBar > 10.5
+                        if data.curBar <= barLim && data.curBar > 10.5 && pos(1,2) >=-1.005 && pos(1,2) <=1.005
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1,2);
                             ydata = data.handles.hplot4b.YData;  % get bar plot y data
@@ -694,7 +694,7 @@ end
                         barLim = max(data.handles.hplot4.XData);
                         
                         %if curBarIdx <= barLim && curBarIdx > 0.5 && pos2(1,2) >= -3 && pos2(1,2) <= 3
-                        if data.curBar <= barLim && data.curBar > 0.5
+                        if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1);
                             ydata = data.handles.hplot4.YData;
