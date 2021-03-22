@@ -169,9 +169,10 @@ switch(lower(option))
         
         if sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
             disp('reached breaking point 1')
-            
+            set(data.handles.h0, 'Color' ,'red')
             return
         else
+            set(data.handles.h0, 'Color' ,'black')
             %stateData = varargin{2};
             %x = varargin{1};
             newVals = varargin{1}';
@@ -212,6 +213,29 @@ switch(lower(option))
                         set(data.handles.h4btext(i-10),'vert','top','Position', [i,newVals(i)-0.05,0],'Color', 'Black');
                     end
                 end
+                if i == 13
+                    if newVals(i) >= 0.7
+                        set(data.handles.h1a, 'visible', 'on');
+                        set(data.handles.h1b, 'visible', 'on');
+                        set(data.handles.h1c, 'visible', 'on');
+                        set(data.handles.hfig,'userdata',data);
+                    elseif newVals(i) >= 0
+                        set(data.handles.h1a, 'visible', 'on');
+                        set(data.handles.h1b, 'visible', 'on');
+                        set(data.handles.h1c, 'visible', 'off');
+                        set(data.handles.hfig,'userdata',data);
+                    elseif newVals(i) >= -0.7
+                        set(data.handles.h1a, 'visible', 'on');
+                        set(data.handles.h1b, 'visible', 'off');
+                        set(data.handles.h1c, 'visible', 'off');
+                        set(data.handles.hfig,'userdata',data);
+                    else
+                        set(data.handles.h1a, 'visible', 'off');
+                        set(data.handles.h1b, 'visible', 'off');
+                        set(data.handles.h1c, 'visible', 'off');
+                        set(data.handles.hfig,'userdata',data);
+                    end
+                end
             end
             set(data.handles.hfig,'userdata',data);
         end
@@ -225,19 +249,19 @@ switch(lower(option))
         data.state.x=varargin{1};
         
         % vocalization display
-        if exist('data', 'var') == 1 && isfield(data, 'curBar')
+        if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
             if data.curBar == 13
-                if data.curBarVal >= 0.6
+                if data.curBarVal >= 0.7
                     set(data.handles.h1a, 'visible', 'on');
                     set(data.handles.h1b, 'visible', 'on');
                     set(data.handles.h1c, 'visible', 'on');
                     set(data.handles.hfig,'userdata',data);
-                elseif data.curBarVal >= 0.3
+                elseif data.curBarVal >= 0
                     set(data.handles.h1a, 'visible', 'on');
                     set(data.handles.h1b, 'visible', 'on');
                     set(data.handles.h1c, 'visible', 'off');
                     set(data.handles.hfig,'userdata',data);
-                elseif data.curBarVal >= 0
+                elseif data.curBarVal >= -0.7
                     set(data.handles.h1a, 'visible', 'on');
                     set(data.handles.h1b, 'visible', 'off');
                     set(data.handles.h1c, 'visible', 'off');
@@ -267,7 +291,10 @@ switch(lower(option))
         % config that worked.
          if sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
              disp('reached breaking point 2')
+             set(data.handles.h0, 'Color' ,'red')
              return
+         else
+             set(data.handles.h0, 'Color' ,'black')
          end
         
         % vocal tract configuration
@@ -292,6 +319,10 @@ switch(lower(option))
         % Vocal tract memory ver 1
         set(data.handles.h0,'xdata',real(x),'ydata',imag(x));
         set(data.handles.h1,'xdata',real(x),'ydata',imag(x));
+        if isfield(data, 'reset') && data.reset == 1
+            set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
+            data.reset = 0;
+        end 
         % ver 2
         %set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
@@ -425,7 +456,7 @@ end
     end
 
     function resetPushed(PushButton, EventData)
-        data.setup = 1;
+        data.reset = 1;
         data.ready2play = 0;
         set(data.handles.hfig,'userdata',data);
         diva_vtdisp_Ricky(hfig,'updsliders',[zeros(10,1);0;.5;.5],data);
@@ -445,7 +476,7 @@ end
         % Current point 'pos' is structured as such [xfront, yfront, zfront;xback, yback, zback]
         % Instead of looking though fields for specific data var, should
         % just look at the newly implemented 'currAxis'
-        if strcmp(currAxis, '4b')
+        if strcmp(currAxis, '4b') % supp articulators
             %curBarIdx = round(sArtPos(1));
             data.curBar = round(sArtPos(1));
             if isfield(data, 'vCordPos')
@@ -457,7 +488,7 @@ end
             if isfield(data, 'curFtarget')
                 data = rmfield(data,'curFtarget'); 
             end
-        elseif  strcmp(currAxis, '4')
+        elseif  strcmp(currAxis, '4') % main articulators
             %curBarIdx = round(mArtPos(1,2));
             data.curBar = round(mArtPos(1,2));
             if isfield(data, 'vCordPos')
@@ -469,7 +500,7 @@ end
             if isfield(data, 'curFtarget')
                 data = rmfield(data,'curFtarget'); 
             end
-        elseif strcmp(currAxis, '3')
+        elseif strcmp(currAxis, '3') % formant plot
             % need to determine which formant clicked
             data.curFval = round(FPos(1));
             data.curFpoint = FPos;
@@ -482,7 +513,7 @@ end
             if isfield(data, 'newVocalT')
                 data = rmfield(data,'newVocalT'); 
             end  
-        elseif strcmp(currAxis, '1')
+        elseif strcmp(currAxis, '1') % vocal tract plot
             data.vCordPos = vCordPos(1,1:2);
             if isfield(data, 'curBar')
                 data = rmfield(data,'curBar'); 
@@ -529,6 +560,7 @@ end
             set(data.handles.h3F3, 'color', 'b');
             set(data.handles.hfig,'userdata',data);
             drawnow;
+            data = rmfield(data,'curFpoint');
         end
         % could add a block here to turn the appropriate formant cyan?
         if isfield(data, 'vCordPos')
