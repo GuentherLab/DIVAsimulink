@@ -37,7 +37,7 @@ switch(lower(option))
         t = linspace(150, 210, 100); t2 = linspace(135, 225, 100); t3 = linspace(120, 240, 100);
         x  = 3 * cosd(t);y  = 3 * sind(t);x2 = 4 * cosd(t2);y2 = 4 * sind(t2);x3 = 5 * cosd(t3);y3 = 5 * sind(t3);
         data.handles.h1a = plot(-x+2, -y, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1a,'visible', 'on');
-        data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1b,'visible', 'off');
+        data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1b,'visible', 'on');
         data.handles.h1c = plot(-x3, -y3, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1c,'visible', 'off');
         set(data.handles.hax1a, 'YLim', [-4 4], 'XLim', [4.5 5]); set(data.handles.hax1b, 'YLim', [-4 4], 'XLim', [3.3 4]); set(data.handles.hax1c, 'YLim', [-6 6], 'XLim', [3.0 5]);
         set(data.handles.hax1a,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1b,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1c,'box','off','xtick',[],'ytick',[], 'visible', 'off');
@@ -168,7 +168,7 @@ switch(lower(option))
         [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
         
         if sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-            disp('reached breaking point 1')
+            %disp('reached breaking point 1')
             set(data.handles.h0, 'Color' ,'red')
             return
         else
@@ -290,7 +290,7 @@ switch(lower(option))
         % user and also not update the sliders / revert them to the last
         % config that worked.
          if sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-             disp('reached breaking point 2')
+             %disp('reached breaking point 2')
              set(data.handles.h0, 'Color' ,'red')
              return
          else
