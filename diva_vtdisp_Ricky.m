@@ -66,27 +66,31 @@ switch(lower(option))
         %data.handles.hplot4 = bar(-3+(3+3)*rand(1,13));
         
         % plotting new horizontal  'bar-sliders'
-        % main articulators (1-10)
+        % main articulators (1-10 or 1-numMainArt)
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
+        labels = diva_vocaltract();
+        numMainArt = length((labels.Input.Plots_label(2:end-3)));
+        data.numMainArt = numMainArt;
         data.handles.hax4 = axes('units','norm','position',[.525 .325 .25 .625]);
-        data.handles.hplot4 = barh(zeros(1,10), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
+        data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
         hold on; data.handles.hplot5=plot(zeros(10,1),1:10,'ko','markerfacecolor','k'); hold off
         %%% adding bar values to main articulators 
-        data.handles.h4text = text((zeros(10,1)-0.1),1:10,num2str(zeros(10,1)),'Color','black','vert','middle','horiz','right');
-        labels = diva_vocaltract();
+        data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
         data.handles.hplot4.FaceColor = 'flat';
-        set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 10.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
-        set(data.handles.hax4, 'YTickLabel', labels.Input.Plots_label(2:11));
+        set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
+        set(data.handles.hax4, 'YTickLabel', labels.Input.Plots_label(2:end-3));
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
         
-        % extra articulators (11-13)
+        % extra articulators (11-13 or [numMainArt+1]-[numMainArt+3])
+        numSuppArt = length((labels.Input.Plots_label(2:end)));
+        data.numSuppArt = numSuppArt;
         data.handles.hax4b = axes('units','norm','position',[.825 .325 .15 .625]);
-        data.handles.hplot4b = bar([11:1:13],[0 .5 .5], 'BarWidth', 0.7); % psst you need to plot the bar first, before changing the axes properties
+        data.handles.hplot4b = bar([numMainArt+1:1:numSuppArt],[0 .5 .5], 'BarWidth', 0.7); % psst you need to plot the bar first, before changing the axes properties
         data.handles.hplot4b.FaceColor = 'flat';
-        hold on; data.handles.hplot5b=plot(11:13,[0 .5 .5],'ko','markerfacecolor','k'); hold off
-        set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [10.5 13.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
-        data.handles.h4btext = text(11:13,[-0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
+        hold on; data.handles.hplot5b=plot(numMainArt+1:numSuppArt,[0 .5 .5],'ko','markerfacecolor','k'); hold off
+        set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [numMainArt+0.5 numSuppArt+0.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
+        data.handles.h4btext = text(numMainArt+1:numSuppArt,[-0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
         set(data.handles.h4btext(1),'String',round(0,2,'significant'),'vert','top','horiz','center');
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
@@ -100,7 +104,7 @@ switch(lower(option))
         % flag for first time setup
         data.setup = 1;
         set(data.handles.hfig,'userdata',data);
-        diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(10,1);0;.5;.5]); % uses 'update' case to initialize default plots
+        diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
         drawnow;
         
     case 'setslider' % called when a slider is moved, or mouse is released
@@ -124,7 +128,7 @@ switch(lower(option))
         end
         if isempty(n), n=1:numel(v); end
         try, x=data.state.x(:,end);
-        catch, x=zeros(13,1);
+        catch, x=zeros(data.numSuppArt,1);
         end
         
         if isfield(data, 'newVocalT')
@@ -177,9 +181,9 @@ switch(lower(option))
             %x = varargin{1};
             newVals = varargin{1}';
             % for main articulators
-            set(data.handles.hplot4, 'YData', newVals(1:10));
-            set(data.handles.hplot5, 'XData', newVals(1:10));
-            for i = 1:10
+            set(data.handles.hplot4, 'YData', newVals(1:data.numMainArt));
+            set(data.handles.hplot5, 'XData', newVals(1:data.numMainArt));
+            for i = 1:data.numMainArt
                 set(data.handles.h4text(i),'String', round(newVals(i),3,'significant'));
                 if newVals(i) > 0
                     if newVals(i) > 0.5
@@ -196,21 +200,21 @@ switch(lower(option))
                 end
             end 
             % for supp articulators
-            set(data.handles.hplot4b, 'YData', newVals(11:13));
-            set(data.handles.hplot5b, 'YData', newVals(11:13));
-            for i = 11:13
-                set(data.handles.h4btext(i-10),'String', round(newVals(i),2,'significant'));
+            set(data.handles.hplot4b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
+            set(data.handles.hplot5b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
+            for i = data.numMainArt+1:data.numSuppArt
+                set(data.handles.h4btext(i-data.numMainArt),'String', round(newVals(i),2,'significant'));
                 if newVals(i) > 0
                     if newVals(i) > 0.5
-                        set(data.handles.h4btext(i-10),'vert','top','Position', [i,newVals(i)-0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-data.numMainArt),'vert','top','Position', [i,newVals(i)-0.025,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i-10),'vert','bottom','Position', [i,newVals(i)+0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-data.numMainArt),'vert','bottom','Position', [i,newVals(i)+0.05,0],'Color', 'Black');
                     end
                 else
                     if newVals(i) < -0.5
-                        set(data.handles.h4btext(i-10),'vert','bottom','Position', [i,newVals(i)+0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-data.numMainArt),'vert','bottom','Position', [i,newVals(i)+0.025,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i-10),'vert','top','Position', [i,newVals(i)-0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-data.numMainArt),'vert','top','Position', [i,newVals(i)-0.05,0],'Color', 'Black');
                     end
                 end
                 if i == 13
@@ -333,7 +337,7 @@ switch(lower(option))
         set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(8,max(data.state.af)/2)*[-1 1]);
         
         % frequency spectrum
-        x=10*log10(abs(data.state.filt));
+        x=10*log10(abs(data.state.filt)); % does this need to be adjusted based on numMainArt?
         calcPeaks = find(x(2:end-1)>x(1:end-2)&x(2:end-1)>x(3:end))*fs/numel(data.state.filt)*1e0; % calc freq peaks
         audPeaks = round(data.state.Aud(2:end,:));
         combPeaks = [audPeaks;calcPeaks(4:end)];
@@ -459,8 +463,8 @@ end
         data.reset = 1;
         data.ready2play = 0;
         set(data.handles.hfig,'userdata',data);
-        diva_vtdisp_Ricky(hfig,'updsliders',[zeros(10,1);0;.5;.5],data);
-        diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(10,1);0;.5;.5]); % uses 'update' case to initialize default plots
+        diva_vtdisp_Ricky(hfig,'updsliders',[zeros(data.numMainArt,1);0;.5;.5],data);
+        diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(data.numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
         drawnow;
     end
 
@@ -546,8 +550,8 @@ end
         data=get(hfig,'userdata');
         data.mouseIsDown = false;% recognizes / saves the fact that the mous has been let go
         if isfield(data, 'curBar')
-            if data.curBar > 10
-                data.handles.hplot4b.CData(data.curBar-10,:) = [0 0.4470 0.7410];
+            if data.curBar > data.numMainArt
+                data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.4470 0.7410];
             else
                 data.handles.hplot4.CData(data.curBar,:) = [0 0.4470 0.7410];
             end
@@ -654,16 +658,16 @@ end
                 
                 % handling articulator plot clicks
                 if isfield(data, 'curBar')
-                    if data.curBar > 10
+                    if data.curBar > data.numMainArt
                         pos=get(data.handles.hax4b,'currentpoint');
-                        data.handles.hplot4b.CData(data.curBar-10,:) = [0 0.8 0.8];
+                        data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4b.XData);
-                        if data.curBar <= barLim && data.curBar > 10.5 && pos(1,2) >=-1.005 && pos(1,2) <=1.005
+                        if data.curBar <= barLim && data.curBar > data.numMainArt+0.5 && pos(1,2) >=-1.005 && pos(1,2) <=1.005
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1,2);
                             ydata = data.handles.hplot4b.YData;  % get bar plot y data
                             newY = ydata;
-                            newY(data.curBar-10) = pos(1,2);
+                            newY(data.curBar-data.numMainArt) = pos(1,2);
                             %disp(pos2(1,2));
                             data.handles.hplot4b.YData = newY;
                             data.handles.hplot5b.YData = newY;
@@ -671,15 +675,15 @@ end
                                 set(data.handles.h4btext(k),'String', round(newY(k),2,'significant'));
                                 if newY(k) > 0
                                     if newY(k) > 0.5
-                                        set(data.handles.h4btext(k),'vert','top','Position', [k+10,newY(k)-0.025,0],'Color', 'White');
+                                        set(data.handles.h4btext(k),'vert','top','Position', [k+data.numMainArt,newY(k)-0.025,0],'Color', 'White');
                                     else
-                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+10,newY(k)+0.05,0],'Color', 'Black');
+                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+data.numMainArt,newY(k)+0.05,0],'Color', 'Black');
                                     end
                                 else
                                     if newY(k) < -0.5
-                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+10,newY(k)+0.025,0],'Color', 'White');
+                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+data.numMainArt,newY(k)+0.025,0],'Color', 'White');
                                     else
-                                        set(data.handles.h4btext(k),'vert','top','Position', [k+10,newY(k)-0.05,0],'Color', 'Black');
+                                        set(data.handles.h4btext(k),'vert','top','Position', [k+data.numMainArt,newY(k)-0.05,0],'Color', 'Black');
                                     end
                                 end
                             end
