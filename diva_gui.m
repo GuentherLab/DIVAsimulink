@@ -244,7 +244,9 @@ switch(lower(option)),
         etime=time/1000+.060+.100;
         set_param(DIVA_x.model,'StopTime',num2str(etime));
         
-        t=DIVA_x.production_art.time/DIVA_x.production_art.time(end)*time/1000;
+        try, t=DIVA_x.production_art.time/DIVA_x.production_art.time(end)*time/1000;
+        catch, t=0:.005:time/1000;
+        end
         DT=.005; Target_duration=[];for t1=DT*(0:ceil(etime/DT)), Target_duration=[Target_duration; t1 t(min(numel(t),sum(t<=t1)+1))-t(sum(min(numel(t),sum(t<=t1)+1)-1))]; end
         assignin('base','Target_duration',Target_duration);
         %Target_duration=[0,time/1000]; % time&values

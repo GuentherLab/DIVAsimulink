@@ -104,8 +104,6 @@ switch(lower(style))
             x=x+dx;
             y=Compute(x);
         end
-        %disp(x); disp(y)
-        %disp(niter)
     otherwise
         error('unknown option %s',style)
 end

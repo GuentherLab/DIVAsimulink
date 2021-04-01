@@ -8,9 +8,11 @@ fs=4*11025;
 %Art=max(-1,min(1,Art));
 switch(lower(option))
     case 'explicit' 
-        [Aud,Som,Outline,af,d]=diva_synth_sample(Art);
+        [Outline,Aud,Som,af,d]=diva_synth_sample(Art);
         filt=a2h(max(0,af),d,fs/10,fs);
-        %filt=a2h(max(0,af),d,fs,fs);
+        %filt=a2h(max(0,af),d,fs,fs); 
+    case 'outline' 
+        Aud=diva_synth_sample(Art);
     case 'sound' % outputs soundwave associated with sequence of articulatory states
         Aud=diva_synth_sound(Art);
         Som=fs;
@@ -19,7 +21,7 @@ switch(lower(option))
         if ndata>1
             Aud=cell(1,ndata);Som=cell(1,ndata);Outline=cell(1,ndata);af=cell(1,ndata);
             for n1=1:size(Art,2),
-                [Aud{n1},Som{n1},Outline{n1}]=diva_synth_sample(Art(:,n1));
+                [Outline{n1},Aud{n1},Som{n1}]=diva_synth_sample(Art(:,n1));
             end
             Aud=cat(2,Aud{:});
             Som=cat(2,Som{:});
@@ -32,9 +34,9 @@ switch(lower(option))
 %             end
         else
             if nargout>1
-                [Aud,Som,Outline]=diva_synth_sample(Art);
+                [Outline,Aud,Som]=diva_synth_sample(Art);
             else
-                Aud=diva_synth_sample(Art);
+                [nill,Aud]=diva_synth_sample(Art);
             end
         end
 end
@@ -218,7 +220,7 @@ end
 % Aud(1:4) F0-F3 pitch&formants
 % Som(1:6) place of articulation (~ from pharyngeal to labial closure)
 % Som(7:8) P/V params (pressure,voicing)
-function [Aud,Som,Outline,af,d]=diva_synth_sample(Art)
+function [Outline,Aud,Som,af,d]=diva_synth_sample(Art)
 persistent vt fmfit;
 if isempty(vt)
     [filepath,filename]=fileparts(mfilename);
@@ -231,26 +233,28 @@ x=vt.Scale(idx).*Art(idx);
 Outline=vt.Average+vt.Base(:,idx)*x;
 % computes somatosensory output (explicitly from vocal tract configuration)
 Som=zeros(8,1);
-if nargout>3
+if nargout>2
     [a,b,sc,af,d]=xy2ab(Outline);
-    Som(1:6)=max(-1,min(1, -tanh(1*sc) ));
-    Som(7:8)=Art(end-1:end);
+    Som(1:6)=max(-1,min(1, -tanh(1*sc) )); % place of articulation
+    Som(7:8)=Art(end-1:end);               % Pressure/Voicing
+    %Som(7)=min(Som(7),tanh((min(af)-0)/.10)); % note: Pressure som for closed configurations
 %         [a,b,sc]=xy2ab(Outline);
 end
 % computes auditory/somatosensory output (through previously computed forward fit)
 Aud=zeros(4,1);
 if ~isempty(fmfit)
-    Aud(1)=100+50*Art(end-2);
+    Aud(1)=100+50*Art(end-2); % F0
     dx=bsxfun(@minus,Art(idx)',fmfit.mu);
     p=-sum((dx*fmfit.iSigma).*dx,2)/2;
     p=fmfit.p.*exp(p-max(p));
     p=p/sum(p);
     px=p*[Art(idx)',1];
-    Aud(2:4)=fmfit.beta_fmt*px(:);
+    Aud(2:4)=fmfit.beta_fmt*px(:); % F1-F3
 end
-if ~isempty(fmfit)&&nargout>1&&nargout<=3,
+if 0,%~isempty(fmfit)&&nargout>1&&nargout<=3,
     Som(1:6)=fmfit.beta_som*px(:);
     Som(7:8)=Art(end-1:end);
+    %Som(7)=min(Som(7),tanh((min(af)-.05)/.05)); % note: Pressure som for closed configurations
 end
 %disp(Art); disp(Aud);
 end
