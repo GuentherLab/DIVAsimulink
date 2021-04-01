@@ -10,7 +10,7 @@ switch(lower(option))
     case 'explicit' 
         [Outline,Aud,Som,af,d]=diva_synth_sample(Art);
         filt=a2h(max(0,af),d,fs/10,fs);
-        %filt=a2h(max(0,af),d,fs,fs);
+        %filt=a2h(max(0,af),d,fs,fs); 
     case 'outline' 
         Aud=diva_synth_sample(Art);
     case 'sound' % outputs soundwave associated with sequence of articulatory states
