@@ -30,15 +30,15 @@ switch(lower(option))
         %set(data.handles.h1,'xdata',real(data.state.Outline),'ydata',imag(data.state.Outline));
         
         % setting up supplementary plots for 2D vocal tract vocalization
-        data.handles.hax1a=axes('units','norm','position',[.36 .3 .04 .65]);
-        data.handles.hax1b=axes('units','norm','position',[.40 .3 .04 .65]);
-        data.handles.hax1c=axes('units','norm','position',[.44 .3 .04 .65]);
+        data.handles.hax1a=axes('units','norm','position',[.34 .3 .04 .65]);
+        data.handles.hax1b=axes('units','norm','position',[.38 .3 .04 .65]);
+        data.handles.hax1c=axes('units','norm','position',[.42 .3 .04 .65]);
         % arc plot data
         t = linspace(150, 210, 100); t2 = linspace(135, 225, 100); t3 = linspace(120, 240, 100);
         x  = 3 * cosd(t);y  = 3 * sind(t);x2 = 4 * cosd(t2);y2 = 4 * sind(t2);x3 = 5 * cosd(t3);y3 = 5 * sind(t3);
-        data.handles.h1a = plot(-x+2, -y, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1a,'visible', 'on');
-        data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1b,'visible', 'on');
-        data.handles.h1c = plot(-x3, -y3, 'k-', 'LineWidth', 4, 'parent', data.handles.hax1c,'visible', 'off');
+        data.handles.h1a = plot(-x+2, -y, 'k-', 'LineWidth', 2, 'parent', data.handles.hax1a,'visible', 'on');
+        data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 2, 'parent', data.handles.hax1b,'visible', 'on');
+        data.handles.h1c = plot(-x3, -y3, 'k-', 'LineWidth', 2, 'parent', data.handles.hax1c,'visible', 'off');
         set(data.handles.hax1a, 'YLim', [-4 4], 'XLim', [4.5 5]); set(data.handles.hax1b, 'YLim', [-4 4], 'XLim', [3.3 4]); set(data.handles.hax1c, 'YLim', [-6 6], 'XLim', [3.0 5]);
         set(data.handles.hax1a,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1b,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1c,'box','off','xtick',[],'ytick',[], 'visible', 'off');
         
@@ -66,10 +66,11 @@ switch(lower(option))
         %data.handles.hplot4 = bar(-3+(3+3)*rand(1,13));
         
         % plotting new horizontal  'bar-sliders'
-        % main articulators (1-10 or 1-numMainArt)
+        % main articulators (1:10 or 1:numMainArt)
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
         labels = diva_vocaltract();
-        numMainArt = length((labels.Input.Plots_label(2:end-3)));
+        numMainArt = length((labels.Input.Plots_label(2:end)));
+        %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
         data.handles.hax4 = axes('units','norm','position',[.525 .325 .25 .625]);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
@@ -78,18 +79,19 @@ switch(lower(option))
         data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
         data.handles.hplot4.FaceColor = 'flat';
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
-        set(data.handles.hax4, 'YTickLabel', labels.Input.Plots_label(2:end-3));
+        set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', labels.Input.Plots_label(2:end-3), 'Fontunit', 'norm');
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
         
-        % extra articulators (11-13 or [numMainArt+1]-[numMainArt+3])
-        numSuppArt = length((labels.Input.Plots_label(2:end)));
+        % extra articulators (11:13 or [numMainArt+1]:[numMainArt+3])
+        numSuppArt = numMainArt+3; % ideally want +3 to be determined by total number of labels or something
+        %numSuppArt = length((labels.Input.Plots_label(2:end)));
         data.numSuppArt = numSuppArt;
         data.handles.hax4b = axes('units','norm','position',[.825 .325 .15 .625]);
         data.handles.hplot4b = bar([numMainArt+1:1:numSuppArt],[0 .5 .5], 'BarWidth', 0.7); % psst you need to plot the bar first, before changing the axes properties
         data.handles.hplot4b.FaceColor = 'flat';
         hold on; data.handles.hplot5b=plot(numMainArt+1:numSuppArt,[0 .5 .5],'ko','markerfacecolor','k'); hold off
-        set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [numMainArt+0.5 numSuppArt+0.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
+        set(data.handles.hax4b,'FontUnits','norm','FontSize',0.04, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [numMainArt+0.5 numSuppArt+0.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
         data.handles.h4btext = text(numMainArt+1:numSuppArt,[-0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
         set(data.handles.h4btext(1),'String',round(0,2,'significant'),'vert','top','horiz','center');
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
@@ -355,9 +357,9 @@ switch(lower(option))
             Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03];       
         end
         if data.setup
-            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','normalized','Position', Fpos{1},'Callback', @FboxEdited);
-            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','normalized','Position', Fpos{2},'Callback', @FboxEdited);
-            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','normalized','Position', Fpos{3},'Callback', @FboxEdited);
+            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
+            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
+            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
             set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
@@ -671,7 +673,7 @@ end
                             %disp(pos2(1,2));
                             data.handles.hplot4b.YData = newY;
                             data.handles.hplot5b.YData = newY;
-                            for k = 1:3
+                            for k = 1:(data.numSuppArt - data.numMainArt)
                                 set(data.handles.h4btext(k),'String', round(newY(k),2,'significant'));
                                 if newY(k) > 0
                                     if newY(k) > 0.5
@@ -708,7 +710,7 @@ end
                             %disp(pos2(1,2));
                             data.handles.hplot4.YData = newY;
                             data.handles.hplot5.XData = newY;
-                            for k = 1:10
+                            for k = 1:data.numMainArt
                                 set(data.handles.h4text(k),'String', round(newY(k),3,'significant'));
                                 if newY(k) > 0
                                     if newY(k) > 0.5
