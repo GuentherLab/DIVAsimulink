@@ -10,7 +10,7 @@ switch(lower(option))
         %[data.state.y,data.state.z,data.state.Outline]=diva_synth(data.state.x);
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.3 .5 .4 .4],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w');
+        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w');
         
         % setting up 2D vocal tract
         %data.handles.hax1=axes('units','norm','position',[.05 .3 .45 .65],'color',1*[1 1 1]);
