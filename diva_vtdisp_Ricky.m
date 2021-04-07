@@ -102,6 +102,9 @@ switch(lower(option))
         
         % reset button
         data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
+        % synthesize button
+        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','Position',[.25 .37 .06 .06],'Visible','on','CallBack', @synthPushed);
+        
         
         % flag for first time setup
         data.setup = 1;
@@ -349,17 +352,26 @@ switch(lower(option))
         peakVals = x(peakIdx+1);
         %f0box = annotation('textbox',[.5,.5,.5,.5],'String',peakVals(1), 'FitBoxToText','on');
         %set(data.handles.h3,'xdata',(0:numel(data.state.filt)-1)*fs/numel(data.state.filt)*1e0,'ydata',x);
-        set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
+        %set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
+        set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',calcPeaks);
+        
         %set(data.handles.h6, 'XData', i, 'YData', peakVals); If I wanted to add markers on each peak
         % figure out position of each Formant txt box       
         Fpos = cell(3,1);
         for j = 1:3
-            Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03];       
+            %Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
+            Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.03,0.038,0.03];
         end
         if data.setup
-            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
-            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
-            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
+            % top version uses audPeaks values which are from
+            % data.state.Aud or the diva_synth function
+            %data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
+            %data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
+            %data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
+            
+            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(calcPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
+            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(calcPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
+            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(calcPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
             set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
@@ -367,23 +379,30 @@ switch(lower(option))
             data.setup = 0;
             set(data.handles.hfig,'userdata',data);
         else
-            set(data.handles.f1txt,'String',string(audPeaks(1)),'Position',Fpos{1});
-            set(data.handles.f2txt,'String',string(audPeaks(2)),'Position',Fpos{2});
-            set(data.handles.f3txt,'String',string(audPeaks(3)),'Position',Fpos{3});
+            % top version uses audPeaks values which are from
+            % data.state.Aud or the diva_synth function
+            %set(data.handles.f1txt,'String',string(audPeaks(1)),'Position',Fpos{1});
+            %set(data.handles.f2txt,'String',string(audPeaks(2)),'Position',Fpos{2});
+            %set(data.handles.f3txt,'String',string(audPeaks(3)),'Position',Fpos{3});
+            
+            set(data.handles.f1txt,'String',string(calcPeaks(1)),'Position',Fpos{1});
+            set(data.handles.f2txt,'String',string(calcPeaks(2)),'Position',Fpos{2});
+            set(data.handles.f3txt,'String',string(calcPeaks(3)),'Position',Fpos{3});
             set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
             %set(data.handles.f3txt,'String',string(i(4)),'Position',Fpos{4}); 
         end
         
-        if exist('data', 'var') == 1 && isfield(data, 'ready2play')
-            if data.ready2play
-                %if size(data.state.x,2)>1,
-                [data.state.s,data.state.fs]=diva_synth(data.state.x,'sound');
-                sound(data.state.s,data.state.fs);
-                %end
-            end
-        end
+        % Old play sound method
+        %if exist('data', 'var') == 1 && isfield(data, 'ready2play')
+        %    if data.ready2play
+        %        %if size(data.state.x,2)>1,
+        %        [data.state.s,data.state.fs]=diva_synth(data.state.x,'sound');
+        %        sound(data.state.s,data.state.fs);
+        %        %end
+        %    end
+        %end
         
         %set(data.handles.hax3,'XTickLabelRotation',45); % rotate x-axis label to avoid overlap
         set(data.handles.hfig,'userdata',data);
@@ -468,6 +487,18 @@ end
         diva_vtdisp_Ricky(hfig,'updsliders',[zeros(data.numMainArt,1);0;.5;.5],data);
         diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(data.numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
         drawnow;
+    end
+
+    function synthPushed(PushButton, EventData)
+        if isempty(hfig), hfig=gcf; end
+        data=get(hfig,'userdata'); 
+        if size(data.state.x,2) < 2
+            data.state.x=repmat(data.state.x,[1,100]);
+        end
+        [data.state.s,data.state.fs]=diva_synth(data.state.x,'sound');
+        sound(data.state.s,data.state.fs);
+        data.ready2play = 0;
+        set(data.handles.hfig,'userdata',data);
     end
 
     function downcallback(varargin)
