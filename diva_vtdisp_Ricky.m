@@ -344,12 +344,13 @@ switch(lower(option))
         % frequency spectrum
         x=10*log10(abs(data.state.filt)); % does this need to be adjusted based on numMainArt?
         calcPeaks = find(x(2:end-1)>x(1:end-2)&x(2:end-1)>x(3:end))*fs/numel(data.state.filt)*1e0; % calc freq peaks
+        % trying to integrate diva_synth vals
         audPeaks = round(data.state.Aud(2:end,:));
         combPeaks = [audPeaks;calcPeaks(4:end)];
         h3xdata = (0:numel(data.state.filt)-1)*fs/numel(data.state.filt)*1e0;
         set(data.handles.h3,'xdata',h3xdata,'ydata',x);
         peakIdx = find(x(2:end-1)>x(1:end-2)&x(2:end-1)>x(3:end));
-        peakVals = x(peakIdx+1);
+        %peakVals = x(peakIdx+1);
         %f0box = annotation('textbox',[.5,.5,.5,.5],'String',peakVals(1), 'FitBoxToText','on');
         %set(data.handles.h3,'xdata',(0:numel(data.state.filt)-1)*fs/numel(data.state.filt)*1e0,'ydata',x);
         %set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
