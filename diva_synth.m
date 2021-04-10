@@ -228,9 +228,9 @@ if isempty(vt)
 end
 % computes vocal tract configuration
 idx=1:10;
-
-x=vt.Scale(idx).*Art(idx);
-Outline=vt.Average+vt.Base(:,idx)*x;
+tidx=[1:3,5:10]; % no soft-palate
+x=vt.Scale(tidx).*Art(tidx);
+Outline=vt.Average+vt.Base(:,tidx)*x;
 % computes somatosensory output (explicitly from vocal tract configuration)
 Som=zeros(8,1);
 if nargout>2
