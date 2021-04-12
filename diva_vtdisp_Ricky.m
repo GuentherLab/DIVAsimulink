@@ -96,16 +96,11 @@ switch(lower(option))
         set(data.handles.h4btext(1),'String',round(0,2,'significant'),'vert','top','horiz','center');
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
-        %for n1=1:13 % this is where the sliders are created, need to replace these with bars (for now)
-        %    data.handles.hslider(n1)=uicontrol('units','norm','position',[.6 .90-(n1-1)*.05 .3 .05],'style','slider','min',-3,'max',3,'callback',@(varargin)diva_vtdisp(data.handles.hfig,'setslider',n1));
-        %end
-        
         % reset button
         data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
         % synthesize button
         data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','Position',[.25 .37 .06 .06],'Visible','on','CallBack', @synthPushed);
-        
-        
+             
         % flag for first time setup
         data.setup = 1;
         set(data.handles.hfig,'userdata',data);
@@ -358,11 +353,13 @@ switch(lower(option))
         
         %set(data.handles.h6, 'XData', i, 'YData', peakVals); If I wanted to add markers on each peak
         % figure out position of each Formant txt box       
+        
         Fpos = cell(3,1);
         for j = 1:3
             %Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
             Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.03,0.038,0.03];
         end
+        
         if data.setup
             % Old ver (uses actual freq val)
             %data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(calcPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
@@ -695,6 +692,7 @@ end
                             curFtarget(1:curFidx-1) = nan;
                             curFtarget(curFidx+1:end) = nan;
                             curFtarget(curFidx) = newPos(1,1);
+                            disp(curFtarget);
                             data.curFtarget = curFtarget;               
                             
                             % pass on data to next part of GUI
