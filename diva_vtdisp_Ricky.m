@@ -355,26 +355,27 @@ switch(lower(option))
         %set(data.handles.h6, 'XData', i, 'YData', peakVals); If I wanted to add markers on each peak
         % figure out position of each Formant txt box       
         
-        Fpos = cell(3,1);
-        for j = 1:3
-            %Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
-            Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.03,0.038,0.03];
-        end
+        % old code, when basing position on formant position
+        %Fpos = cell(3,1);
+        %for j = 1:3
+        %    Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
+            
+        %end
+        Fpos = {[0.95,0.18,0.038,0.03]; [0.95,0.14,0.038,0.03]; [0.95,0.1,0.038,0.03]};
         
         if data.setup
             % Old ver (uses actual freq val)
             %data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(calcPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
-            %data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(calcPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
-            %data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(calcPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
             %set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
-            %set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
-            %set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
                         
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
-            data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
-            data.handles.f2txt = uicontrol('Style','edit','Tag','f2txt','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
-            data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
+            data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.18,0.038,0.03]);
+            data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.14,0.038,0.03]);
+            data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.10,0.038,0.03]);
+            data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
+            data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
+            data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', [-15 ,15]);
@@ -384,21 +385,14 @@ switch(lower(option))
         else
             % Old ver (uses actual freq val)
             %set(data.handles.f1txt,'String',string(calcPeaks(1)),'Position',Fpos{1});
-            %set(data.handles.f2txt,'String',string(calcPeaks(2)),'Position',Fpos{2});
-            %set(data.handles.f3txt,'String',string(calcPeaks(3)),'Position',Fpos{3});
             %set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
-            %set(data.handles.h3F2, 'xdata',[h3xdata(peakIdx(2)),h3xdata(peakIdx(2))],'ydata', [-15 ,15]);
-            %set(data.handles.h3F3, 'xdata',[h3xdata(peakIdx(3)),h3xdata(peakIdx(3))],'ydata', [-15 ,15]);
+
             
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
-            %set(data.handles.f1txt,'String',string(audPeaks(1)),'Position',Fpos{1});
-            %set(data.handles.f2txt,'String',string(audPeaks(2)),'Position',Fpos{2});
-            %set(data.handles.f3txt,'String',string(audPeaks(3)),'Position',Fpos{3});
-            
-            set(data.handles.f1txt,'String',string(audPeaks(1)),'Position',Fpos{1});
-            set(data.handles.f2txt,'String',string(audPeaks(2)),'Position',Fpos{2});
-            set(data.handles.f3txt,'String',string(audPeaks(3)),'Position',Fpos{3});
+            set(data.handles.f1edit,'String',string(audPeaks(1)),'Position',Fpos{1});
+            set(data.handles.f2edit,'String',string(audPeaks(2)),'Position',Fpos{2});
+            set(data.handles.f3edit,'String',string(audPeaks(3)),'Position',Fpos{3});
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', [-15 ,15]);
@@ -440,17 +434,17 @@ end
         %turns out the limitsare variable bc it depends on the solveinv
         %output.
         switch ObjH.Tag
-            case 'f1txt'
+            case 'f1edit'
                 currFidx = 2;
-            case 'f2txt'
+            case 'f2edit'
                 currFidx = 3;
-            case 'f3txt'
+            case 'f3edit'
                 currFidx = 4;
            %case 'f4txt'
            %currFidx = 4;
         end
         %allF = str2double(data.handles.hax3.XTickLabel);
-        allF = [str2double(data.handles.f1txt.String);str2double(data.handles.f2txt.String);str2double(data.handles.f3txt.String)];
+        allF = [str2double(data.handles.f1edit.String);str2double(data.handles.f2edit.String);str2double(data.handles.f3edit.String)];
         f0 = 100; % may need to derive this based on tension in the future
         data.origF = [f0;allF(1:3)];
         curFtarget = [f0;allF(1:3)];
@@ -577,7 +571,7 @@ end
         %data.curBar = curBarIdx;
         f0 = 100; % may need to derive this based on tension in the future    
         %origF = get(data.handles.hax3,'XTickLabel'); % get original set of formants
-        origF = [str2double(data.handles.f1txt.String);str2double(data.handles.f2txt.String);str2double(data.handles.f3txt.String)];
+        origF = [str2double(data.handles.f1edit.String);str2double(data.handles.f2edit.String);str2double(data.handles.f3edit.String)];
         origF = [f0;str2double(origF(1:3))];
         data.origF = origF;
         % want to store the original position of vocal tract before any
@@ -677,7 +671,7 @@ end
                             %data.handles.h3.YData = newy; 
                             
                             %availableF = str2double(data.handles.hax3.XTickLabel);
-                            availableF = [str2double(data.handles.f1txt.String);str2double(data.handles.f2txt.String);str2double(data.handles.f3txt.String)];
+                            availableF = [str2double(data.handles.f1edit.String);str2double(data.handles.f2edit.String);str2double(data.handles.f3edit.String)];
                             [~,curFidx] = min(abs(availableF-data.curFpoint(1)));
                             switch curFidx
                                 case 1
