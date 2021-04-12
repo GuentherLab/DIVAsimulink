@@ -103,6 +103,7 @@ switch(lower(option))
              
         % flag for first time setup
         data.setup = 1;
+        clear diva_synth %on rare occasions the persistent vt variable needs to be updated
         set(data.handles.hfig,'userdata',data);
         diva_vtdisp_Ricky(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
         drawnow;
@@ -692,7 +693,6 @@ end
                             curFtarget(1:curFidx-1) = nan;
                             curFtarget(curFidx+1:end) = nan;
                             curFtarget(curFidx) = newPos(1,1);
-                            disp(curFtarget);
                             data.curFtarget = curFtarget;               
                             
                             % pass on data to next part of GUI
