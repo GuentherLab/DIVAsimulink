@@ -1,0 +1,7 @@
+1. DIVA GUI integration, three panels: 'articulatory synthesizer', 'DIVA simulation panel', 'Target creation panel'
+2. add constriction display to 'articulatory synthesizer' panel and make user-controllable
+3. add checkbox for "constrained" articulator, mix with Simulink constrictions
+4. create new "create target" dialog box to import info from 'Articulatory Synthesizer' to 'Target creation panel'
+5. vocal tract intersections shown as darker gray
+6. create dialog box to enter formant values simultaneously
+
