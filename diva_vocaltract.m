@@ -71,13 +71,15 @@ DIVA_x.debug=0;
   elseif ischar(block)
       switch(lower(block)),
           case 'auditory'
-              varargout{1}=diva_vocaltractcompute(varargin{:});
+              [varargout{1},nill,varargout{2}]=diva_vocaltractcompute(varargin{:});
           case 'somatosensory'
-              [out{1},out{2}]=diva_vocaltractcompute(varargin{:});
-              varargout{1}=out{2};
+              [nill,varargout{1},varargout{2}]=diva_vocaltractcompute(varargin{:});
           case 'auditory&somatosensory'
-              [out{1},out{2}]=diva_vocaltractcompute(varargin{:});
-              varargout{1}=cat(1,out{:});
+              [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
+              varargout={cat(1,out{1:2}),out{3}};
+          case 'formant'
+              [varargout{1},nill,varargout{2}]=diva_vocaltractcompute(varargin{:});
+              varargout{1}=varargout{1}.*DIVA_x.params.Output(1).Scale;
           case 'output'
               [varargout{1:nargout}]=diva_vocaltractcompute(varargin{:});
           case 'base'
@@ -87,6 +89,8 @@ DIVA_x.debug=0;
 %                   Q=Q.*DIVA_x.params.Input.BlockDiagonal;
 %               end
 %               varargout{1}=orth(Q);
+          case 'pseudoinv'
+              varargout{1}=diva_vocaltractpseudoinv(varargin{:});
           otherwise
               error(['unrecognized option ',lower(block)]);
               
@@ -159,20 +163,28 @@ t=t+1;
 end
 
 
-function [y,z]=diva_vocaltractcompute(x,dodisp)
+function [y,z,p0]=diva_vocaltractcompute(x,dodisp,needsom)
 global DIVA_x;
-if nargin<2, dodisp=0; end
+if nargin<2||isempty(dodisp), dodisp=0; end
+if nargin<3||isempty(needsom), needsom=true; end
 
   if ~DIVA_x.debug
       x=x.*DIVA_x.params.Input.Scale;
-      if nargout==1&&~dodisp
-          y=diva_synth(x);
-          y=y./DIVA_x.params.Output(1).Scale;
+      if needsom, 
+          [y,z,Outline,p0]=diva_synth(x);
       else
-          [y,z,Outline]=diva_synth(x);
-          y=y./DIVA_x.params.Output(1).Scale;
-          z=z./DIVA_x.params.Output(2).Scale;
+          [y,z,Outline,p0]=diva_synth(x,'aud');
       end
+      y=y./DIVA_x.params.Output(1).Scale;
+      if ~isempty(z), z=z./DIVA_x.params.Output(2).Scale; end
+%       if nargout==1&&~dodisp
+%           y=diva_synth(x);
+%           y=y./DIVA_x.params.Output(1).Scale;
+%       else
+%           [y,z,Outline]=diva_synth(x);
+%           y=y./DIVA_x.params.Output(1).Scale;
+%           z=z./DIVA_x.params.Output(2).Scale;
+%       end
       
       if DIVA_x.gui&&nargin>1&&dodisp % display vt
           if dodisp==-1, % initialize display
@@ -216,3 +228,8 @@ if nargin<2, dodisp=0; end
       end
   end
 end
+
+
+
+
+

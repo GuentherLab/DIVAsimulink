@@ -8,7 +8,7 @@ fs=4*11025;
 %Art=max(-1,min(1,Art));
 switch(lower(option))
     case 'explicit' 
-        [Outline,Aud,Som,af,d]=diva_synth_sample(Art);
+        [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
         filt=a2h(max(0,af),d,fs/10,fs);
         %filt=a2h(max(0,af),d,fs,fs); 
     case 'outline' 
@@ -16,16 +16,20 @@ switch(lower(option))
     case 'sound' % outputs soundwave associated with sequence of articulatory states
         Aud=diva_synth_sound(Art);
         Som=fs;
-    case 'audsom' % outputs auditory/somatosensory representation associated with a given articulatory state
+    case {'aud','audsom'} % outputs auditory/somatosensory representation associated with a given articulatory state
+        needsom=strcmpi(option,'audsom');
         ndata=size(Art,2);
         if ndata>1
-            Aud=cell(1,ndata);Som=cell(1,ndata);Outline=cell(1,ndata);af=cell(1,ndata);
-            for n1=1:size(Art,2),
-                [Outline{n1},Aud{n1},Som{n1}]=diva_synth_sample(Art(:,n1));
+            Aud=cell(1,ndata);Som=cell(1,ndata);Outline=cell(1,ndata);af=cell(1,ndata);P=nan(1,size(Art,2));
+            if needsom
+                for n1=1:size(Art,2),[Outline{n1},P(n1),Aud{n1},Som{n1}]=diva_synth_sample(Art(:,n1));end
+            else
+                for n1=1:size(Art,2),[Outline{n1},P(n1),Aud{n1}]=diva_synth_sample(Art(:,n1));end
             end
             Aud=cat(2,Aud{:});
             Som=cat(2,Som{:});
             Outline=cat(2,Outline{:});
+            af=P; % note: returns also p / distance-to-training-samples
 %             if nargout>3,
 %                 laf=cellfun('length',af);
 %                 mlaf=max(laf);
@@ -33,10 +37,13 @@ switch(lower(option))
 %                 af=cat(2,af{:});
 %             end
         else
-            if nargout>1
-                [Outline,Aud,Som]=diva_synth_sample(Art);
+            if nargout>1&&needsom
+                [Outline,P,Aud,Som]=diva_synth_sample(Art);
+                af=P;
             else
-                [nill,Aud]=diva_synth_sample(Art);
+                [Outline,P,Aud]=diva_synth_sample(Art);
+                af=P;
+                Som=[];
             end
         end
 end
@@ -85,8 +92,8 @@ while time<(ndata+1)*dt;
     % sample articulatory parameters
     t0=floor(time/dt);
     t1=(time-t0*dt)/dt;
-    [nill,nill,nill,af1,d]=diva_synth_sample(Art(:,min(ndata,1+t0)));
-    [nill,nill,nill,af2,d]=diva_synth_sample(Art(:,min(ndata,2+t0)));
+    [nill,nill,nill,nill,af1,d]=diva_synth_sample(Art(:,min(ndata,1+t0)));
+    [nill,nill,nill,nill,af2,d]=diva_synth_sample(Art(:,min(ndata,2+t0)));
     d=d*voices(opt.voices).size;
     naf1=numel(af1);naf2=numel(af2);
     if naf2<naf1,af2(end+(1:naf1-naf2))=af2(end); end
@@ -220,7 +227,7 @@ end
 % Aud(1:4) F0-F3 pitch&formants
 % Som(1:6) place of articulation (~ from pharyngeal to labial closure)
 % Som(7:8) P/V params (pressure,voicing)
-function [Outline,Aud,Som,af,d]=diva_synth_sample(Art)
+function [Outline,p0,Aud,Som,af,d]=diva_synth_sample(Art)
 persistent vt fmfit;
 if isempty(vt)
     [filepath,filename]=fileparts(mfilename);
@@ -231,9 +238,10 @@ idx=1:10;
 tidx=[1:3,5:10]; % no soft-palate
 x=vt.Scale(tidx).*Art(tidx);
 Outline=vt.Average+vt.Base(:,tidx)*x;
+if nargout<=1, return; end
 % computes somatosensory output (explicitly from vocal tract configuration)
 Som=zeros(8,1);
-if nargout>2
+if nargout>3
     [a,b,sc,af,d]=xy2ab(Outline);
     Som(1:6)=max(-1,min(1, -tanh(1*sc) )); % place of articulation
     Som(7:8)=Art(end-1:end);               % Pressure/Voicing
@@ -242,14 +250,17 @@ if nargout>2
 end
 % computes auditory/somatosensory output (through previously computed forward fit)
 Aud=zeros(4,1);
+p0=0;
 if ~isempty(fmfit)
     Aud(1)=100+50*Art(end-2); % F0
     dx=bsxfun(@minus,Art(idx)',fmfit.mu);
     p=-sum((dx*fmfit.iSigma).*dx,2)/2;
-    p=fmfit.p.*exp(p-max(p));
+    p0=max(p); 
+    p=fmfit.p.*exp(p-p0);
     p=p/sum(p);
     px=p*[Art(idx)',1];
     Aud(2:4)=fmfit.beta_fmt*px(:); % F1-F3
+    p0=exp(p0);
 end
 if 0,%~isempty(fmfit)&&nargout>1&&nargout<=3,
     Som(1:6)=fmfit.beta_som*px(:);

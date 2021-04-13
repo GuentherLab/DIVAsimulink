@@ -10,7 +10,7 @@ switch(lower(option))
         %[data.state.y,data.state.z,data.state.Outline]=diva_synth(data.state.x);
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w');
+        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w','interruptible','on','busyaction','queue');
         
         % setting up 2D vocal tract
         %data.handles.hax1=axes('units','norm','position',[.05 .3 .45 .65],'color',1*[1 1 1]);
@@ -24,6 +24,7 @@ switch(lower(option))
         data.handles.h1=patch(nan,nan,'k','facecolor',.85*[1 1 1],'edgecolor','none','linewidth',2,'parent',data.handles.hax1);
         hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
+        hold(data.handles.hax1,'on'); data.handles.mousepos1=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         
         axis(data.handles.hax1,'equal','tight');
         set(data.handles.hax1,'xcolor','w','ycolor','w','xtick',[],'ytick',[],'xdir','reverse');
@@ -49,11 +50,12 @@ switch(lower(option))
         
         % plotting frequency spectrum
         data.handles.hax3=axes('units','norm','position',[.6 .1 .3 .15],'box','off');
-        data.handles.h3=plot(nan,nan,'k','color','k','linewidth',2,'parent',data.handles.hax3);
+        data.handles.h3=plot(nan,nan,'k','color',.75*[1 1 1],'linewidth',2,'parent',data.handles.hax3);
         %hold on; data.handles.h6=plot(nan,nan,'co','markerfacecolor','c'); hold off; If I wanted to add cyan markers on the plot 
-        hold on; data.handles.h3F1=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
-        hold on; data.handles.h3F2=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
-        hold on; data.handles.h3F3=plot(nan,nan,'--','color','b','linewidth',1,'parent',data.handles.hax3);  hold off;
+        hold on; data.handles.h3F1=plot(nan,nan,'-','color','k','linewidth',2,'parent',data.handles.hax3);  hold off;
+        hold on; data.handles.h3F2=plot(nan,nan,'-','color','k','linewidth',2,'parent',data.handles.hax3);  hold off;
+        hold on; data.handles.h3F3=plot(nan,nan,'-','color','k','linewidth',2,'parent',data.handles.hax3);  hold off;
+        hold(data.handles.hax3,'on'); data.handles.mousepos2=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax3); hold(data.handles.hax3,'off');
         xlabel(data.handles.hax3,'Frequency (Hz)');
         ylabel(data.handles.hax3,'VT filter (dB)');
         
@@ -79,7 +81,7 @@ switch(lower(option))
         data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
         data.handles.hplot4.FaceColor = 'flat';
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
-        set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', labels.Input.Plots_label(2:end-3), 'Fontunit', 'norm');
+        set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', labels.Input.Plots_label(2:end), 'Fontunit', 'norm');
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
         
@@ -133,20 +135,21 @@ switch(lower(option))
         end
         
         if isfield(data, 'newVocalT')
-            x=diva_solveinv(x,data.newVocalT,'outline','lambda',0.02,'center',data.oldVocalT);
+            x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',0.02,'center',data.oldstatex,'stepiter',.1); %,'center',data.oldVocalT);
             x=max(-1,min(1,x));
             %diva_vtdisp_Ricky(hfig,'test',x,stateData);
             diva_vtdisp_Ricky(hfig,'updsliders',x,data);
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
         if isfield(data, 'curFtarget')
-            x=diva_solveinv(x,data.curFtarget,'formant','lambda',0.02);
-            %x=diva_solveinv(x,data.curFtarget,'formant','center',data.origF);
+            x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',0.02,'center',data.oldstatex);
+            %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
             x=max(-1,min(1,x));
             %diva_vtdisp_Ricky(hfig,'test',x,stateData);
             diva_vtdisp_Ricky(hfig,'updsliders',x,data);
             data = rmfield(data,'curFtarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
+        
         x=repmat(x,[1,100]);
         if (data.currAxis == '4') | (data.currAxis == '4b')
             x(n,:)=[linspace(x(n,1),v,20),repmat(v,1,80)]; % for cases where articulator slides are being changed
@@ -172,7 +175,7 @@ switch(lower(option))
         n=n(end);
         [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
         
-        if sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
+        if 0,%sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
             %disp('reached breaking point 1')
             set(data.handles.h0, 'Color' ,'red')
             return
@@ -252,7 +255,8 @@ switch(lower(option))
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
         data.state.x=varargin{1};
-        
+        if ~isfield(data,'oldstatex'), data.oldstatex=data.state.x(:,end); end
+
         % vocalization display
         if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
             if data.curBar == 13
@@ -294,9 +298,10 @@ switch(lower(option))
         % the following works, but it would be nicer for it to notify the
         % user and also not update the sliders / revert them to the last
         % config that worked.
-         if sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
+         if 0,%sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
              %disp('reached breaking point 2')
              set(data.handles.h0, 'Color' ,'red')
+             set(data.handles.hfig,'userdata',data);
              return
          else
              set(data.handles.h0, 'Color' ,'black')
@@ -510,6 +515,22 @@ end
     function downcallback(varargin)
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');  
+        if isfield(data, 'curBar')
+            data = rmfield(data,'curBar');
+        end
+        if isfield(data, 'vCordPos')
+            data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
+        end
+        if isfield(data, 'newVocalT')
+            data = rmfield(data,'newVocalT');
+        end
+        if isfield(data, 'curFtarget')
+            data = rmfield(data,'curFtarget');
+        end
+        if isfield(data, 'curFpoint')
+            data = rmfield(data,'curFpoint');
+        end
+        set(hfig,'userdata',data);
         currPoint = get(data.handles.hfig,'currentpoint');
         currAxis = findCurrAxis(currPoint);
         mArtPos=get(data.handles.hax4,'currentpoint');  % get current point rel to axes [x y -; x y -] for main articulators
@@ -522,48 +543,19 @@ end
         if strcmp(currAxis, '4b') % supp articulators
             %curBarIdx = round(sArtPos(1));
             data.curBar = round(sArtPos(1));
-            if isfield(data, 'vCordPos')
-                data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
-            end
-            if isfield(data, 'newVocalT')
-                data = rmfield(data,'newVocalT'); 
-            end
-            if isfield(data, 'curFtarget')
-                data = rmfield(data,'curFtarget'); 
-            end
         elseif  strcmp(currAxis, '4') % main articulators
             %curBarIdx = round(mArtPos(1,2));
             data.curBar = round(mArtPos(1,2));
-            if isfield(data, 'vCordPos')
-                data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
-            end
-            if isfield(data, 'newVocalT')
-                data = rmfield(data,'newVocalT'); 
-            end
-            if isfield(data, 'curFtarget')
-                data = rmfield(data,'curFtarget'); 
-            end
         elseif strcmp(currAxis, '3') % formant plot
             % need to determine which formant clicked
             data.curFval = round(FPos(1));
             data.curFpoint = FPos;
-            if isfield(data, 'vCordPos')
-                data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
-            end
-            if isfield(data, 'curBar')
-                data = rmfield(data,'curBar'); 
-            end
-            if isfield(data, 'newVocalT')
-                data = rmfield(data,'newVocalT'); 
-            end  
+            origF = [str2double(data.handles.f1edit.String);str2double(data.handles.f2edit.String);str2double(data.handles.f3edit.String)];
+            [~,data.curFidx] = min(abs(origF-data.curFpoint(1))); % decide which formant to track only when mouse is clicked
+            set(data.handles.mousepos2,'xdata',[FPos(1,1) FPos(1,1)],'ydata',[FPos(1,2) FPos(1,2)]);
         elseif strcmp(currAxis, '1') % vocal tract plot
             data.vCordPos = vCordPos(1,1:2);
-            if isfield(data, 'curBar')
-                data = rmfield(data,'curBar'); 
-            end
-            if isfield(data, 'curFtarget')
-                data = rmfield(data,'curFtarget'); 
-            end
+            set(data.handles.mousepos1,'xdata',[vCordPos(1,1) vCordPos(1,1)],'ydata',[vCordPos(1,2) vCordPos(1,2)]);
         else
         end
         %curBarIdx = round(pos2(1));
@@ -579,6 +571,7 @@ end
         origVocalTx = get(data.handles.h0,'xdata');
         origVocalTy = get(data.handles.h0,'ydata');
         data.origVocalT = complex(origVocalTx,origVocalTy);
+        data.oldstatex=data.state.x(:,end);
         data.currAxis = currAxis;
         data.mouseIsDown = true; % recognizes / saves the fact that the mouse is pressed down
         data.ready2play = false;
@@ -589,6 +582,7 @@ end
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
         data.mouseIsDown = false;% recognizes / saves the fact that the mous has been let go
+        set(hfig,'userdata',data);
         if isfield(data, 'curBar')
             if data.curBar > data.numMainArt
                 data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.4470 0.7410];
@@ -599,17 +593,18 @@ end
             drawnow;
         end
         if isfield(data, 'curFpoint')
-            set(data.handles.h3F1, 'color', 'b');
-            set(data.handles.h3F2, 'color', 'b');
-            set(data.handles.h3F3, 'color', 'b');
+            set(data.handles.h3F1, 'color', 'k');
+            set(data.handles.h3F2, 'color', 'k');
+            set(data.handles.h3F3, 'color', 'k');
             set(data.handles.hfig,'userdata',data);
-            drawnow;
             data = rmfield(data,'curFpoint');
+            drawnow;
         end
         % could add a block here to turn the appropriate formant cyan?
         if isfield(data, 'vCordPos')
             data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
+        set([data.handles.mousepos1,data.handles.mousepos2],'xdata',[],'ydata',[]);
         data.ready2play = true;
         set(data.handles.hfig,'userdata',data);
         diva_vtdisp_Ricky(data.handles.hfig,'setslider',data);
@@ -630,6 +625,7 @@ end
                 % handling vocal tract plot clicks
                 if isfield(data, 'vCordPos')
                     newPos = get(data.handles.hax1,'currentpoint');
+                    txdata=[get(data.handles.mousepos1,'xdata') newPos(1,1)];tydata=[get(data.handles.mousepos1,'ydata') newPos(1,2)];set(data.handles.mousepos1,'xdata',txdata([1 end]),'ydata',tydata([1 end]));
                     xdata = data.handles.h0.XData;
                     ydata = data.handles.h0.YData;
                     distances = sqrt((data.vCordPos(1)-xdata).^2+(data.vCordPos(2)-ydata).^2);
@@ -654,13 +650,14 @@ end
                 % handling frequency plot clicks
                 if isfield(data, 'curFpoint')
                     newPos = get(data.handles.hax3,'currentpoint');
+                    txdata=[get(data.handles.mousepos2,'xdata') newPos(1,1)];tydata=[get(data.handles.mousepos2,'ydata') newPos(1,2)];set(data.handles.mousepos2,'xdata',txdata([1 end]),'ydata',tydata([1 end]));
                     %xdata = data.handles.h3.XData;  % get formant plot data
                     %ydata = data.handles.h3.YData;  % get formant plot data
                     %distances = sqrt((data.curFpoint(1)-xdata).^2+(data.curFpoint(2)-ydata).^2);
                     %[minValue, minIndex] = min(distances);
                     
                     fLim = max(data.handles.hax3.XLim);
-                        if data.curFval <= fLim && data.curFval > 0
+                        if newPos(1,1) <= fLim && newPos(1,1) > 0
                             data.curFval = newPos(1,1); % new chosen formant freq val
                             %[pks, locs] = findpeaks(data.handles.h3.YData);
                             %newx = xdata;
@@ -672,8 +669,9 @@ end
                             
                             %availableF = str2double(data.handles.hax3.XTickLabel);
                             availableF = [str2double(data.handles.f1edit.String);str2double(data.handles.f2edit.String);str2double(data.handles.f3edit.String)];
-                            [~,curFidx] = min(abs(availableF-data.curFpoint(1)));
-                            switch curFidx
+                            %[~,curFidx] = min(abs(availableF-data.curFpoint(1)));
+                            set([data.handles.h3F1,data.handles.h3F2,data.handles.h3F3], 'color', 'k');
+                            switch data.curFidx
                                 case 1
                                     set(data.handles.h3F1, 'color', 'c');
                                 case 2
@@ -681,7 +679,7 @@ end
                                 case 3
                                     set(data.handles.h3F3, 'color', 'c');
                             end
-                            curFidx = curFidx+1; % add 1 to pass f0
+                            curFidx = data.curFidx+1; % add 1 to pass f0
                             f0 = 100; % may need to derive this based on tension in the future
                             curFtarget = [f0;availableF(1:3)];
                             curFtarget(1:curFidx-1) = nan;
