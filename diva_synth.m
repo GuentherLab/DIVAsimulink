@@ -328,7 +328,7 @@ x0=45;%90;      % quarter circle center
 y0=-100;%-60;   
 r=60;%30;       % quarter circle radius
 k=pi*r/2;
-d=1.25*.75/10;%unitstocm
+d=1.5*.75/10;%unitstocm
 
 a=zeros(size(x));
 b=zeros(size(x));

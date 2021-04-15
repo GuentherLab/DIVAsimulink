@@ -284,7 +284,7 @@ switch(lower(option))
             end
         end
         
-        d=1.0*.75/10;
+        d=1.5*.75/10;
         fs=4*11025;
         
         %pay attention here for real-time plot update
