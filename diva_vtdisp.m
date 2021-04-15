@@ -447,6 +447,10 @@ end
         curFtarget = [f0;allF(1:3)];
         curFtarget(1) = nan;
         data.curFtarget = curFtarget;
+        origVocalTx = get(data.handles.h0,'xdata');
+        origVocalTy = get(data.handles.h0,'ydata');
+        data.origVocalT = complex(origVocalTx,origVocalTy);
+        data.oldstatex=data.state.x(:,end);
         data.currAxis = 3;
         data.ready2play = 1;
         set(data.handles.hfig,'userdata',data);
