@@ -67,7 +67,6 @@ switch(lower(option))
         %data.handles.hplot4.FaceColor = 'flat';
         %data.handles.hplot4 = bar(-3+(3+3)*rand(1,13));
         
-        % plotting new horizontal  'bar-sliders'
         % main articulators (1:10 or 1:numMainArt)
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
         labels = diva_vocaltract();
@@ -85,23 +84,27 @@ switch(lower(option))
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
         
-        % extra articulators (11:13 or [numMainArt+1]:[numMainArt+3])
+        % extra (glottis) articulators (11:13 or [numMainArt+1]:[numMainArt+3])
         numSuppArt = numMainArt+3; % ideally want +3 to be determined by total number of labels or something
         %numSuppArt = length((labels.Input.Plots_label(2:end)));
         data.numSuppArt = numSuppArt;
-        data.handles.hax4b = axes('units','norm','position',[.825 .325 .15 .625]);
-        data.handles.hplot4b = bar([numMainArt+1:1:numSuppArt],[0 .5 .5], 'BarWidth', 0.7); % psst you need to plot the bar first, before changing the axes properties
+        data.handles.hax4b = axes('units','norm','position',[.84 .73 .15 .22]);
+        data.handles.hplot4b = barh((numMainArt+1:numSuppArt),[0 0.5 0.5], 'BarWidth', 0.6);
+        hold on; data.handles.hplot5b=plot([0 .5 .5],(numMainArt+1:numSuppArt),'ko','markerfacecolor','k'); hold off
+        %%% adding bar values to supp articulators 
+        data.handles.h4btext = text([-0.1 0.6 0.6],(numMainArt+1:numSuppArt),num2str([0.0;0.5;0.5]),'Color','black','vert','middle','horiz','right');
+        set(data.handles.h4btext(2),'String',round(0.5,2,'significant'),'vert','middle','horiz','left');
+        set(data.handles.h4btext(3),'String',round(0.5,2,'significant'),'vert','middle','horiz','left');
         data.handles.hplot4b.FaceColor = 'flat';
-        hold on; data.handles.hplot5b=plot(numMainArt+1:numSuppArt,[0 .5 .5],'ko','markerfacecolor','k'); hold off
-        set(data.handles.hax4b,'FontUnits','norm','FontSize',0.04, 'YLimMode', 'manual', 'YLim', [-1 1], 'XLimMode', 'manual', 'XLim', [numMainArt+0.5 numSuppArt+0.5], 'XTickMode', 'manual', 'XTickLabel', {'tension','pressure','voicing'}, 'XTickLabelRotation',45);
-        data.handles.h4btext = text(numMainArt+1:numSuppArt,[-0.05 0.55 0.55],num2str([0.0;0.5;0.5]),'Color','black','vert','bottom','horiz','center');
-        set(data.handles.h4btext(1),'String',round(0,2,'significant'),'vert','top','horiz','center');
+        set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [numMainArt+0.5 numSuppArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
+        set(data.handles.hax4b, 'FontUnits','norm','FontSize',0.1,'YTickLabel', {'tension','pressure','voicing'}, 'Fontunit', 'norm');
+                        
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
         % reset button
-        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
+        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
         % synthesize button
-        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','Position',[.25 .37 .06 .06],'Visible','on','CallBack', @synthPushed);
+        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .37 .06 .06],'Visible','on','CallBack', @synthPushed);
              
         % flag for first time setup
         data.setup = 1;
@@ -205,20 +208,20 @@ switch(lower(option))
             end 
             % for supp articulators
             set(data.handles.hplot4b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
-            set(data.handles.hplot5b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
+            set(data.handles.hplot5b, 'XData', newVals(data.numMainArt+1:data.numSuppArt));
             for i = data.numMainArt+1:data.numSuppArt
                 set(data.handles.h4btext(i-data.numMainArt),'String', round(newVals(i),2,'significant'));
                 if newVals(i) > 0
                     if newVals(i) > 0.5
-                        set(data.handles.h4btext(i-data.numMainArt),'vert','top','Position', [i,newVals(i)-0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i-data.numMainArt),'vert','bottom','Position', [i,newVals(i)+0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
                     end
                 else
                     if newVals(i) < -0.5
-                        set(data.handles.h4btext(i-data.numMainArt),'vert','bottom','Position', [i,newVals(i)+0.025,0],'Color', 'White');
+                        set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
                     else
-                        set(data.handles.h4btext(i-data.numMainArt),'vert','top','Position', [i,newVals(i)-0.05,0],'Color', 'Black');
+                        set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
                     end
                 end
                 if i == 13
@@ -469,7 +472,7 @@ end
         % currAxis value is based on the axis number: 
         % '1' = vocal tract plot
         % '4' = main articulator bar plot
-        % '4b' = supplementary articulator bar plot
+        % '4b' = glottis articulator bar plot
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
         xp = currPoint(1);
@@ -542,7 +545,7 @@ end
         % just look at the newly implemented 'currAxis'
         if strcmp(currAxis, '4b') % supp articulators
             %curBarIdx = round(sArtPos(1));
-            data.curBar = round(sArtPos(1));
+            data.curBar = round(sArtPos(1,2));
         elseif  strcmp(currAxis, '4') % main articulators
             %curBarIdx = round(mArtPos(1,2));
             data.curBar = round(mArtPos(1,2));
@@ -701,28 +704,28 @@ end
                         pos=get(data.handles.hax4b,'currentpoint');
                         data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4b.XData);
-                        if data.curBar <= barLim && data.curBar > data.numMainArt+0.5 && pos(1,2) >=-1.005 && pos(1,2) <=1.005
+                        if data.curBar <= barLim && data.curBar > data.numMainArt+0.5 && pos(1) >=-1.005 && pos(1) <=1.005
                             %data.curBar = curBarIdx;
-                            data.curBarVal = pos(1,2);
+                            data.curBarVal = pos(1);
                             ydata = data.handles.hplot4b.YData;  % get bar plot y data
                             newY = ydata;
-                            newY(data.curBar-data.numMainArt) = pos(1,2);
+                            newY(data.curBar-data.numMainArt) = pos(1);
                             %disp(pos2(1,2));
                             data.handles.hplot4b.YData = newY;
-                            data.handles.hplot5b.YData = newY;
+                            data.handles.hplot5b.XData = newY;
                             for k = 1:(data.numSuppArt - data.numMainArt)
                                 set(data.handles.h4btext(k),'String', round(newY(k),2,'significant'));
                                 if newY(k) > 0
                                     if newY(k) > 0.5
-                                        set(data.handles.h4btext(k),'vert','top','Position', [k+data.numMainArt,newY(k)-0.025,0],'Color', 'White');
+                                        set(data.handles.h4btext(k),'horiz','right','Position', [newY(k)-0.1,k+data.numMainArt,0],'Color', 'White');
                                     else
-                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+data.numMainArt,newY(k)+0.05,0],'Color', 'Black');
+                                        set(data.handles.h4btext(k),'horiz','left','Position', [newY(k)+0.1,k+data.numMainArt,0],'Color', 'Black');
                                     end
                                 else
                                     if newY(k) < -0.5
-                                        set(data.handles.h4btext(k),'vert','bottom','Position', [k+data.numMainArt,newY(k)+0.025,0],'Color', 'White');
+                                        set(data.handles.h4btext(k),'horiz','left','Position', [newY(k)+0.1,k+data.numMainArt,0],'Color', 'White');
                                     else
-                                        set(data.handles.h4btext(k),'vert','top','Position', [k+data.numMainArt,newY(k)-0.05,0],'Color', 'Black');
+                                        set(data.handles.h4btext(k),'horiz','right','Position', [newY(k)-0.1,k+data.numMainArt,0],'Color', 'Black');
                                     end
                                 end
                             end
@@ -735,7 +738,6 @@ end
                         pos=get(data.handles.hax4,'currentpoint'); % get current point rel to axes [x y -; x y -]
                         data.handles.hplot4.CData(data.curBar,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4.XData);
-                        
                         %if curBarIdx <= barLim && curBarIdx > 0.5 && pos2(1,2) >= -3 && pos2(1,2) <= 3
                         if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005
                             %data.curBar = curBarIdx;
