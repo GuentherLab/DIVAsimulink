@@ -73,9 +73,9 @@ switch(lower(option))
         numMainArt = length((labels.Input.Plots_label(2:end)));
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
-        data.handles.hax4 = axes('units','norm','position',[.525 .325 .25 .625]);
+        data.handles.hax4 = axes('units','norm','position',[.535 .325 .22 .625]);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
-        hold on; data.handles.hplot5=plot(zeros(10,1),1:10,'ko','markerfacecolor','k'); hold off
+        hold on; data.handles.hplot5=plot(zeros(numMainArt,1),1:numMainArt,'ko','markerfacecolor','k'); hold off
         %%% adding bar values to main articulators 
         data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
         data.handles.hplot4.FaceColor = 'flat';
@@ -84,11 +84,10 @@ switch(lower(option))
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
         
-        % extra (glottis) articulators (11:13 or [numMainArt+1]:[numMainArt+3])
+        % Glottis articulators (11:13 or [numMainArt+1]:[numMainArt+3])
         numSuppArt = numMainArt+3; % ideally want +3 to be determined by total number of labels or something
-        %numSuppArt = length((labels.Input.Plots_label(2:end)));
         data.numSuppArt = numSuppArt;
-        data.handles.hax4b = axes('units','norm','position',[.84 .73 .15 .22]);
+        data.handles.hax4b = axes('units','norm','position',[.84 .77 .15 .18]);
         data.handles.hplot4b = barh((numMainArt+1:numSuppArt),[0 0.5 0.5], 'BarWidth', 0.6);
         hold on; data.handles.hplot5b=plot([0 .5 .5],(numMainArt+1:numSuppArt),'ko','markerfacecolor','k'); hold off
         %%% adding bar values to supp articulators 
@@ -97,8 +96,22 @@ switch(lower(option))
         set(data.handles.h4btext(3),'String',round(0.5,2,'significant'),'vert','middle','horiz','left');
         data.handles.hplot4b.FaceColor = 'flat';
         set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [numMainArt+0.5 numSuppArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
-        set(data.handles.hax4b, 'FontUnits','norm','FontSize',0.1,'YTickLabel', {'tension','pressure','voicing'}, 'Fontunit', 'norm');
-                        
+        set(data.handles.hax4b, 'FontUnits','norm','FontSize',0.12,'YTickLabel', {'Tension','Pressure','Voicing'}, 'Fontunit', 'norm');
+        
+        % Constriction articulators (14:20 or [numSuppArt+1]:[numConst+6])
+        numConstArt = numSuppArt+6; % ideally want +3 to be determined by total number of labels or something
+        data.numConstArt = numConstArt;
+        data.handles.hax4c = axes('units','norm','position',[.84 .32 .15 .4]);
+        data.handles.hplot4c = barh((numSuppArt+1:numConstArt),zeros(numConstArt-numSuppArt,1), 'BarWidth', 0.6);
+        hold on; data.handles.hplot5c=plot(zeros(numConstArt-numSuppArt,1),(numSuppArt+1:numConstArt),'ko','markerfacecolor','k'); hold off
+        %%% adding bar values constrictor articulators 
+        data.handles.h4ctext = text(zeros(numConstArt-numSuppArt,1)-0.1,(numSuppArt+1:numConstArt),num2str(zeros(numConstArt-numSuppArt,1)),'Color','black','vert','middle','horiz','right');
+        data.handles.hplot4c.FaceColor = 'flat';
+        set(data.handles.hax4c, 'YLimMode', 'manual', 'YLim', [numSuppArt+0.5 numConstArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
+        % formatting constriction labels
+        constLabels = cellfun(@(x) [upper(x(4)) x(5:end)], labels.Output(2).Plots_label(4:end), 'UniformOutput', false);
+        set(data.handles.hax4c, 'FontUnits','norm','FontSize',0.05,'YTickLabel', constLabels , 'Fontunit', 'norm');        
+        
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
         % reset button
