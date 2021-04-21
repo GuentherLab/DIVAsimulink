@@ -486,18 +486,22 @@ end
         % '1' = vocal tract plot
         % '4' = main articulator bar plot
         % '4b' = glottis articulator bar plot
+        % '4c' = constrictor articulator plot
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
         xp = currPoint(1);
         yp = currPoint(2);
         mArtPos = data.handles.hax4.Position;
         sArtPos = data.handles.hax4b.Position;
+        cArtPos = data.handles.hax4c.Position;
         vCordPos = data.handles.hax1.Position;
         FPos = data.handles.hax3.Position;
         if xp > mArtPos(1) && yp > mArtPos(2) && (xp < (mArtPos(1)+mArtPos(3))) && (yp < (mArtPos(2)+mArtPos(4)))
             currAxis = '4';
         elseif xp > sArtPos(1) && yp > sArtPos(2) && (xp < (sArtPos(1)+sArtPos(3))) && (yp < (sArtPos(2)+sArtPos(4)))
             currAxis = '4b';
+        elseif xp > cArtPos(1) && yp > cArtPos(2) && (xp < (cArtPos(1)+cArtPos(3))) && (yp < (cArtPos(2)+cArtPos(4)))
+            currAxis = '4c'; 
         elseif xp > FPos(1) && yp > FPos(2) && (xp < (FPos(1)+FPos(3))) && (yp < (FPos(2)+FPos(4)))
             currAxis = '3';
         elseif xp > vCordPos(1) && yp > vCordPos(2) && (xp < (vCordPos(1)+vCordPos(3))) && (yp < (vCordPos(2)+vCordPos(4)))
@@ -550,17 +554,18 @@ end
         currPoint = get(data.handles.hfig,'currentpoint');
         currAxis = findCurrAxis(currPoint);
         mArtPos=get(data.handles.hax4,'currentpoint');  % get current point rel to axes [x y -; x y -] for main articulators
-        sArtPos=get(data.handles.hax4b,'currentpoint'); % for additional articulators
+        sArtPos=get(data.handles.hax4b,'currentpoint'); % for glottal articulators
+        cArtPos=get(data.handles.hax4c,'currentpoint'); % for constrictor articulators
         FPos=get(data.handles.hax3,'currentpoint'); % for formant plot
         vCordPos=get(data.handles.hax1,'currentpoint'); % for vocal tract
         % Current point 'pos' is structured as such [xfront, yfront, zfront;xback, yback, zback]
         % Instead of looking though fields for specific data var, should
         % just look at the newly implemented 'currAxis'
-        if strcmp(currAxis, '4b') % supp articulators
-            %curBarIdx = round(sArtPos(1));
+        if strcmp(currAxis, '4c') % const articulators
+            data.curBar = round(cArtPos(1,2));
+        elseif strcmp(currAxis, '4b') % supp articulators
             data.curBar = round(sArtPos(1,2));
         elseif  strcmp(currAxis, '4') % main articulators
-            %curBarIdx = round(mArtPos(1,2));
             data.curBar = round(mArtPos(1,2));
         elseif strcmp(currAxis, '3') % formant plot
             % need to determine which formant clicked
@@ -600,11 +605,15 @@ end
         data.mouseIsDown = false;% recognizes / saves the fact that the mous has been let go
         set(hfig,'userdata',data);
         if isfield(data, 'curBar')
-            if data.curBar > data.numMainArt
+            if data.curBar > data.numSuppArt
+                data.handles.hplot4c.CData(data.curBar-data.numSuppArt,:) = [0 0.4470 0.7410];
+            elseif data.curBar > data.numMainArt
                 data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.4470 0.7410];
             else
-                data.handles.hplot4.CData(data.curBar,:) = [0 0.4470 0.7410];
+                 data.handles.hplot4.CData(data.curBar,:) = [0 0.4470 0.7410];
             end
+            % NOTE: just doing set(data.handles.hplot4, 'CData', [0 0.4470
+            % 0.7410]) will stop indiv bars from haveing their own CData.
             set(data.handles.hfig,'userdata',data);
             drawnow;
         end
@@ -713,7 +722,40 @@ end
                 
                 % handling articulator plot clicks
                 if isfield(data, 'curBar')
-                    if data.curBar > data.numMainArt
+                    if data.curBar > data.numSuppArt
+                    pos=get(data.handles.hax4c,'currentpoint');
+                        data.handles.hplot4c.CData(data.curBar-data.numSuppArt,:) = [0 0.8 0.8];
+                        barLim = max(data.handles.hplot4c.XData);
+                        if data.curBar <= barLim && data.curBar > data.numSuppArt+0.5 && pos(1) >=-1.005 && pos(1) <=1.005
+                            data.curBarVal = pos(1);
+                            ydata = data.handles.hplot4c.YData;  % get bar plot y data
+                            newY = ydata;
+                            newY(data.curBar-data.numSuppArt) = pos(1);
+                            %disp(pos2(1,2));
+                            data.handles.hplot4c.YData = newY;
+                            data.handles.hplot5c.XData = newY;
+                            for k = 1:(data.numConstArt - data.numSuppArt)
+                                set(data.handles.h4ctext(k),'String', round(newY(k),2,'significant'));
+                                if newY(k) > 0
+                                    if newY(k) > 0.5
+                                        set(data.handles.h4ctext(k),'horiz','right','Position', [newY(k)-0.1,k+data.numSuppArt,0],'Color', 'White');
+                                    else
+                                        set(data.handles.h4ctext(k),'horiz','left','Position', [newY(k)+0.1,k+data.numSuppArt,0],'Color', 'Black');
+                                    end
+                                else
+                                    if newY(k) < -0.5
+                                        set(data.handles.h4ctext(k),'horiz','left','Position', [newY(k)+0.1,k+data.numSuppArt,0],'Color', 'White');
+                                    else
+                                        set(data.handles.h4ctext(k),'horiz','right','Position', [newY(k)-0.1,k+data.numSuppArt,0],'Color', 'Black');
+                                    end
+                                end
+                            end
+                            data.ready2play = false;
+                            set(data.handles.hfig,'userdata',data);
+                            diva_vtdisp(data.handles.hfig,'setslider',data);
+                            drawnow;
+                        end
+                    elseif data.curBar > data.numMainArt
                         pos=get(data.handles.hax4b,'currentpoint');
                         data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4b.XData);
