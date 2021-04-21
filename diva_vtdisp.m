@@ -123,6 +123,7 @@ switch(lower(option))
         data.setup = 1;
         clear diva_synth %on rare occasions the persistent vt variable needs to be updated
         set(data.handles.hfig,'userdata',data);
+        diva_vtdisp(data.handles.hfig,'updsliders',[zeros(numMainArt,1);0;.5;.5]); 
         diva_vtdisp(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
         drawnow;
         
@@ -182,87 +183,104 @@ switch(lower(option))
     case 'updsliders'
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
-        
-        % added the following to check for breaks before updating the
-        % sliders, look into doing this earlier in a more elegant way
-        x = varargin{1}; 
-        x=repmat(x,[1,100]);
-        n=[1:9:size(x,2)-1,size(x,2)];
-        n=n(end);
-        [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
-        
-        if 0,%sum(test.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-            %disp('reached breaking point 1')
-            set(data.handles.h0, 'Color' ,'red')
-            return
+
+        %%% temp this will change depending on diva_solve inv is
+        %%% implemented for constrictors
+        if length(varargin{1}') < data.numConstArt
+            x = varargin{1};
+            x=repmat(x,[1,100]);
+            n=[1:9:size(x,2)-1,size(x,2)];
+            n=n(end);
+            [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
+            constVals = test.state.Som(1:6);
         else
-            set(data.handles.h0, 'Color' ,'black')
-            %stateData = varargin{2};
-            %x = varargin{1};
-            newVals = varargin{1}';
-            % for main articulators
-            set(data.handles.hplot4, 'YData', newVals(1:data.numMainArt));
-            set(data.handles.hplot5, 'XData', newVals(1:data.numMainArt));
-            for i = 1:data.numMainArt
-                set(data.handles.h4text(i),'String', round(newVals(i),3,'significant'));
-                if newVals(i) > 0
-                    if newVals(i) > 0.5
-                        set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
-                    else
-                        set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
-                    end
+            constVals = varargin{1}';
+            constVals(1,end-5:end);
+        end
+        
+        newVals = varargin{1}';
+        % for main articulators
+        set(data.handles.hplot4, 'YData', newVals(1:data.numMainArt));
+        set(data.handles.hplot5, 'XData', newVals(1:data.numMainArt));
+        for i = 1:data.numMainArt
+            set(data.handles.h4text(i),'String', round(newVals(i),3,'significant'));
+            if newVals(i) > 0
+                if newVals(i) > 0.5
+                    set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
                 else
-                    if newVals(i) < -0.5
-                        set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
-                    else
-                        set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
-                    end
+                    set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
                 end
-            end 
-            % for supp articulators
-            set(data.handles.hplot4b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
-            set(data.handles.hplot5b, 'XData', newVals(data.numMainArt+1:data.numSuppArt));
-            for i = data.numMainArt+1:data.numSuppArt
-                set(data.handles.h4btext(i-data.numMainArt),'String', round(newVals(i),2,'significant'));
-                if newVals(i) > 0
-                    if newVals(i) > 0.5
-                        set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
-                    else
-                        set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
-                    end
+            else
+                if newVals(i) < -0.5
+                    set(data.handles.h4text(i),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
                 else
-                    if newVals(i) < -0.5
-                        set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
-                    else
-                        set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
-                    end
-                end
-                if i == 13
-                    if newVals(i) >= 0.7
-                        set(data.handles.h1a, 'visible', 'on');
-                        set(data.handles.h1b, 'visible', 'on');
-                        set(data.handles.h1c, 'visible', 'on');
-                        set(data.handles.hfig,'userdata',data);
-                    elseif newVals(i) >= 0
-                        set(data.handles.h1a, 'visible', 'on');
-                        set(data.handles.h1b, 'visible', 'on');
-                        set(data.handles.h1c, 'visible', 'off');
-                        set(data.handles.hfig,'userdata',data);
-                    elseif newVals(i) >= -0.7
-                        set(data.handles.h1a, 'visible', 'on');
-                        set(data.handles.h1b, 'visible', 'off');
-                        set(data.handles.h1c, 'visible', 'off');
-                        set(data.handles.hfig,'userdata',data);
-                    else
-                        set(data.handles.h1a, 'visible', 'off');
-                        set(data.handles.h1b, 'visible', 'off');
-                        set(data.handles.h1c, 'visible', 'off');
-                        set(data.handles.hfig,'userdata',data);
-                    end
+                    set(data.handles.h4text(i),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
                 end
             end
-            set(data.handles.hfig,'userdata',data);
         end
+        % for supp articulators
+        set(data.handles.hplot4b, 'YData', newVals(data.numMainArt+1:data.numSuppArt));
+        set(data.handles.hplot5b, 'XData', newVals(data.numMainArt+1:data.numSuppArt));
+        for i = data.numMainArt+1:data.numSuppArt
+            set(data.handles.h4btext(i-data.numMainArt),'String', round(newVals(i),2,'significant'));
+            if newVals(i) > 0
+                if newVals(i) > 0.5
+                    set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'White');
+                else
+                    set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'Black');
+                end
+            else
+                if newVals(i) < -0.5
+                    set(data.handles.h4btext(i-data.numMainArt),'horiz','left','Position', [newVals(i)+0.1,i,0],'Color', 'White');
+                else
+                    set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', 'Black');
+                end
+            end
+            if i == 13
+                if newVals(i) >= 0.7
+                    set(data.handles.h1a, 'visible', 'on');
+                    set(data.handles.h1b, 'visible', 'on');
+                    set(data.handles.h1c, 'visible', 'on');
+                    set(data.handles.hfig,'userdata',data);
+                elseif newVals(i) >= 0
+                    set(data.handles.h1a, 'visible', 'on');
+                    set(data.handles.h1b, 'visible', 'on');
+                    set(data.handles.h1c, 'visible', 'off');
+                    set(data.handles.hfig,'userdata',data);
+                elseif newVals(i) >= -0.7
+                    set(data.handles.h1a, 'visible', 'on');
+                    set(data.handles.h1b, 'visible', 'off');
+                    set(data.handles.h1c, 'visible', 'off');
+                    set(data.handles.hfig,'userdata',data);
+                else
+                    set(data.handles.h1a, 'visible', 'off');
+                    set(data.handles.h1b, 'visible', 'off');
+                    set(data.handles.h1c, 'visible', 'off');
+                    set(data.handles.hfig,'userdata',data);
+                end
+            end
+        end
+        % for constrictor articulators (section may change in future!!)
+        set(data.handles.hplot4c, 'YData', constVals);
+        set(data.handles.hplot5c, 'XData', constVals);
+        for i = data.numSuppArt+1:data.numConstArt
+            set(data.handles.h4ctext(i-data.numSuppArt),'String', round(constVals(i-data.numSuppArt),2,'significant'));
+            if constVals(i-data.numSuppArt) > 0
+                if constVals(i-data.numSuppArt) > 0.5
+                    set(data.handles.h4ctext(i-data.numSuppArt),'horiz','right','Position', [constVals(i-data.numSuppArt)-0.1,i,0],'Color', 'White');
+                else
+                    set(data.handles.h4ctext(i-data.numSuppArt),'horiz','left','Position', [constVals(i-data.numSuppArt)+0.1,i,0],'Color', 'Black');
+                end
+            else
+                if constVals(i-data.numSuppArt) < -0.5
+                    set(data.handles.h4ctext(i-data.numSuppArt),'horiz','left','Position', [constVals(i-data.numSuppArt)+0.1,i,0],'Color', 'White');
+                else
+                    set(data.handles.h4ctext(i-data.numSuppArt),'horiz','right','Position', [constVals(i-data.numSuppArt)-0.1,i,0],'Color', 'Black');
+                end
+            end
+        end
+        set(data.handles.hfig,'userdata',data);
+        
         
     case 'update'
         %if numel(varargin)> 1
@@ -275,7 +293,7 @@ switch(lower(option))
 
         % vocalization display
         if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
-            if data.curBar == 13
+            if data.curBar == data.numSuppArt
                 if data.curBarVal >= 0.7
                     set(data.handles.h1a, 'visible', 'on');
                     set(data.handles.h1b, 'visible', 'on');
@@ -353,7 +371,7 @@ switch(lower(option))
         %set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
         
-        
+          
         % area function
         set(data.handles.h2,'xdata',d*[1:numel(data.state.af) numel(data.state.af):-1:1],'ydata',[max(0,data.state.af(:))'/2, -fliplr(max(0,data.state.af(:))')/2]);
         set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(8,max(data.state.af)/2)*[-1 1]);
