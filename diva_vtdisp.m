@@ -12,9 +12,11 @@ switch(lower(option))
         % setting up figure
         data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w','interruptible','on','busyaction','queue');
         
+        mfigTitle = uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
+        
         % setting up 2D vocal tract
         %data.handles.hax1=axes('units','norm','position',[.05 .3 .45 .65],'color',1*[1 1 1]);
-        data.handles.hax1=axes('units','norm','position',[0 .3 .45 .65],'color',1*[1 1 1]);
+        data.handles.hax1=axes('units','norm','position',[0 .26 .45 .65],'color',1*[1 1 1]);
         
         % memory first (h0 is outline, h1 is fill)
         % ver1 solid moving, dotted fixed
@@ -31,9 +33,9 @@ switch(lower(option))
         %set(data.handles.h1,'xdata',real(data.state.Outline),'ydata',imag(data.state.Outline));
         
         % setting up supplementary plots for 2D vocal tract vocalization
-        data.handles.hax1a=axes('units','norm','position',[.34 .3 .04 .65]);
-        data.handles.hax1b=axes('units','norm','position',[.38 .3 .04 .65]);
-        data.handles.hax1c=axes('units','norm','position',[.42 .3 .04 .65]);
+        data.handles.hax1a=axes('units','norm','position',[.34 .26 .04 .65]);
+        data.handles.hax1b=axes('units','norm','position',[.38 .26 .04 .65]);
+        data.handles.hax1c=axes('units','norm','position',[.42 .26 .04 .65]);
         % arc plot data
         t = linspace(150, 210, 100); t2 = linspace(135, 225, 100); t3 = linspace(120, 240, 100);
         x  = 3 * cosd(t);y  = 3 * sind(t);x2 = 4 * cosd(t2);y2 = 4 * sind(t2);x3 = 5 * cosd(t3);y3 = 5 * sind(t3);
@@ -44,12 +46,12 @@ switch(lower(option))
         set(data.handles.hax1a,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1b,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1c,'box','off','xtick',[],'ytick',[], 'visible', 'off');
         
         % plotting area function
-        data.handles.hax2=axes('units','norm','position',[.1 .1 .3 .15],'color',.85*[1 1 1]);
+        data.handles.hax2=axes('units','norm','position',[.1 .06 .3 .15],'color',.85*[1 1 1]);
         data.handles.h2=patch(nan,nan,'k','facecolor',1*[1 1 1],'edgecolor','k','linewidth',2,'parent',data.handles.hax2);
         xlabel(data.handles.hax2,'distance to glottis (cm)'); ylabel(data.handles.hax2,'Area (cm^2)');
         
         % plotting frequency spectrum
-        data.handles.hax3=axes('units','norm','position',[.6 .1 .3 .15],'box','off');
+        data.handles.hax3=axes('units','norm','position',[.6 .06 .3 .15],'box','off');
         data.handles.h3=plot(nan,nan,'k','color',.75*[1 1 1],'linewidth',2,'parent',data.handles.hax3);
         %hold on; data.handles.h6=plot(nan,nan,'co','markerfacecolor','c'); hold off; If I wanted to add cyan markers on the plot 
         hold on; data.handles.h3F1=plot(nan,nan,'-','color','k','linewidth',2,'parent',data.handles.hax3);  hold off;
@@ -58,7 +60,7 @@ switch(lower(option))
         hold(data.handles.hax3,'on'); data.handles.mousepos2=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax3); hold(data.handles.hax3,'off');
         xlabel(data.handles.hax3,'Frequency (Hz)');
         ylabel(data.handles.hax3,'VT filter (dB)');
-        data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.08,0.09,0.05],'BackgroundColor',[1 1 1]);
+        data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1]);
         
         % plotting vert 'bar-sliders'
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
@@ -74,8 +76,9 @@ switch(lower(option))
         numMainArt = length((labels.Input.Plots_label(2:end)));
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
-        data.handles.hax4 = axes('units','norm','position',[.535 .325 .22 .625]);
+        data.handles.hax4 = axes('units','norm','position',[.535 .275 .22 .625]);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
+        hold on; title('Articulators', 'FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5=plot(zeros(numMainArt,1),1:numMainArt,'ko','markerfacecolor','k'); hold off
         %%% adding bar values to main articulators 
         data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
@@ -88,8 +91,9 @@ switch(lower(option))
         % Glottis articulators (11:13 or [numMainArt+1]:[numMainArt+3])
         numSuppArt = numMainArt+3; % ideally want +3 to be determined by total number of labels or something
         data.numSuppArt = numSuppArt;
-        data.handles.hax4b = axes('units','norm','position',[.84 .77 .15 .18]);
+        data.handles.hax4b = axes('units','norm','position',[.84 .72 .15 .18]);
         data.handles.hplot4b = barh((numMainArt+1:numSuppArt),[0 0.5 0.5], 'BarWidth', 0.6);
+        hold on; title('Glottis','FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5b=plot([0 .5 .5],(numMainArt+1:numSuppArt),'ko','markerfacecolor','k'); hold off
         %%% adding bar values to supp articulators 
         data.handles.h4btext = text([-0.1 0.6 0.6],(numMainArt+1:numSuppArt),num2str([0.0;0.5;0.5]),'Color','black','vert','middle','horiz','right');
@@ -102,8 +106,9 @@ switch(lower(option))
         % Constriction articulators (14:20 or [numSuppArt+1]:[numConst+6])
         numConstArt = numSuppArt+6; % ideally want +3 to be determined by total number of labels or something
         data.numConstArt = numConstArt;
-        data.handles.hax4c = axes('units','norm','position',[.84 .32 .15 .4]);
+        data.handles.hax4c = axes('units','norm','position',[.84 .275 .15 .38]);
         data.handles.hplot4c = barh((numSuppArt+1:numConstArt),zeros(numConstArt-numSuppArt,1), 'BarWidth', 0.6);
+        hold on; title('Constrictions','FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5c=plot(zeros(numConstArt-numSuppArt,1),(numSuppArt+1:numConstArt),'ko','markerfacecolor','k'); hold off
         %%% adding bar values constrictor articulators 
         data.handles.h4ctext = text(zeros(numConstArt-numSuppArt,1)-0.1,(numSuppArt+1:numConstArt),num2str(zeros(numConstArt-numSuppArt,1)),'Color','black','vert','middle','horiz','right');
@@ -111,14 +116,14 @@ switch(lower(option))
         set(data.handles.hax4c, 'YLimMode', 'manual', 'YLim', [numSuppArt+0.5 numConstArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
         % formatting constriction labels
         constLabels = cellfun(@(x) [upper(x(4)) x(5:end)], labels.Output(2).Plots_label(4:end), 'UniformOutput', false);
-        set(data.handles.hax4c, 'FontUnits','norm','FontSize',0.05,'YTickLabel', constLabels , 'Fontunit', 'norm');        
+        set(data.handles.hax4c, 'FontUnits','norm','FontSize',0.056,'YTickLabel', constLabels , 'Fontunit', 'norm');        
         
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
         % reset button
-        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .30 .06 .06],'Visible','on','CallBack', @resetPushed);
+        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .26 .06 .06],'Visible','on','CallBack', @resetPushed);
         % synthesize button
-        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .37 .06 .06],'Visible','on','CallBack', @synthPushed);
+        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .33 .06 .06],'Visible','on','CallBack', @synthPushed);
              
         % flag for first time setup
         data.setup = 1;
@@ -401,7 +406,7 @@ switch(lower(option))
         %    Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
             
         %end
-        Fpos = {[0.95,0.22,0.038,0.03]; [0.95,0.18,0.038,0.03]; [0.95,0.14,0.038,0.03]};
+        Fpos = {[0.95,0.18,0.038,0.03]; [0.95,0.14,0.038,0.03]; [0.95,0.10,0.038,0.03]};
         
         if data.setup
             % Old ver (uses actual freq val)
@@ -410,9 +415,9 @@ switch(lower(option))
                         
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
-            data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.22,0.038,0.03]);
-            data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.18,0.038,0.03]);
-            data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.14,0.038,0.03]);
+            data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.18,0.038,0.03]);
+            data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.14,0.038,0.03]);
+            data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.10,0.038,0.03]);
             data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
             data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
             data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited);
