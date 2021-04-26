@@ -19,9 +19,9 @@ switch(lower(option))
         % memory first (h0 is outline, h1 is fill)
         % ver1 solid moving, dotted fixed
         % ver2 is the opposite
-        data.handles.h1_memory=patch(nan,nan,'k','facecolor',.85*[1 1 1],'linestyle','--','edgecolor','none','linewidth',2,'parent',data.handles.hax1);
+        data.handles.h1_memory=patch(nan,nan,'k','facecolor','none','linestyle','--','edgecolor','none','linewidth',2,'parent',data.handles.hax1);
         % regular 2D representation
-        data.handles.h1=patch(nan,nan,'k','facecolor',.85*[1 1 1],'edgecolor','none','linewidth',2,'parent',data.handles.hax1);
+        data.handles.h1=[patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',2,'parent',data.handles.hax1),patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',2,'parent',data.handles.hax1)];
         hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.mousepos1=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
@@ -310,6 +310,10 @@ switch(lower(option))
         % vocal tract configuration
         x=data.state.Outline;
         x(end+1)=x(1);
+        xI=real(x(353))+1i*imag(x(160));
+        xA=[xI;x(354:end);x(1:160);xI];
+        xB=[xI;x(160:353);xI];
+        xC=[xA;xB];
         
         if data.setup
             set(data.handles.h0,'xdata',real(x),'ydata',imag(x));
@@ -328,7 +332,8 @@ switch(lower(option))
         
         % Vocal tract memory ver 1
         set(data.handles.h0,'xdata',real(x),'ydata',imag(x));
-        set(data.handles.h1,'xdata',real(x),'ydata',imag(x));
+        set(data.handles.h1(1),'xdata',real(xA),'ydata',imag(xA));
+        set(data.handles.h1(2),'xdata',real(xB),'ydata',imag(xB));
         if isfield(data, 'reset') && data.reset == 1
             set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
             data.reset = 0;
