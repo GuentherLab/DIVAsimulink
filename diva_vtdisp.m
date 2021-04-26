@@ -88,7 +88,7 @@ switch(lower(option))
         set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
         %set(data.handles.hax4,'ButtonDownFcn',@mArtdowncallback);
         %set(data.handles.hax4, 'YAxisLocation', 'origin');
-        data.handles.lockTxt = uicontrol('Style','text','String','Lock','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.51,0.88,0.025,0.025] ,'BackgroundColor',[1 1 1]);
+        data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.88,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
             mArtLabelPos = [0.518, (0.292+i/16), 0.016, 0.0245];
             data.handles.mArtCheckboxes(i+1) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',[1 1 1]);
