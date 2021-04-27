@@ -171,6 +171,14 @@ switch(lower(option))
             diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
+%         if isfield(data, 'const_target')
+%             x=diva_solveinv('target_somatosensory',x,data.curConstTarget,'lambda',0.02,'center',data.oldstatex);
+%             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
+%             x=max(-1,min(1,x));
+%             %diva_vtdisp(hfig,'test',x,stateData);
+%             diva_vtdisp(hfig,'updsliders',x,data);
+%             data = rmfield(data,'curFtarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
+%         end
         if isfield(data, 'curFtarget')
             x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',0.02,'center',data.oldstatex);
             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
