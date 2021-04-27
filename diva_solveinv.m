@@ -21,7 +21,14 @@ function x = diva_solveinv(style,x,y_target,varargin)
 % (note: y_target values with NaN values are disregarded/
 % unconstrained in this optimization procedure)
 %
-% xnew = diva_solveinv(x,y_target,'outline',param_name,param_value,...) 
+% xnew = diva_solveinv('target_somatosensory',x,y_target)
+% finds articulatory configuration xnew close to initial
+% configuration x, such that the somatosensory signal
+% approximates the target configuration y_target
+% (note: y_target values with NaN values are disregarded/
+% unconstrained in this optimization procedure)
+%
+% xnew = diva_solveinv(...,param_name,param_value,...) 
 % defines additional solver settings:
 % eps           pseudoinverse step-size [.05]
 % lambda        pseudoinverse regularization strength [.05]
@@ -39,7 +46,7 @@ function x = diva_solveinv(style,x,y_target,varargin)
 % Outline_target(1:idx-1)=nan; 
 % Outline_target(idx+1:end)=nan; 
 % hold on; plot(Outline,'.-'); plot(Outline(idx),'ko'); hold off; axis equal off;  
-% x2=diva_solveinv(x,Outline_target,'outline'); 
+% x2=diva_solveinv('target_outline',x,Outline_target); 
 % [Aud2,Som2,Outline2]=diva_synth(x2,'explicit'); 
 % hold on; plot(Outline2,'.-'); plot(Outline2(idx),'ko'); hold off; axis equal off;
 %
@@ -53,7 +60,7 @@ function x = diva_solveinv(style,x,y_target,varargin)
 % Fmt_target(1:idx-1)=nan; 
 % Fmt_target(idx+1:end)=nan; 
 % hold on; plot(Aud,'.-'); plot(idx,Aud(idx),'ko'); hold off; 
-% x2=diva_solveinv(x,Fmt_target,'formant'); 
+% x2=diva_solveinv('target_formant',x,Fmt_target); 
 % [Aud2,Som2,Outline2]=diva_synth(x2,'explicit'); 
 % hold on; plot(Aud2,'.-'); plot(idx,Aud2(idx),'ko'); hold off;
 %
@@ -95,8 +102,9 @@ switch(lower(style))
         if isempty(p0), p0=1; end
         x=-min(1,p0/.1)*dx;
         
-    case {'target_outline','target_formant'}  % iterative pseudo-inverse solution to target position
+    case {'target_outline','target_formant','target_somatosensory'}  % iterative pseudo-inverse solution to target position
         isaud=strcmpi(style,'target_formant');
+        issom=strcmpi(style,'target_somatosensory');
         valid = ~isnan(y_target); % only care about these dimensions
         if ~isempty(params.center), 
             x=params.center; 
@@ -104,6 +112,8 @@ switch(lower(style))
         x0=x;
         if isaud, 
             [y,p0]=diva_vocaltract('formant',x,[],false);
+        elseif issom
+            [y,p0]=diva_vocaltract('somatosensory',x,[],true);
         else
             Outline = diva_synth(x,'outline');
             y=[real(Outline);imag(Outline)];
@@ -131,6 +141,8 @@ switch(lower(style))
                 xt(ndim)=x(ndim)+params.eps;
                 if isaud, 
                     yt=diva_vocaltract('formant',xt,[],false);
+                elseif issom
+                    yt=diva_vocaltract('somatosensory',xt,[],true);
                 else
                     outline = diva_synth(xt,'outline');
                     yt=[real(outline);imag(outline)];
@@ -139,72 +151,23 @@ switch(lower(style))
                 DY(:,ndim)=yt-y;
             end
             dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda);
-%             if 0||params.lambda==0, % slower
-%                 JJ=DY'*DY;
-%                 iJ=params.eps*pinv(JJ+params.lambda*params.eps^2*Iy)*DY'; % computes pseudoinverse
-%                 dx=iJ*dy;
-%             else % faster
-%                 dx=params.eps*([DY; eye(N)*sqrt(params.lambda)*params.eps]\[dy; zeros(N,1)]);
-%             end
             if isempty(p0), p0=1; end
             x=x+min(1,p0/.1)*params.stepiter*dx;
             if isaud, 
                 [y,p0]=diva_vocaltract('formant',x,[],false);
                 %y=diva_synth(x);
+            elseif issom, 
+                [y,p0]=diva_vocaltract('somatosensory',x,[],true);
             else
                 outline = diva_synth(x,'outline');
                 y=[real(outline);imag(outline)];
             end
-            %[Aud,Som,Outline]=diva_synth(x);
-            %if isaud, y=Aud;
-            %else y=[real(Outline);imag(Outline)];
-            %end
-            %y=Compute(x);
-            %disp(err)
         end
         %if ~isempty(p0), x=x*p0+x0*(1-p0); end
     otherwise
         error('unknown option %s',style)
 end
-
 end
-
-% function outline = ComputeOutline(Art)
-% outline = diva_synth(Art,'outline');
-% %     % computes vocal tract configuration
-% %     persistent vt fmfit;
-% %     if isempty(vt)
-% %         [filepath,filename]=fileparts(mfilename);
-% %         load(fullfile(filepath,'diva_synth.mat'),'vt','fmfit');
-% %     end
-% %     idx=1:10;
-% %     x=vt.Scale(idx).*Art(idx);
-% %     outline=vt.Average+vt.Base(:,idx)*x;
-% outline=[real(outline);imag(outline)];
-% end
-
-% function Som = ComputeSom(Art)
-% [Aud,Som]=diva_synth(Art);
-% end
-
-% function Aud = ComputeFormant(Art)
-% Aud = diva_synth(Art);
-% % % computes vocal tract configuration
-% % persistent vt fmfit;
-% % if isempty(vt)
-% %     [filepath,filename]=fileparts(mfilename);
-% %     load(fullfile(filepath,'diva_synth.mat'),'vt','fmfit');
-% % end
-% % idx=1:10;
-% % Aud=zeros(4,1);
-% % Aud(1)=100+50*Art(end-2); % F0
-% % dx=bsxfun(@minus,Art(idx)',fmfit.mu);
-% % p=-sum((dx*fmfit.iSigma).*dx,2)/2;
-% % p=fmfit.p.*exp(p-max(p));
-% % p=p/sum(p);
-% % px=p*[Art(idx)',1];
-% % Aud(2:4)=fmfit.beta_fmt*px(:); % F1-F3
-% end
 
 function dx = pseudoinv_fromjacobian(DY,dy,EPS,LAMBDA)
 if 0 % slower
