@@ -168,56 +168,45 @@ switch(lower(option))
             x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',0.02,'center',data.oldstatex,'stepiter',.1); %,'center',data.oldVocalT);
             x=max(-1,min(1,x));
             %diva_vtdisp(hfig,'test',x,stateData);
-            diva_vtdisp(hfig,'updsliders',x,data);
+            %diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
-%         if isfield(data, 'const_target')
-%             x=diva_solveinv('target_somatosensory',x,data.curConstTarget,'lambda',0.02,'center',data.oldstatex);
-%             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
-%             x=max(-1,min(1,x));
-%             %diva_vtdisp(hfig,'test',x,stateData);
-%             diva_vtdisp(hfig,'updsliders',x,data);
-%             data = rmfield(data,'curFtarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
-%         end
+         if isfield(data, 'constTarget')
+             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',0.02,'center',data.oldstatex);
+             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
+             x=max(-1,min(1,x));
+             %diva_vtdisp(hfig,'test',x,stateData);
+             %diva_vtdisp(hfig,'updsliders',x,data);
+             data = rmfield(data,'constTarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
+         end
         if isfield(data, 'curFtarget')
             x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',0.02,'center',data.oldstatex);
             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
             x=max(-1,min(1,x));
             %diva_vtdisp(hfig,'test',x,stateData);
-            diva_vtdisp(hfig,'updsliders',x,data);
+            %diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'curFtarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
+        diva_vtdisp(hfig,'updsliders',x,data);
         
         x=repmat(x,[1,100]);
-        if (data.currAxis == '4') | (data.currAxis == '4b')
+        if (data.currAxis == '4') | (data.currAxis == '4b')  %| (data.currAxis == '4c')
             x(n,:)=[linspace(x(n,1),v,20),repmat(v,1,80)]; % for cases where articulator slides are being changed
         end 
         diva_vtdisp(hfig,'update',x,data);
         
-        %     case 'test'
-        %         %clf;
-        %         data=get(hfig,'userdata');
-        %         [Aud,Som,Outline]=diva_synth(varargin{1},'explicit');
-        %         set(data.handles.h1,'xdata',real(Outline),'ydata',imag(Outline));
-        %         hold on; plot(Outline,'.-'); hold off; axis equal off;
         
     case 'updsliders'
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
 
-        %%% temp this will change depending on diva_solve inv is
-        %%% implemented for constrictors
-        if length(varargin{1}') < data.numConstArt
-            x = varargin{1};
-            x=repmat(x,[1,100]);
-            n=[1:9:size(x,2)-1,size(x,2)];
-            n=n(end);
-            [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
-            constVals = test.state.Som(1:6);
-        else
-            constVals = varargin{1}';
-            constVals(1,end-5:end);
-        end
+        %%% for constriction values
+        x = varargin{1};
+        x=repmat(x,[1,100]);
+        n=[1:9:size(x,2)-1,size(x,2)];
+        n=n(end);
+        [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
+        constVals = test.state.Som(1:6);
         
         newVals = varargin{1}';
         % for main articulators
@@ -311,7 +300,7 @@ switch(lower(option))
         data=get(hfig,'userdata');
         data.state.x=varargin{1};
         if ~isfield(data,'oldstatex'), data.oldstatex=data.state.x(:,end); end
-
+        
         % vocalization display
         if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
             if data.curBar == data.numSuppArt
@@ -353,14 +342,14 @@ switch(lower(option))
         % the following works, but it would be nicer for it to notify the
         % user and also not update the sliders / revert them to the last
         % config that worked.
-         if 0,%sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-             %disp('reached breaking point 2')
-             set(data.handles.h0, 'Color' ,'red')
-             set(data.handles.hfig,'userdata',data);
-             return
-         else
-             set(data.handles.h0, 'Color' ,'black')
-         end
+        if 0,%sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
+            %disp('reached breaking point 2')
+            set(data.handles.h0, 'Color' ,'red')
+            set(data.handles.hfig,'userdata',data);
+            return
+        else
+            set(data.handles.h0, 'Color' ,'black')
+        end
         
         % vocal tract configuration
         x=data.state.Outline;
@@ -392,12 +381,12 @@ switch(lower(option))
         if isfield(data, 'reset') && data.reset == 1
             set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
             data.reset = 0;
-        end 
+        end
         % ver 2
         %set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
         
-          
+        
         % area function
         set(data.handles.h2,'xdata',d*[1:numel(data.state.af) numel(data.state.af):-1:1],'ydata',[max(0,data.state.af(:))'/2, -fliplr(max(0,data.state.af(:))')/2]);
         set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(8,max(data.state.af)/2)*[-1 1]);
@@ -417,23 +406,19 @@ switch(lower(option))
         %set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
         set(data.handles.hax3,'xlim',[0 min(4000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',calcPeaks);
         
-        %set(data.handles.h6, 'XData', i, 'YData', peakVals); If I wanted to add markers on each peak
-        % figure out position of each Formant txt box       
-        
         % old code, when basing position on formant position
         %Fpos = cell(3,1);
         %for j = 1:3
-        %    Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos 
-            
+        %    Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos
         %end
-
+        
         Fpos = {[0.95,0.18,0.038,0.03]; [0.95,0.14,0.038,0.03]; [0.95,0.1,0.038,0.03]; [0.91,0.02,0.078,0.03]};
         
         if data.setup
             % Old ver (uses actual freq val)
             %data.handles.f1txt = uicontrol('Style','edit','Tag','f1txt','String',string(calcPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited);
             %set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
-                        
+            
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
             data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.18,0.038,0.03]);
@@ -453,7 +438,7 @@ switch(lower(option))
             % Old ver (uses actual freq val)
             %set(data.handles.f1txt,'String',string(calcPeaks(1)),'Position',Fpos{1});
             %set(data.handles.h3F1, 'xdata',[h3xdata(peakIdx(1)),h3xdata(peakIdx(1))],'ydata', [-15 ,15]);
-
+            
             
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
@@ -464,7 +449,7 @@ switch(lower(option))
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', [-15 ,15]);
-            %set(data.handles.f3txt,'String',string(i(4)),'Position',Fpos{4}); 
+            %set(data.handles.f3txt,'String',string(i(4)),'Position',Fpos{4});
         end
         
         % Old play sound method
@@ -576,6 +561,9 @@ end
         data=get(hfig,'userdata');  
         if isfield(data, 'curBar')
             data = rmfield(data,'curBar');
+        end
+        if isfield(data, 'constTarget')
+            data = rmfield(data,'constTarget');
         end
         if isfield(data, 'vCordPos')
             data = rmfield(data,'vCordPos'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
@@ -789,6 +777,11 @@ end
                                     end
                                 end
                             end
+                            barIdx = data.curBar-data.numSuppArt;
+                            constTarget = [newY data.handles.hplot4b.YData(end-1:end)]; % constrictor vals + last two glottis vals (voicing and pressure)
+                            constTarget(1:barIdx-1) = nan;
+                            constTarget(barIdx+1:end) = nan;
+                            data.constTarget = constTarget';
                             data.ready2play = false;
                             set(data.handles.hfig,'userdata',data);
                             diva_vtdisp(data.handles.hfig,'setslider',data);
