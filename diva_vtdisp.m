@@ -76,7 +76,8 @@ switch(lower(option))
         numMainArt = length((labels.Input.Plots_label(2:end)));
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
-        data.handles.hax4 = axes('units','norm','position',[.535 .275 .22 .625]);
+        mArtAxPos = [.535 .275 .22 .6];
+        data.handles.hax4 = axes('units','norm','position',mArtAxPos);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
         hold on; title('Motor articulators', 'FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5=plot(zeros(numMainArt,1),1:numMainArt,'ko','markerfacecolor','k'); hold off
@@ -87,17 +88,16 @@ switch(lower(option))
         %motorArtLabels = labels.Input.Plots_label(2:end);
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),0), 'Fontunit', 'norm');
         set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
-        data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.88,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
+        data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
-            mArtLabelPos = [0.518, (0.292+i/16), 0.016, 0.0245];
+            mArtLabelPos = [0.518, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
             data.handles.mArtCheckboxes(i+1) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',[1 1 1]);
         end
-        
         
         % Glottis articulators (11:13 or [numMainArt+1]:[numMainArt+3])
         numSuppArt = numMainArt+3; % ideally want +3 to be determined by total number of labels or something
         data.numSuppArt = numSuppArt;
-        data.handles.hax4b = axes('units','norm','position',[.84 .72 .15 .18]);
+        data.handles.hax4b = axes('units','norm','position',[.84 .72 .15 .16]);
         data.handles.hplot4b = barh((numMainArt+1:numSuppArt),[0 0.5 0.5], 'BarWidth', 0.6);
         hold on; title('Glottis','FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5b=plot([0 .5 .5],(numMainArt+1:numSuppArt),'ko','markerfacecolor','k'); hold off
@@ -107,7 +107,7 @@ switch(lower(option))
         set(data.handles.h4btext(3),'String',round(0.5,2,'significant'),'vert','middle','horiz','left');
         data.handles.hplot4b.FaceColor = 'flat';
         set(data.handles.hax4b, 'YLimMode', 'manual', 'YLim', [numMainArt+0.5 numSuppArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse');
-        set(data.handles.hax4b, 'FontUnits','norm','FontSize',0.12,'YTickLabel', {'Tension','Pressure','Voicing'}, 'Fontunit', 'norm');
+        set(data.handles.hax4b, 'FontUnits','norm','FontSize',0.15,'YTickLabel', {'Tension','Pressure','Voicing'}, 'Fontunit', 'norm');
         
         % Constriction articulators (14:20 or [numSuppArt+1]:[numConst+6])
         numConstArt = numSuppArt+6; % ideally want +3 to be determined by total number of labels or something
@@ -126,6 +126,8 @@ switch(lower(option))
         
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
         
+        % create new target button
+        data.handles.cr8TargetButton = uicontrol('Style','pushbutton','String','Create new target','Units','normalized','FontUnits','norm','FontSize',0.36,'Position',[.86 .93 .1 .05],'Visible','on','CallBack', @cr8TargetPushed);
         % reset button
         data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.3,'Position',[.25 .26 .06 .06],'Visible','on','CallBack', @resetPushed);
         % synthesize button
@@ -554,6 +556,70 @@ end
         data.ready2play = 0;
         set(data.handles.hfig,'userdata',data);
     end
+
+    function cr8TargetPushed(PushButton, EventData)
+        if isempty(hfig), hfig=gcf; end
+        data=get(hfig,'userdata'); 
+        mainFigPos = data.handles.hfig.Position;
+        data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2) (mainFigPos(3)*0.3) mainFigPos(4)],'menubar','none','name','Create new target','numbertitle','off','color','w','interruptible','on','busyaction','queue');
+        data.handles.tNameTxt = uicontrol('Style','text','String','Target name:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,0.96,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.tNameBox = uicontrol('Style','edit','String','default_target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.4,0.96,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+        
+        labels = diva_vocaltract();
+        mArtLabels = labels.Input.Plots_label(2:end);
+        mArtHval = 0.92;
+        data.handles.mArtTxt = uicontrol('Style','text','String','Motor Articulators:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,0.92,0.60,0.03], 'Parent', data.handles.cr8Tfig);
+        mArtHval = mArtHval-0.04;
+        for m = 1:data.numMainArt
+            data.handles.mArtName(m) = uicontrol('Style','text','String',mArtLabels(m),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,mArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtMin(m) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtBox(m) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,mArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtMax(m) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,mArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+        mArtHval = mArtHval-0.035;
+        end
+        
+        gArtHval = mArtHval-0.005;
+        gArtLabels = {'Tension', 'Pressure', 'Voicing'};
+        data.handles.gArtTxt = uicontrol('Style','text','String','Glottis:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,gArtHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
+        gArtHval = gArtHval-0.035;
+        for g = 1:(data.numSuppArt-data.numMainArt)
+            data.handles.gArtName(g) = uicontrol('Style','text','String',gArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,gArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtMin(g) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtBox(g) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtMax(g) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            gArtHval = gArtHval - 0.035;
+        end
+        
+        cArtHval = gArtHval-0.005;
+        cArtLabels = labels.Output(2).Plots_label(4:end);
+        data.handles.cArtTxt = uicontrol('Style','text','String','Constrictions:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,cArtHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
+        cArtHval = cArtHval-0.035;
+        for c = 1:(data.numConstArt-data.numSuppArt)
+            data.handles.cArtName(c) = uicontrol('Style','text','String',cArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtMin(c) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtBox(c) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,cArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtMax(c) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,cArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            cArtHval = cArtHval - 0.035;
+        end
+        
+        formantHval = cArtHval-0.005;
+        formantLabels = {'F1','F2','F3'};
+        data.handles.formantTxt = uicontrol('Style','text','String','Formants:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,formantHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
+        formantHval = formantHval-0.035;
+        for f = 1:3
+            data.handles.formantName(f) = uicontrol('Style','text','String',formantLabels(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,formantHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantMin(f) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantBox(f) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,formantHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantMax(f) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
+            formantHval = formantHval - 0.035;
+        end
+        
+        
+        
+        
+        set(data.handles.hfig,'userdata',data);
+    end
+
 
     function downcallback(varargin)
         if isempty(hfig), hfig=gcf; end
