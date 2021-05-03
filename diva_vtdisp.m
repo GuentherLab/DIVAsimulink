@@ -571,7 +571,7 @@ end
         data.handles.mArtTxt = uicontrol('Style','text','String','Motor Articulators:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,0.92,0.60,0.03], 'Parent', data.handles.cr8Tfig);
         mArtHval = mArtHval-0.04;
         for m = 1:data.numMainArt
-            data.handles.mArtName(m) = uicontrol('Style','text','String',mArtLabels(m),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,mArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtName(m) = uicontrol('Style','checkbox','String',mArtLabels(m),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,mArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.mArtMin(m) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.mArtBox(m) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,mArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.mArtMax(m) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,mArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
@@ -583,7 +583,7 @@ end
         data.handles.gArtTxt = uicontrol('Style','text','String','Glottis:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,gArtHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
         gArtHval = gArtHval-0.035;
         for g = 1:(data.numSuppArt-data.numMainArt)
-            data.handles.gArtName(g) = uicontrol('Style','text','String',gArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,gArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,gArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtMin(g) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtBox(g) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtMax(g) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
@@ -595,7 +595,7 @@ end
         data.handles.cArtTxt = uicontrol('Style','text','String','Constrictions:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,cArtHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
         cArtHval = cArtHval-0.035;
         for c = 1:(data.numConstArt-data.numSuppArt)
-            data.handles.cArtName(c) = uicontrol('Style','text','String',cArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtName(c) = uicontrol('Style','checkbox','String',cArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.cArtMin(c) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.cArtBox(c) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,cArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.cArtMax(c) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,cArtHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
@@ -607,7 +607,7 @@ end
         data.handles.formantTxt = uicontrol('Style','text','String','Formants:','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.06,formantHval,0.60,0.03], 'Parent', data.handles.cr8Tfig);
         formantHval = formantHval-0.035;
         for f = 1:3
-            data.handles.formantName(f) = uicontrol('Style','text','String',formantLabels(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,formantHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantName(f) = uicontrol('Style','checkbox','String',formantLabels(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.02,formantHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.formantMin(f) = uicontrol('Style','edit','String','min','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.formantBox(f) = uicontrol('Style','edit','String','cur val','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,formantHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
             data.handles.formantMax(f) = uicontrol('Style','edit','String','max','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.03], 'Parent', data.handles.cr8Tfig);
