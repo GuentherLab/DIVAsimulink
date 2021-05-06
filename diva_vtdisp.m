@@ -60,7 +60,6 @@ switch(lower(option))
         hold(data.handles.hax3,'on'); data.handles.mousepos2=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax3); hold(data.handles.hax3,'off');
         xlabel(data.handles.hax3,'Frequency (Hz)');
         ylabel(data.handles.hax3,'VT filter (dB)');
-        data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1]);
         
         % plotting vert 'bar-sliders'
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
@@ -425,10 +424,11 @@ switch(lower(option))
             data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.18,0.038,0.03]);
             data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.14,0.038,0.03]);
             data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.10,0.038,0.03]);
-            data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','Callback', @FboxEdited);
-            data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @(varargin)set(data.handles.f123apply,'visible','on'));
-            data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @(varargin)set(data.handles.f123apply,'visible','on'));
-            data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @(varargin)set(data.handles.f123apply,'visible','on'));
+            data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','Callback', @ApplyFchanges);
+            data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1],'visible','off');
+            data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited); 
+            data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
+            data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', [-15 ,15]);
@@ -447,6 +447,7 @@ switch(lower(option))
             set(data.handles.f2edit,'String',string(audPeaks(2)),'Position',Fpos{2});
             set(data.handles.f3edit,'String',string(audPeaks(3)),'Position',Fpos{3});
             set(data.handles.f123apply,'visible','off');
+            set(data.handles.VTopenCheck,'visible','off');
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', [-15 ,15]);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', [-15 ,15]);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', [-15 ,15]);
@@ -478,8 +479,16 @@ end
 %              return
 %          end
 %    end
-
+    
     function FboxEdited(ObjH, EventData)
+        if isempty(hfig), hfig=gcf; end
+        data=get(hfig,'userdata');
+        set(data.handles.f123apply,'visible','on')
+        set(data.handles.VTopenCheck,'visible','on');
+        set(data.handles.hfig,'userdata',data);
+    end
+
+    function ApplyFchanges(ObjH, EventData)
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
         % ObjH is the button handle
