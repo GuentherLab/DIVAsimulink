@@ -90,7 +90,7 @@ switch(lower(option))
         data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
             mArtLabelPos = [0.518, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
-            data.handles.mArtCheckboxes(i+1) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',[1 1 1]);
+            data.handles.mArtCheckboxes(10-i) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',[1 1 1]);
         end
         
         % Glottis articulators (11:13 or [numMainArt+1]:[numMainArt+3])
@@ -901,10 +901,11 @@ end
                         end
                     else
                         pos=get(data.handles.hax4,'currentpoint'); % get current point rel to axes [x y -; x y -]
-                        data.handles.hplot4.CData(data.curBar,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4.XData);
+                        curBarLock = get(data.handles.mArtCheckboxes(data.curBar), 'Value');
                         %if curBarIdx <= barLim && curBarIdx > 0.5 && pos2(1,2) >= -3 && pos2(1,2) <= 3
-                        if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005
+                        if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005 && curBarLock ~= 1
+                            data.handles.hplot4.CData(data.curBar,:) = [0 0.8 0.8];
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1);
                             ydata = data.handles.hplot4.YData;
