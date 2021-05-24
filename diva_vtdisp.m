@@ -602,7 +602,7 @@ end
         gArtHval = gArtHval-0.03;
         gArtVals = data.handles.hplot4b.YData;
         for g = 1:(data.numSuppArt-data.numMainArt)
-            data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,gArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Value', 1,'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,gArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtMin(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)*.9,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtBox(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtMax(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
@@ -634,7 +634,7 @@ end
         formantHval = formantHval-0.03;
         fvals = {data.handles.f1edit.String data.handles.f2edit.String data.handles.f3edit.String};
         for f = 1:3
-            data.handles.formantName(f) = uicontrol('Style','checkbox','String',formantLabels(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,formantHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantName(f) = uicontrol('Style','checkbox','String',formantLabels(f),'Value', 1,'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,formantHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.formantMin(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*0.9),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,formantHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.formantBox(f) = uicontrol('Style','edit','String',fvals(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.formantMax(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*1.1),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
