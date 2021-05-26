@@ -144,6 +144,7 @@ switch(lower(option))
         %stateData = varargin{1};
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
+        updateTargetWindow()
         n=[];
         %if numel(varargin)>=1, n=varargin{1}; end
         %if numel(varargin)>=2, v=varargin{2}; end
@@ -199,7 +200,9 @@ switch(lower(option))
     case 'updsliders'
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
-
+        
+        updateTargetWindow()
+        
         %%% for constriction values
         x = varargin{1};
         x=repmat(x,[1,100]);
@@ -298,9 +301,12 @@ switch(lower(option))
         %end
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata');
+        
+        updateTargetWindow()
+        
         data.state.x=varargin{1};
         if ~isfield(data,'oldstatex'), data.oldstatex=data.state.x(:,end); end
-        
+               
         % vocalization display
         if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
             if data.curBar == data.numSuppArt
@@ -640,10 +646,42 @@ end
             data.handles.formantMax(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*1.1),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             formantHval = formantHval - 0.032;
         end
-        
         data.handles.saveTarget= uicontrol('Style','pushbutton','String','Save target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.55,0.005,0.4,0.045], 'Parent', data.handles.cr8Tfig);
-             
         set(data.handles.hfig,'userdata',data);
+        updateTargetWindow()
+    end
+
+    function updateTargetWindow()
+        if isempty(hfig), hfig=gcf; end
+        data=get(hfig,'userdata'); 
+        
+        if isfield(data.handles,'cr8Tfig')
+            mArtVals = data.handles.hplot4.YData;
+            for m = 1:data.numMainArt
+                set(data.handles.mArtMin(m),'String',num2str(round(mArtVals(m)*.9,2,'significant')));
+                set(data.handles.mArtBox(m),'String',num2str(round(mArtVals(m),2,'significant')));
+                set(data.handles.mArtMax(m),'String',num2str(round(mArtVals(m)*1.1,2,'significant')));
+            end
+            gArtVals = data.handles.hplot4b.YData;
+            for g = 1:(data.numSuppArt-data.numMainArt)
+                set(data.handles.gArtMin(g),'String',num2str(round(gArtVals(g)*.9,2,'significant')));
+                set(data.handles.gArtBox(g),'String',num2str(round(gArtVals(g),2,'significant')));
+                set(data.handles.gArtMax(g),'String',num2str(round(gArtVals(g)*1.1,2,'significant')));
+            end
+            cArtVals = data.handles.hplot4c.YData;
+            for c = 1:(data.numConstArt-data.numSuppArt)
+                set(data.handles.cArtMin(c),'String',num2str(round(cArtVals(c)*.9,2,'significant')));
+                set(data.handles.cArtBox(c),'String',num2str(round(cArtVals(c),2,'significant')));
+                set(data.handles.cArtMax(c),'String',num2str(round(cArtVals(c)*1.1,2,'significant')));
+            end
+            fvals = {data.handles.f1edit.String data.handles.f2edit.String data.handles.f3edit.String};
+            for f = 1:3
+                set(data.handles.formantMin(f),'String',num2str(str2double(fvals(f))*0.9));
+                set(data.handles.formantBox(f),'String',fvals(f));
+                set(data.handles.formantMax(f),'String',num2str(str2double(fvals(f))*1.1));
+            end
+            set(data.handles.hfig,'userdata',data);
+        end
     end
 
 
