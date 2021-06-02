@@ -5,9 +5,11 @@ hfig=[];
 if ishandle(option), hfig=option; option=varargin{1}; varargin=varargin(2:end); end
 
 switch(lower(option))
+    
     case 'init'
         %data.state.x=zeros(13,1);
         %[data.state.y,data.state.z,data.state.Outline]=diva_synth(data.state.x);
+        if ~isempty(varargin); setupArt = varargin{1}; end
         
         % setting up figure
         data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w','interruptible','on','busyaction','queue');
@@ -136,9 +138,15 @@ switch(lower(option))
         data.setup = 1;
         clear diva_synth %on rare occasions the persistent vt variable needs to be updated
         set(data.handles.hfig,'userdata',data);
-        diva_vtdisp(data.handles.hfig,'updsliders',[zeros(numMainArt,1);0;.5;.5]); 
-        diva_vtdisp(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
-        drawnow;
+        
+        if exist('setupArt','var') == 1
+            diva_vtdisp(data.handles.hfig,'updsliders',setupArt); 
+            diva_vtdisp(data.handles.hfig,'update',setupArt); % uses 'update' case to initialize default plots            
+        else
+            diva_vtdisp(data.handles.hfig,'updsliders',[zeros(numMainArt,1);0;.5;.5]); 
+            diva_vtdisp(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
+        end
+        drawnow;      
         
     case 'setslider' % called when a slider is moved, or mouse is released
         %stateData = varargin{1};
@@ -173,7 +181,7 @@ switch(lower(option))
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
          if isfield(data, 'constTarget')
-             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',0.02,'center',data.oldstatex);
+             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',0.05,'center',data.oldstatex);
              %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
              x=max(-1,min(1,x));
              %diva_vtdisp(hfig,'test',x,stateData);
