@@ -584,10 +584,10 @@ end
         if isempty(hfig), hfig=gcf; end
         data=get(hfig,'userdata'); 
         mainFigPos = data.handles.hfig.Position;
+                
         data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2)-0.25 (mainFigPos(3)*0.45) mainFigPos(4)+0.25],'menubar','none','name','Create new target','numbertitle','off','color','w','interruptible','on','busyaction','queue');
         data.handles.tNameTxt = uicontrol('Style','text','String','Target name:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.02,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
         data.handles.tNameBox = uicontrol('Style','edit','String','default_target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.5,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
-        
         data.handles.storeTxt = uicontrol('Style','text','String','Store in target:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.01,0.92,0.28,0.03], 'Parent', data.handles.cr8Tfig);
         
         labels = diva_vocaltract();
@@ -604,9 +604,9 @@ end
             data.handles.mArtMin(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)*.9,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.mArtBox(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.mArtMax(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
-        mArtHval = mArtHval-0.032;
+            mArtHval = mArtHval-0.032; 
         end
-        
+              
         gArtHval = mArtHval-0.01;
         gArtLabels = {'Tension', 'Pressure', 'Voicing'};
         data.handles.gArtTxt = uicontrol('Style','text','String','Glottis:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,gArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
@@ -622,7 +622,7 @@ end
             data.handles.gArtMax(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             gArtHval = gArtHval - 0.032;
         end
-        
+                
         cArtHval = gArtHval-0.01;
         cArtLabels = labels.Output(2).Plots_label(4:end);
         data.handles.cArtTxt = uicontrol('Style','text','String','Constrictions:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
@@ -654,7 +654,20 @@ end
             data.handles.formantMax(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*1.1),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             formantHval = formantHval - 0.032;
         end
-        data.handles.saveTarget= uicontrol('Style','pushbutton','String','Save target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.55,0.005,0.4,0.045], 'Parent', data.handles.cr8Tfig);
+        
+        curTargetVals.targetName = get(data.handles.tNameBox,'String');
+        curTargetVals.motorArtLabels = mArtLabels;
+        curTargetVals.motorArtVals = mArtVals;
+        curTargetVals.glottArtLabels = gArtLabels;
+        curTargetVals.glottArtVals = gArtVals;
+        curTargetVals.constArtLabels = cArtLabels;
+        curTargetVals.constArtVals = cArtVals;
+        curTargetVals.formantArtLabels = formantLabels;
+        curTargetVals.formantArtVals = fvals;
+        
+        data.handles.curTargetVals = curTargetVals; % [mArtVals gArtVals cArtVals fvals]; 
+        
+        data.handles.saveTarget= uicontrol('Style','pushbutton','String','Save target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.55,0.005,0.4,0.045], 'Callback', @saveTarget, 'Parent', data.handles.cr8Tfig);
         set(data.handles.hfig,'userdata',data);
         updateTargetWindow()
     end
@@ -690,6 +703,13 @@ end
             end
             set(data.handles.hfig,'userdata',data);
         end
+    end
+
+    function saveTarget(PushButton, EventData)
+        if isempty(hfig), hfig=gcf; end
+        data=get(hfig,'userdata');
+        curTargetData = data.handles.curTargetVals;
+        disp(curTargetData)
     end
 
 
