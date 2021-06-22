@@ -71,15 +71,44 @@ DIVA_x.debug=0;
   elseif ischar(block)
       switch(lower(block)),
           case 'auditory'
+              if numel(varargin)>=3, varargin{3}=false; end
               [varargout{1},nill,varargout{2}]=diva_vocaltractcompute(varargin{:});
           case 'somatosensory'
+              if numel(varargin)>=3, varargin{3}=true; end
               [nill,varargout{1},varargout{2}]=diva_vocaltractcompute(varargin{:});
+          case 'somatosensory&aperture'
+              if numel(varargin)>=3, varargin{3}=true; end
+              [nill,out{1},out{2}]=diva_vocaltractcompute(varargin{:});
+              ht=max(out{1}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
+              varargout={cat(1,out{1},ht),out{2}};
           case 'auditory&somatosensory'
+              if numel(varargin)>=3, varargin{3}=true; end
               [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
               varargout={cat(1,out{1:2}),out{3}};
+          case 'auditory&aperture'
+              if numel(varargin)>=3, varargin{3}=true; end
+              [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
+              ht=max(out{2}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
+              varargout={cat(1,out{1},ht),out{3}};
           case 'formant'
+              if numel(varargin)>=3, varargin{3}=false; end
               [varargout{1},nill,varargout{2}]=diva_vocaltractcompute(varargin{:});
               varargout{1}=varargout{1}.*DIVA_x.params.Output(1).Scale;
+          case 'formant&somatosensory'
+              if numel(varargin)>=3, varargin{3}=true; end
+              [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
+              out{1}=out{1}.*DIVA_x.params.Output(1).Scale;
+              out{2}=out{2}.*DIVA_x.params.Output(2).Scale;
+              varargout={cat(1,out{1:2}),out{3}};
+          case 'formant&aperture'
+              if numel(varargin)>=3, varargin{3}=true; end
+              [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
+              out{1}=out{1}.*DIVA_x.params.Output(1).Scale;
+              ht=max(out{2}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
+              varargout={cat(1,out{1},ht),out{3}};
           case 'output'
               [varargout{1:nargout}]=diva_vocaltractcompute(varargin{:});
           case 'base'

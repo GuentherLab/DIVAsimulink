@@ -112,7 +112,16 @@ switch(lower(style))
             x=params.center; 
         end            
         x0=x;
-        if isaud, 
+        h=[];
+        if params.constrained_open&&isaud
+            [y,p0]=diva_vocaltract('formant&aperture',x,[],false);
+            h=y(end); 
+            y=y(1:end-1);
+        elseif params.constrained_open&&issom
+            [y,p0]=diva_vocaltract('somatosensory&aperture',x,[],true);
+            h=y(end); 
+            y=y(1:end-1);
+        elseif isaud, 
             [y,p0]=diva_vocaltract('formant',x,[],false);
         elseif issom
             [y,p0]=diva_vocaltract('somatosensory',x,[],true);
@@ -133,29 +142,52 @@ switch(lower(style))
             dy=y_target-y;
             %dy(~valid)=0.5*dy(~valid);
             dy(~valid)=0;
+            if ~isempty(h), dh=0-h; end
             err=mean(abs(dy(valid)));
             if err<params.maxerr, break; end
             if params.dodisp, disp(err); end
             
             DY=zeros([M,N]); % direction of auditory/somatosensory change
+            DH=zeros([1,N]); % direction of aperture change
             for ndim=1:N, % computes jacobian
                 xt=x;
                 xt(ndim)=x(ndim)+params.eps;
-                if isaud, 
+                if params.constrained_open&&isaud
+                    yt=diva_vocaltract('formant&aperture',xt,[],true);
+                    ht=yt(end);
+                    yt=yt(1:end-1);
+                elseif params.constrained_open&&issom
+                    yt=diva_vocaltract('somatosensory&aperture',xt,[],true);
+                    ht=yt(end);
+                    yt=yt(1:end-1);
+                elseif isaud, 
                     yt=diva_vocaltract('formant',xt,[],false);
                 elseif issom
                     yt=diva_vocaltract('somatosensory',xt,[],true);
+                    ht=max(yt(end-5:end)); % note: assumes last 6 som variables are PA_*
+                    ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
                 else
                     outline = diva_synth(xt,'outline');
                     yt=[real(outline);imag(outline)];
                 end
                 %ty=Compute(tx);
                 DY(:,ndim)=yt-y;
+                if ~isempty(h), DH(:,ndim)=ht-h; end
             end
-            dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor);
+            if params.constrained_open&&(isaud||issom), dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor, DH, dh, 100);
+            else dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor);
+            end
             if isempty(p0), p0=1; end
             x=x+min(1,p0/.1)*params.stepiter*dx;
-            if isaud, 
+            if params.constrained_open&&isaud
+                [y,p0]=diva_vocaltract('formant&aperture',x,[],false);
+                h=y(end);
+                y=y(1:end-1);
+            elseif params.constrained_open&&issom
+                [y,p0]=diva_vocaltract('somatosensory&aperture',x,[],true);
+                h=y(end);
+                y=y(1:end-1);
+            elseif isaud, 
                 [y,p0]=diva_vocaltract('formant',x,[],false);
                 %y=diva_synth(x);
             elseif issom, 
@@ -165,17 +197,20 @@ switch(lower(style))
                 y=[real(outline);imag(outline)];
             end
         end
+        disp(niter);
         %if ~isempty(p0), x=x*p0+x0*(1-p0); end
     otherwise
         error('unknown option %s',style)
 end
 end
 
-function dx = pseudoinv_fromjacobian(DY,dy,EPS,LAMBDA,IDX_CONSTRAINED)
+function dx = pseudoinv_fromjacobian(DY,dy,EPS,LAMBDA,IDX_CONSTRAINED, DH,dh,LAMBDAh)
 N=size(DY,2);
 CX=eye(N)*sqrt(LAMBDA)*EPS;
 if ~isempty(IDX_CONSTRAINED), CX(1+(IDX_CONSTRAINED-1)*(N+1))=1e3*EPS; end
-dx=EPS*([DY; CX]\[dy; zeros(N,1)]);
+if nargin>6&&~isempty(DH), dx=EPS*([DY; LAMBDAh*DH; CX]\[dy; LAMBDAh*dh; zeros(N,1)]);
+else dx=EPS*([DY; CX]\[dy; zeros(N,1)]);
+end
 if ~isempty(IDX_CONSTRAINED), dx(IDX_CONSTRAINED)=0; end
 % (reference pseudoinverse computation, slower)
 %     JJ=DY*DY';

@@ -12,7 +12,7 @@ switch(lower(option))
         if ~isempty(varargin); setupArt = varargin{1}; end
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w','interruptible','on','busyaction','queue');
+        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','DIVA vocal tract display','numbertitle','off','color','w','interruptible','on','busyaction','queue'); 
         
         mfigTitle = uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
         
@@ -25,7 +25,10 @@ switch(lower(option))
         % ver2 is the opposite
         data.handles.h1_memory=patch(nan,nan,'k','facecolor','none','linestyle','--','edgecolor','none','linewidth',2,'parent',data.handles.hax1);
         % regular 2D representation
-        data.handles.h1=[patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1)];
+        data.handles.h1=[...
+            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
+            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
+            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1)];
         hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',2,'parent',data.handles.hax1,'tag','clickable'); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.mousepos1=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
@@ -94,6 +97,8 @@ switch(lower(option))
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
         data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
+        data.LockOpen = false;
+        data.longsearch = false;
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
             mArtLabelPos = [0.518, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
             data.handles.mArtCheckboxes(10-i) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',[1 1 1],'callback',@lockcheckbox);
@@ -156,6 +161,8 @@ switch(lower(option))
     case 'setslider' % called when a slider is moved, or mouse is released
         %stateData = varargin{1};
         if isempty(hfig), hfig=gcf; end
+        busyaction=get(hfig,'busyaction');
+        set(hfig,'busyaction','cancel'); % avoids queueing of callbacks during long computation
         data=get(hfig,'userdata');
         updateTargetWindow(data)
         n=[];
@@ -178,23 +185,24 @@ switch(lower(option))
         catch, x=zeros(data.numSuppArt,1);
         end
         
+        if data.longsearch, solveinvoptions={'maxiter',100}; else solveinvoptions={}; end
         if isfield(data, 'newVocalT')
-            x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues); %,'center',data.oldVocalT);
+            x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:}); %,'center',data.oldVocalT);
             x=max(-1,min(1,x));
             %diva_vtdisp(hfig,'test',x,stateData);
             %diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
-         if isfield(data, 'constTarget')
-             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues);
+        if isfield(data, 'constTarget')
+             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:});
              %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
              x=max(-1,min(1,x));
              %diva_vtdisp(hfig,'test',x,stateData);
              %diva_vtdisp(hfig,'updsliders',x,data);
              data = rmfield(data,'constTarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
-         end
+        end
         if isfield(data, 'curFtarget')
-            x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'maxiter',100);
+            x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',data.LockOpen,solveinvoptions{:});
             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
             x=max(-1,min(1,x));
             %diva_vtdisp(hfig,'test',x,stateData);
@@ -208,6 +216,7 @@ switch(lower(option))
             x(n,:)=[linspace(x(n,1),v,20),repmat(v,1,80)]; % for cases where articulator slides are being changed
         end 
         diva_vtdisp(hfig,'update',x,data);
+        set(hfig,'busyaction',busyaction);
         
         
     case 'updsliders'
@@ -319,6 +328,7 @@ switch(lower(option))
         
         data.state.x=varargin{1};
         if ~isfield(data,'oldstate'), data.oldstate=data.state; end
+        data.longsearch=false; 
                
         % vocalization display
         if (exist('data', 'var') == 1 && isfield(data, 'curBar'))
@@ -373,10 +383,12 @@ switch(lower(option))
         % vocal tract configuration
         x=data.state.Outline;
         x(end+1)=x(1);
-        xI=real(x(353))+1i*imag(x(160)); % break shaded vt area in two segments to avoid white overlaps
+        xI=real(x(353))+1i*imag(x(160)); % break shaded vt area in three segments to avoid white overlaps
         xA=[xI;x(354:end);x(1:160);xI];
         xB=[xI;x(160:353);xI];
-        xC=[xA;xB];
+        xC=[xB(99:152); xB(99)];
+        xB=[xB(1:99); xB(152:end)];
+        %xC=[xA;xB];
         
         x(353:354)=nan; % remove vt corner from border display
         
@@ -399,6 +411,7 @@ switch(lower(option))
         set(data.handles.h0,'xdata',real(x),'ydata',imag(x));
         set(data.handles.h1(1),'xdata',real(xA),'ydata',imag(xA));
         set(data.handles.h1(2),'xdata',real(xB),'ydata',imag(xB));
+        set(data.handles.h1(3),'xdata',real(xC),'ydata',imag(xC));
         if isfield(data, 'reset') && data.reset == 1
             set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
             data.reset = 0;
@@ -449,7 +462,7 @@ switch(lower(option))
             data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.145,0.038,0.03],'backgroundcolor','w');
             data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.105,0.038,0.03],'backgroundcolor','w');
             data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','Callback', @ApplyFchanges);
-            data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1],'visible','off');
+            data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1],'visible','on','callback',@lockopencheckbox);
             data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited); 
             data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
             data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
@@ -471,7 +484,7 @@ switch(lower(option))
             set(data.handles.f2edit,'String',string(audPeaks(2)),'Position',Fpos{2});
             set(data.handles.f3edit,'String',string(audPeaks(3)),'Position',Fpos{3});
             set(data.handles.f123apply,'visible','off');
-            set(data.handles.VTopenCheck,'visible','off');
+            %set(data.handles.VTopenCheck,'visible','off');
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', maxminspec);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', maxminspec);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', maxminspec);
@@ -534,6 +547,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data.oldstate=data.state;
         data.currAxis = 3;
         data.ready2play = 1;
+        data.longsearch=true;
         set(data.handles.hfig,'userdata',data);
         diva_vtdisp(data.handles.hfig,'setslider',data);
     end
@@ -1072,4 +1086,10 @@ data.LockValues=find(cell2mat(get(data.handles.mArtCheckboxes,'value')));
 set(gcbf,'userdata',data);
 end
 
+function lockopencheckbox(ObjH, EventData)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+data=get(hfig,'userdata');
+data.LockOpen=get(data.handles.VTopenCheck,'value');
+set(gcbf,'userdata',data);
+end
 
