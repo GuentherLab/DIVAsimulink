@@ -164,8 +164,6 @@ switch(lower(style))
                     yt=diva_vocaltract('formant',xt,[],false);
                 elseif issom
                     yt=diva_vocaltract('somatosensory',xt,[],true);
-                    ht=max(yt(end-5:end)); % note: assumes last 6 som variables are PA_*
-                    ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
                 else
                     outline = diva_synth(xt,'outline');
                     yt=[real(outline);imag(outline)];

@@ -23,14 +23,14 @@ switch(lower(option))
         % memory first (h0 is outline, h1 is fill)
         % ver1 solid moving, dotted fixed
         % ver2 is the opposite
-        data.handles.h1_memory=patch(nan,nan,'k','facecolor','none','linestyle','--','edgecolor','none','linewidth',2,'parent',data.handles.hax1);
+        % data.handles.h1_memory=patch(nan,nan,'k','facecolor','none','linestyle','--','edgecolor','none','linewidth',2,'parent',data.handles.hax1);
         % regular 2D representation
         data.handles.h1=[...
-            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
-            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
-            patch(nan,nan,'k','facecolor',.50*[1 1 1],'facealpha',.25,'edgecolor','none','linewidth',1,'parent',data.handles.hax1)];
+            patch(nan,nan,'k','facecolor',.75*[1 1 1],'facealpha',.5,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
+            patch(nan,nan,'k','facecolor',.75*[1 1 1],'facealpha',.5,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
+            patch(nan,nan,'k','facecolor',.75*[1 1 1],'facealpha',.5,'edgecolor','none','linewidth',1,'parent',data.handles.hax1)];
         hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',2,'parent',data.handles.hax1,'tag','clickable'); hold(data.handles.hax1,'off');
-        hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'parent',data.handles.hax1); hold(data.handles.hax1,'off');
+        hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'visible','off','parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.mousepos1=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         
         axis(data.handles.hax1,'equal','tight');
@@ -85,6 +85,7 @@ switch(lower(option))
         mArtAxPos = [.535 .275 .22 .6];
         data.handles.hax4 = axes('units','norm','position',mArtAxPos);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
+        set(data.handles.hplot4,'facecolor',[0 0.447 0.741],'edgecolor',[0 0.447 0.741]);
         hold on; title('Motor articulators', 'FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5=plot(zeros(numMainArt,1),1:numMainArt,'ko','markerfacecolor','k','tag','clickable'); hold off
         %%% adding bar values to main articulators 
@@ -108,6 +109,7 @@ switch(lower(option))
         data.numSuppArt = numSuppArt;
         data.handles.hax4b = axes('units','norm','position',[.84 .72 .15 .16]);
         data.handles.hplot4b = barh((numMainArt+1:numSuppArt),[0 0.5 0.5], 'BarWidth', 0.6);
+        set(data.handles.hplot4b,'facecolor',[0 0.447 0.741],'edgecolor',[0 0.447 0.741]);
         hold on; title('Glottis','FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5b=plot([0 .5 .5],(numMainArt+1:numSuppArt),'ko','markerfacecolor','k','tag','clickable'); hold off
         %%% adding bar values to supp articulators 
@@ -124,6 +126,7 @@ switch(lower(option))
         data.numConstArt = numConstArt;
         data.handles.hax4c = axes('units','norm','position',[.84 .275 .15 .38]);
         data.handles.hplot4c = barh((numSuppArt+1:numConstArt),zeros(numConstArt-numSuppArt,1), 'BarWidth', 0.6);
+        set(data.handles.hplot4c,'facecolor',[0 0.447 0.741],'edgecolor',[0 0.447 0.741]);
         hold on; title('Constrictions','FontWeight', 'normal'); hold off;
         hold on; data.handles.hplot5c=plot(zeros(numConstArt-numSuppArt,1),(numSuppArt+1:numConstArt),'ko','markerfacecolor','k','tag','clickable'); hold off
         %%% adding bar values constrictor articulators 
@@ -371,14 +374,14 @@ switch(lower(option))
         % the following works, but it would be nicer for it to notify the
         % user and also not update the sliders / revert them to the last
         % config that worked.
-        if 0,%sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
-            %disp('reached breaking point 2')
-            set(data.handles.h0, 'Color' ,'red')
-            set(data.handles.hfig,'userdata',data);
-            return
-        else
-            set(data.handles.h0, 'Color' ,'black')
-        end
+        %if 0,%sum(data.state.filt) == 0 % if this is 0, this is a configuration which results in no sound
+        %    %disp('reached breaking point 2')
+        %    set(data.handles.h0, 'Color' ,'red')
+        %    set(data.handles.hfig,'userdata',data);
+        %    return
+        %else
+        %    set(data.handles.h0, 'Color' ,'black')
+        %end
         
         % vocal tract configuration
         x=data.state.Outline;
@@ -461,11 +464,11 @@ switch(lower(option))
             data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.185,0.038,0.03],'backgroundcolor','w');
             data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.145,0.038,0.03],'backgroundcolor','w');
             data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.105,0.038,0.03],'backgroundcolor','w');
-            data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','Callback', @ApplyFchanges);
             data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1],'visible','on','callback',@lockopencheckbox);
             data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited); 
             data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
             data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
+            data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','Callback', @ApplyFchanges);
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', maxminspec);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', maxminspec);
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', maxminspec);
@@ -697,8 +700,8 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         updateTargetWindow(data)
     end
 
-    function updateTargetWindow(data)        
-        if isfield(data.handles,'cr8Tfig')
+    function updateTargetWindow(data) 
+        if isfield(data.handles,'cr8Tfig')&&ishandle(data.handles.cr8Tfig)
             mArtVals = data.handles.hplot4.YData;
             for m = 1:data.numMainArt
                 set(data.handles.mArtMin(m),'String',num2str(round(mArtVals(m)*.9,2,'significant')));
@@ -737,6 +740,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
 
     function downcallback(ObjH,varargin)
         hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+        if isequal(get(hfig,'pointer'),'arrow'), return; end % note: disregards clicks far away from control points
         data=get(hfig,'userdata'); 
         if isfield(data, 'curBar')
             data = rmfield(data,'curBar');
@@ -764,6 +768,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         cArtPos=get(data.handles.hax4c,'currentpoint'); % for constrictor articulators
         FPos=get(data.handles.hax3,'currentpoint'); % for formant plot
         vCordPos=get(data.handles.hax1,'currentpoint'); % for vocal tract
+        set(data.handles.h0_memory,'visible','on');
         % Current point 'pos' is structured as such [xfront, yfront, zfront;xback, yback, zback]
         % Instead of looking though fields for specific data var, should
         % just look at the newly implemented 'currAxis'
@@ -813,13 +818,14 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data=get(hfig,'userdata'); 
         data.mouseIsDown = false;% recognizes / saves the fact that the mous has been let go
         set(hfig,'userdata',data);
+        set(data.handles.h0_memory,'visible','off');
         if isfield(data, 'curBar')
             if data.curBar > data.numSuppArt
-                data.handles.hplot4c.CData(data.curBar-data.numSuppArt,:) = [0 0.4470 0.7410];
+                data.handles.hplot4c.CData(data.curBar-data.numSuppArt,:) = [0 0.447 0.741];
             elseif data.curBar > data.numMainArt
-                data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.4470 0.7410];
+                data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.447 0.741];
             else
-                 data.handles.hplot4.CData(data.curBar,:) = [0 0.4470 0.7410];
+                 data.handles.hplot4.CData(data.curBar,:) = [0 0.447 0.741];
             end
             % NOTE: just doing set(data.handles.hplot4, 'CData', [0 0.4470
             % 0.7410]) will stop indiv bars from haveing their own CData.
@@ -910,11 +916,11 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                             set([data.handles.h3F1,data.handles.h3F2,data.handles.h3F3], 'color', 'k');
                             switch data.curFidx
                                 case 1
-                                    set(data.handles.h3F1, 'color', 'c');
+                                    set(data.handles.h3F1, 'color', [0 0.694 0.933]);
                                 case 2
-                                    set(data.handles.h3F2, 'color', 'c');
+                                    set(data.handles.h3F2, 'color', [0 0.694 0.933]);
                                 case 3
-                                    set(data.handles.h3F3, 'color', 'c');
+                                    set(data.handles.h3F3, 'color', [0 0.694 0.933]);
                             end
                             curFidx = data.curFidx+1; % add 1 to pass f0
                             f0 = data.oldstate.Aud(1); % may need to derive this based on tension in the future
@@ -1014,7 +1020,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                         curBarLock = get(data.handles.mArtCheckboxes(data.curBar), 'Value');
                         %if curBarIdx <= barLim && curBarIdx > 0.5 && pos2(1,2) >= -3 && pos2(1,2) <= 3
                         if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005 && curBarLock ~= 1
-                            data.handles.hplot4.CData(data.curBar,:) = [0 0.8 0.8];
+                            data.handles.hplot4.CData(data.curBar,:) = [0 0.694 0.933];
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1);
                             ydata = data.handles.hplot4.YData;
