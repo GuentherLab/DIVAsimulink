@@ -64,12 +64,14 @@ function x = diva_solveinv(style,x,y_target,varargin)
 % [Aud2,Som2,Outline2]=diva_synth(x2,'explicit'); 
 % hold on; plot(Aud2,'.-'); plot(idx,Aud2(idx),'ko'); hold off;
 %
-params=struct('eps',.05,...     % pseudoinverse step-size
-    'lambda',.05,...            % pseudoinverse regularization strength
-    'maxiter',100,...           % if number of iterations above this, stop
-    'maxerr',.01,...            % if error below this, stop
-    'stepiter',1,...            % iteration step size
+params=struct('eps',.05,...      % pseudoinverse step-size
+    'lambda',.05,...             % pseudoinverse regularization strength
+    'maxiter',16,...             % if number of iterations above this, stop
+    'maxerr',.01,...             % if error below this, stop
+    'stepiter',1,...             % iteration step size
     'center',[],...              % center position (for regularization)
+    'constrained_motor',[],...   % index to motor dimensions that are constrained (cannot change position)
+    'constrained_open',false,... % constrain solutions to always result in an open vocal cavity (no closure)
     'dodisp',false); 
 for n1=1:2:numel(varargin)-1, if ~isfield(params,lower(varargin{n1})), error('unknown option %s',lower(varargin{n1})); else params.(lower(varargin{n1}))=varargin{n1+1}; end; end
 
@@ -98,7 +100,7 @@ switch(lower(style))
             %DY(:,ndim)=yt-y;
             DY(:,ndim)=diva_vocaltract(nout,xt)-y;
         end
-        dx =  pseudoinv_fromjacobian(DY,dy,params.eps,params.lambda);
+        dx =  pseudoinv_fromjacobian(DY,dy,params.eps,params.lambda,params.constrained_motor);
         if isempty(p0), p0=1; end
         x=-min(1,p0/.1)*dx;
         
@@ -150,7 +152,7 @@ switch(lower(style))
                 %ty=Compute(tx);
                 DY(:,ndim)=yt-y;
             end
-            dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda);
+            dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor);
             if isempty(p0), p0=1; end
             x=x+min(1,p0/.1)*params.stepiter*dx;
             if isaud, 
@@ -169,15 +171,16 @@ switch(lower(style))
 end
 end
 
-function dx = pseudoinv_fromjacobian(DY,dy,EPS,LAMBDA)
-if 0 % slower
-    JJ=DY*DY';
-    iJ=EPS*DY'*pinv(JJ+LAMBDA*EPS^2*eye(size(JJ,1))); % computes pseudoinverse
-    dx=iJ*dy;
-else % faster
-    N=size(DY,2);
-    dx=EPS*([DY; eye(N)*sqrt(LAMBDA)*EPS]\[dy; zeros(N,1)]);
-end
+function dx = pseudoinv_fromjacobian(DY,dy,EPS,LAMBDA,IDX_CONSTRAINED)
+N=size(DY,2);
+CX=eye(N)*sqrt(LAMBDA)*EPS;
+if ~isempty(IDX_CONSTRAINED), CX(1+(IDX_CONSTRAINED-1)*(N+1))=1e3*EPS; end
+dx=EPS*([DY; CX]\[dy; zeros(N,1)]);
+if ~isempty(IDX_CONSTRAINED), dx(IDX_CONSTRAINED)=0; end
+% (reference pseudoinverse computation, slower)
+%     JJ=DY*DY';
+%     iJ=EPS*DY'*pinv(JJ+LAMBDA*EPS^2*eye(size(JJ,1))); 
+%     dx=iJ*dy;
 end
 
 
