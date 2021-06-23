@@ -1,15 +1,21 @@
 function [Aud,Som,Outline,af,filt]=diva_synth(Art,option)
+persistent usefit;
+
+if isempty(usefit), usefit=true; end
+if isequal(Art,'usefit'), usefit=option; return; end
 if nargin<2, if size(Art,2)>1, option='sound'; else option='audsom'; end; end
 % Art(1:10) vocaltract shape params
 % Art(11:13) F0/P/V params
 
 fs=4*11025;
+f=[];
 %Art=tanh(Art);
 %Art=max(-1,min(1,Art));
 switch(lower(option))
     case 'explicit' 
         [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
-        filt=a2h(max(0,af),d,fs/10,fs);
+        [filt,f]=a2h(max(0,af),d,fs/10,fs);
+        if ~usefit, Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
         %filt=a2h(max(0,af),d,fs,fs); 
     case 'outline' 
         Aud=diva_synth_sample(Art);
@@ -17,12 +23,15 @@ switch(lower(option))
         Aud=diva_synth_sound(Art);
         Som=fs;
     case {'aud','audsom'} % outputs auditory/somatosensory representation associated with a given articulatory state
-        needsom=strcmpi(option,'audsom');
+        needsom=strcmpi(option,'audsom')|~usefit;
         ndata=size(Art,2);
         if ndata>1
             Aud=cell(1,ndata);Som=cell(1,ndata);Outline=cell(1,ndata);af=cell(1,ndata);P=nan(1,size(Art,2));
             if needsom
-                for n1=1:size(Art,2),[Outline{n1},P(n1),Aud{n1},Som{n1}]=diva_synth_sample(Art(:,n1));end
+                for n1=1:size(Art,2),
+                    [Outline{n1},P(n1),Aud{n1},Som{n1},af,d]=diva_synth_sample(Art(:,n1));
+                    if ~usefit, [filt,f]=a2h(max(0,af),d,fs/10,fs); Aud{n1}(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
+                end
             else
                 for n1=1:size(Art,2),[Outline{n1},P(n1),Aud{n1}]=diva_synth_sample(Art(:,n1));end
             end
@@ -38,7 +47,8 @@ switch(lower(option))
 %             end
         else
             if nargout>1&&needsom
-                [Outline,P,Aud,Som]=diva_synth_sample(Art);
+                [Outline,P,Aud,Som,af,d]=diva_synth_sample(Art);
+                if ~usefit, [filt,f]=a2h(max(0,af),d,fs/10,fs); Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
                 af=P;
             else
                 [Outline,P,Aud]=diva_synth_sample(Art);

@@ -64,12 +64,13 @@ function x = diva_solveinv(style,x,y_target,varargin)
 % [Aud2,Som2,Outline2]=diva_synth(x2,'explicit'); 
 % hold on; plot(Aud2,'.-'); plot(idx,Aud2(idx),'ko'); hold off;
 %
-params=struct('eps',.05,...      % pseudoinverse step-size
+params=struct('eps',.10,...      % pseudoinverse step-size
     'lambda',.05,...             % pseudoinverse regularization strength
     'maxiter',16,...             % if number of iterations above this, stop
     'maxerr',.01,...             % if error below this, stop
     'stepiter',1,...             % iteration step size
     'center',[],...              % center position (for regularization)
+    'bounded_motor',true,...     % bounds motor dimensions to -1:1 range
     'constrained_motor',[],...   % index to motor dimensions that are constrained (cannot change position)
     'constrained_open',false,... % constrain solutions to always result in an open vocal cavity (no closure)
     'dodisp',false); 
@@ -172,11 +173,12 @@ switch(lower(style))
                 DY(:,ndim)=yt-y;
                 if ~isempty(h), DH(:,ndim)=ht-h; end
             end
-            if params.constrained_open&&(isaud||issom), dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor, DH, dh, 100);
+            if params.constrained_open&&(isaud||issom), dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor, DH, dh, 1e2);
             else dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor);
             end
             if isempty(p0), p0=1; end
             x=x+min(1,p0/.1)*params.stepiter*dx;
+            if params.bounded_motor, x=max(-1,min(1,x)); end
             if params.constrained_open&&isaud
                 [y,p0]=diva_vocaltract('formant&aperture',x,[],false);
                 h=y(end);
@@ -195,7 +197,7 @@ switch(lower(style))
                 y=[real(outline);imag(outline)];
             end
         end
-        disp(niter);
+        %disp(niter);
         %if ~isempty(p0), x=x*p0+x0*(1-p0); end
     otherwise
         error('unknown option %s',style)

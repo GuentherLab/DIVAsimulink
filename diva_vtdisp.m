@@ -99,6 +99,7 @@ switch(lower(option))
         data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
         data.LockOpen = false;
+        diva_synth('usefit',true);
         data.longsearch = false;
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
             mArtLabelPos = [0.518, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
@@ -329,7 +330,7 @@ switch(lower(option))
         
         updateTargetWindow(data)
         
-        data.state.x=varargin{1};
+        if numel(varargin)>=1, data.state.x=varargin{1}; end
         if ~isfield(data,'oldstate'), data.oldstate=data.state; end
         data.longsearch=false; 
                
@@ -431,8 +432,9 @@ switch(lower(option))
         set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(32,max(data.state.af))*[0 1]);
         
         % frequency spectrum
+        calcPeaks = find(diff(sign(real(1./data.state.filt))))*fs/numel(data.state.filt); % calc freq peaks
         x=10*log10(abs(data.state.filt)); % does this need to be adjusted based on numMainArt?
-        calcPeaks = find(x(2:end-1)>x(1:end-2)&x(2:end-1)>x(3:end))*fs/numel(data.state.filt)*1e0; % calc freq peaks
+        %calcPeaks = find(x(2:end-1)>x(1:end-2)&x(2:end-1)>x(3:end))*fs/numel(data.state.filt)*1e0; % alternative calc freq peaks
         % trying to integrate diva_synth vals
         audPeaks = round(data.state.Aud(2:end,:));
         combPeaks = [audPeaks;calcPeaks(4:end)];
@@ -465,6 +467,7 @@ switch(lower(option))
             data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.145,0.038,0.03],'backgroundcolor','w');
             data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.105,0.038,0.03],'backgroundcolor','w');
             data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'BackgroundColor',[1 1 1],'visible','on','callback',@lockopencheckbox);
+            data.handles.UseFitCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Use forward model','value',true,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.45,0.0,0.15,0.04],'BackgroundColor',[1 1 1],'visible','on','callback',@usefitcheckbox);
             data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'Callback', @FboxEdited); 
             data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'Callback', @FboxEdited);
             data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
@@ -613,7 +616,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data=get(hfig,'userdata'); 
         mainFigPos = data.handles.hfig.Position;
                 
-        data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2)-0.25 (mainFigPos(3)*0.45) mainFigPos(4)+0.25],'menubar','none','name','Create new target','numbertitle','off','color','w','interruptible','on','busyaction','queue');
+        data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2)-0.25 (mainFigPos(3)*0.45) mainFigPos(4)+0.25],'menubar','none','name','Create new target','numbertitle','off','color',.945*[1 1 1],'interruptible','on','busyaction','queue');
         data.handles.tNameTxt = uicontrol('Style','text','String','Target name:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.02,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
         data.handles.tNameBox = uicontrol('Style','edit','String','default_target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.5,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
         data.handles.storeTxt = uicontrol('Style','text','String','Store in target:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.01,0.92,0.28,0.03], 'Parent', data.handles.cr8Tfig);
@@ -1097,5 +1100,12 @@ hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'
 data=get(hfig,'userdata');
 data.LockOpen=get(data.handles.VTopenCheck,'value');
 set(gcbf,'userdata',data);
+end
+
+function usefitcheckbox(ObjH, EventData)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+val=get(ObjH,'value');
+diva_synth('usefit',val);
+diva_vtdisp(hfig,'update');
 end
 
