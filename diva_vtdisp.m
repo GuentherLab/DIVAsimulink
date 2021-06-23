@@ -396,10 +396,10 @@ switch(lower(option))
         
         x(353:354)=nan; % remove vt corner from border display
         
-        if data.setup
-            set(data.handles.h0,'xdata',real(x),'ydata',imag(x)); % note-alf: this line looks redundant with same line ~10 lines below
-            set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x)); % note-alf: same as above, could add ||data.setup to the "if isfield" line below?
-        end
+        %if data.setup
+        %    set(data.handles.h0,'xdata',real(x),'ydata',imag(x)); % note-alf: this line looks redundant with same line ~10 lines below
+        %    set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x)); % note-alf: same as above, could add ||data.setup to the "if isfield" line below?
+        %end
         
         if exist('data', 'var') == 1 && isfield(data, 'ready2play')
             if data.ready2play
@@ -407,7 +407,7 @@ switch(lower(option))
                 set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
                 % ver 2
                 %set(data.handles.h0,'xdata',real(x),'ydata',imag(x));
-                set(data.handles.hfig,'userdata',data); % note-alf: redundant with same line at the end of this segment 
+                %set(data.handles.hfig,'userdata',data); % note-alf: redundant with same line at the end of this segment 
             end
         end
         
@@ -416,7 +416,7 @@ switch(lower(option))
         set(data.handles.h1(1),'xdata',real(xA),'ydata',imag(xA));
         set(data.handles.h1(2),'xdata',real(xB),'ydata',imag(xB));
         set(data.handles.h1(3),'xdata',real(xC),'ydata',imag(xC));
-        if isfield(data, 'reset') && data.reset == 1
+        if data.setup || isfield(data, 'reset') && data.reset == 1
             set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
             data.reset = 0;
         end
@@ -477,7 +477,7 @@ switch(lower(option))
             set(data.handles.h3F3, 'xdata',[audPeaks(3),audPeaks(3)],'ydata', maxminspec);
             %data.handles.f3txt = uicontrol('Style','edit','Tag','f3txt','String',string(i(4)),'Units','normalized','Position', Fpos{4},'Callback', @FboxEdited);
             data.setup = 0;
-            set(data.handles.hfig,'userdata',data); % note-alf: redundant with same line at the end of this segment 
+            %set(data.handles.hfig,'userdata',data); % note-alf: redundant with same line at the end of this segment 
         else
             % Old ver (uses actual freq val)
             %set(data.handles.f1txt,'String',string(calcPeaks(1)),'Position',Fpos{1});
