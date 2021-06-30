@@ -30,11 +30,14 @@ function x = diva_solveinv(style,x,y_target,varargin)
 %
 % xnew = diva_solveinv(...,param_name,param_value,...) 
 % defines additional solver settings:
-% eps           pseudoinverse step-size [.05]
-% lambda        pseudoinverse regularization strength [.05]
-% beta          null-space relaxation strength [.05]
-% maxiter       maximum number of iterations [100]
-% maxerr        target error tolerance [.01]
+% eps               pseudoinverse step-size [.05]
+% lambda            pseudoinverse regularization strength [.05]
+% beta              null-space relaxation strength [.05]
+% maxiter           maximum number of iterations [100]
+% maxerr            target error tolerance [.01]
+% bounded_motor     bounds motor dimensions to -1:1 range [1]
+% constrained_motor index to motor dimensions that are constrained (cannot change position) []
+% constrained_open  constrain solutions to always result in an open vocal cavity (no closure) [false]
 % 
 % example 1:
 % clf; 
@@ -70,7 +73,7 @@ params=struct('eps',.10,...      % pseudoinverse step-size
     'maxerr',.01,...             % if error below this, stop
     'stepiter',1,...             % iteration step size
     'center',[],...              % center position (for regularization)
-    'bounded_motor',true,...     % bounds motor dimensions to -1:1 range
+    'bounded_motor',false,...    % bounds motor dimensions to -1:1 range
     'constrained_motor',[],...   % index to motor dimensions that are constrained (cannot change position)
     'constrained_open',false,... % constrain solutions to always result in an open vocal cavity (no closure)
     'dodisp',false); 
@@ -178,7 +181,7 @@ switch(lower(style))
             end
             if isempty(p0), p0=1; end
             x=x+min(1,p0/.1)*params.stepiter*dx;
-            if params.bounded_motor, x=max(-1,min(1,x)); end
+            if params.bounded_motor, x=max(-abs(params.bounded_motor),min(abs(params.bounded_motor),x)); end
             if params.constrained_open&&isaud
                 [y,p0]=diva_vocaltract('formant&aperture',x,[],false);
                 h=y(end);

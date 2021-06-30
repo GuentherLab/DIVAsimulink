@@ -82,6 +82,7 @@ switch(lower(option))
         numMainArt = length((labels.Input.Plots_label(2:end)));
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
+        data.motorxlim=2; % range of motor articulatory dimensions
         mArtAxPos = [.535 .275 .22 .6];
         data.handles.hax4 = axes('units','norm','position',mArtAxPos);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
@@ -91,10 +92,10 @@ switch(lower(option))
         %%% adding bar values to main articulators 
         data.handles.h4text = text((zeros(numMainArt,1)-0.1),1:numMainArt,num2str(zeros(numMainArt,1)),'Color','black','vert','middle','horiz','right');
         data.handles.hplot4.FaceColor = 'flat';
-        set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse','xtick',[],'ytick',[],'box','off','xcolor',.95*[1 1 1],'ycolor',.95*[1 1 1],'color',.95*[1 1 1]);
+        set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', data.motorxlim*[-1 1], 'YDir', 'reverse','xtick',[],'ytick',[],'box','off','xcolor',.95*[1 1 1],'ycolor',.95*[1 1 1],'color',.95*[1 1 1]);
         %motorArtLabels = labels.Input.Plots_label(2:end);
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),0), 'Fontunit', 'norm');
-        hold on; data.handles.h4labels=text(-1.25+zeros(1,numMainArt),1:numMainArt,labels.Input.Plots_label(2:end),'horizontalalignment','right','fontunits','norm','fontsize',.04); hold off;
+        hold on; data.handles.h4labels=text(-data.motorxlim*1.25+zeros(1,numMainArt),1:numMainArt,labels.Input.Plots_label(2:end),'horizontalalignment','right','fontunits','norm','fontsize',.04); hold off;
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
         data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
@@ -191,24 +192,24 @@ switch(lower(option))
         
         if data.longsearch, solveinvoptions={'maxiter',100}; else solveinvoptions={}; end
         if isfield(data, 'newVocalT')
-            x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:}); %,'center',data.oldVocalT);
-            x=max(-1,min(1,x));
+            x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'bounded_motor',data.motorxlim,'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:}); %,'center',data.oldVocalT);
+            x=max(-data.motorxlim,min(data.motorxlim,x));
             %diva_vtdisp(hfig,'test',x,stateData);
             %diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'newVocalT'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
         if isfield(data, 'constTarget')
-             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:});
+             x=diva_solveinv('target_somatosensory',x,data.constTarget,'lambda',.05,'center',data.oldstate.x(:,end),'bounded_motor',data.motorxlim,'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:});
              %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
-             x=max(-1,min(1,x));
+            x=max(-data.motorxlim,min(data.motorxlim,x));
              %diva_vtdisp(hfig,'test',x,stateData);
              %diva_vtdisp(hfig,'updsliders',x,data);
              data = rmfield(data,'constTarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
         end
         if isfield(data, 'curFtarget')
-            x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',.05,'center',data.oldstate.x(:,end),'constrained_motor',data.LockValues,'constrained_open',data.LockOpen,solveinvoptions{:});
+            x=diva_solveinv('target_formant',x,data.curFtarget,'lambda',.05,'center',data.oldstate.x(:,end),'bounded_motor',data.motorxlim,'constrained_motor',data.LockValues,'constrained_open',data.LockOpen,solveinvoptions{:});
             %x=diva_solveinv('target_formant',x,data.curFtarget,'center',data.origF);
-            x=max(-1,min(1,x));
+            x=max(-data.motorxlim,min(data.motorxlim,x));
             %diva_vtdisp(hfig,'test',x,stateData);
             %diva_vtdisp(hfig,'updsliders',x,data);
             data = rmfield(data,'curFtarget'); % remove vCord var so that GUI doesn't always assume you are changing the vocal cord
@@ -947,7 +948,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                     pos=get(data.handles.hax4c,'currentpoint');
                         data.handles.hplot4c.CData(data.curBar-data.numSuppArt,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4c.XData);
-                        if data.curBar <= barLim && data.curBar > data.numSuppArt+0.5 && pos(1) >=-1.005 && pos(1) <=1.005
+                        if data.curBar <= barLim && data.curBar > data.numSuppArt+0.5 && pos(1) >=-data.motorxlim*1.005 && pos(1) <=data.motorxlim*1.005
                             data.curBarVal = pos(1);
                             ydata = data.handles.hplot4c.YData;  % get bar plot y data
                             newY = ydata;
@@ -987,7 +988,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                         pos=get(data.handles.hax4b,'currentpoint');
                         data.handles.hplot4b.CData(data.curBar-data.numMainArt,:) = [0 0.8 0.8];
                         barLim = max(data.handles.hplot4b.XData);
-                        if data.curBar <= barLim && data.curBar > data.numMainArt+0.5 && pos(1) >=-1.005 && pos(1) <=1.005
+                        if data.curBar <= barLim && data.curBar > data.numMainArt+0.5  && pos(1) >=-data.motorxlim*1.005 && pos(1) <=data.motorxlim*1.005&& pos(1) >=-1.005 && pos(1) <=1.005
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1);
                             ydata = data.handles.hplot4b.YData;  % get bar plot y data
@@ -1022,7 +1023,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                         barLim = max(data.handles.hplot4.XData);
                         curBarLock = get(data.handles.mArtCheckboxes(data.curBar), 'Value');
                         %if curBarIdx <= barLim && curBarIdx > 0.5 && pos2(1,2) >= -3 && pos2(1,2) <= 3
-                        if data.curBar <= barLim && data.curBar > 0.5 && pos(1) >=-1.005 && pos(1) <=1.005 && curBarLock ~= 1
+                        if data.curBar <= barLim && data.curBar > 0.5  && pos(1) >=-data.motorxlim*1.005 && pos(1) <=data.motorxlim*1.005 && curBarLock ~= 1
                             data.handles.hplot4.CData(data.curBar,:) = [0 0.694 0.933];
                             %data.curBar = curBarIdx;
                             data.curBarVal = pos(1);

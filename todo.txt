@@ -1,10 +1,10 @@
 1. DIVA GUI integration, three panels: 'articulatory synthesizer', 'DIVA simulation panel', 'Target creation panel'
-2. add constriction display to 'articulatory synthesizer' panel and make user-controllable
-     Ricky: add new panel, identical behavior/organization as formants, display test.state.Som output of diva_synth (first 6 values)
-     Alfonso: pseudoinverse solution in diva_solveinv('target_somatosensory',) ... 
-3a. add checkbox for "restrained" articulators (note: mix with Simulink constrictions)
-3b. 'Keep VT open' checkbox for constrained optimization (when solving for formant targets)
-4. create new "create target" dialog box to import info from 'Articulatory Synthesizer' to 'Target creation panel'
-5. vocal tract intersections shown as darker gray
+DONE 2. add constriction display to 'articulatory synthesizer' panel and make user-controllable
+DONE      Ricky: add new panel, identical behavior/organization as formants, display test.state.Som output of diva_synth (first 6 values)
+DONE      Alfonso: pseudoinverse solution in diva_solveinv('target_somatosensory',) ... 
+DONE 3a. add checkbox for "restrained" articulators (note: mix with Simulink constrictions)
+DONE 3b. 'Keep VT open' checkbox for constrained optimization (when solving for formant targets)
+DONE 4. create new "create target" dialog box to import info from 'Articulatory Synthesizer' to 'Target creation panel'
+DONE 5. vocal tract intersections shown as darker gray
 DONE 6. create dialog box to enter formant values simultaneously.
 

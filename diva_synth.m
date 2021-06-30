@@ -3,6 +3,7 @@ persistent usefit;
 
 if isempty(usefit), usefit=true; end
 if isequal(Art,'usefit'), usefit=option; return; end
+if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta'), xy2ab(Art,option); return; end
 if nargin<2, if size(Art,2)>1, option='sound'; else option='audsom'; end; end
 % Art(1:10) vocaltract shape params
 % Art(11:13) F0/P/V params
@@ -15,7 +16,7 @@ switch(lower(option))
     case 'explicit' 
         [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
         [filt,f]=a2h(max(0,af),d,fs/10,fs);
-        if ~usefit, Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
+        if ~usefit, try, Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); catch, Aud(2:4)=nan; end; end
         %filt=a2h(max(0,af),d,fs,fs); 
     case 'outline' 
         Aud=diva_synth_sample(Art);
@@ -55,7 +56,7 @@ switch(lower(option))
                 af=P;
                 Som=[];
             end
-        end
+        end        
 end
 end
 
@@ -282,8 +283,11 @@ end
 
 % computes area function
 function [a,b,sc,af,d]=xy2ab(x,y)
-persistent ab_alpha ab_beta;
-ab_alpha=[];
+persistent ab_alpha ab_beta vtscale;
+if isequal(x,'vtscale'), vtscale=y; return; end
+if isequal(x,'ab_alpha'), ab_alpha=y; return; end
+if isequal(x,'ab_beta'), ab_beta=y; return; end
+%ab_alpha=[];
 if isempty(ab_alpha),
     %     ab_alpha=[1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.78,1.78,1.78,1.77,1.77,1.76,1.75,1.74,1.73,1.72,1.71,1.69,1.67,1.65,1.63,1.60,1.58,1.55,1.52,1.49,1.46,1.43,1.40,1.37,1.34,1.31,1.29,1.26,1.24,1.22,1.20,1.19,1.17,1.16,1.16,1.15,1.15,1.15,1.15,1.16,1.17,1.17,1.19,1.20,1.21,1.23,1.24,1.25,1.27,1.28,1.30,1.31,1.32,1.34,1.35,1.36,1.37,1.37,1.38,1.38,1.38,1.39,1.39,1.39,1.39,1.39,1.39,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.37,1.37,1.37,1.37,1.37,1.36,1.36,1.36,1.36,1.36,1.35,1.35,1.35,1.35,1.35,1.35,1.36,1.36,1.37,1.37,1.38,1.39,1.40,1.41,1.43,1.44,1.46,1.47,1.49,1.51,1.53,1.55,1.57,1.60,1.62,1.64,1.66,1.69,1.71,1.73,1.75,1.77,1.79,1.82,1.84,1.87,1.90,1.94,1.98,2.02,2.07,2.13,2.19,2.25,2.32,2.40,2.48,2.56,2.65,2.75,2.85,2.95,3.05,3.16,3.27,3.37,3.48,3.59,3.69,3.79,3.89,3.99,4.07,4.16,4.24,4.31,4.38,4.44,4.49,4.54,4.58,4.62,4.64,4.67,4.69,4.70,4.71,4.71,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72]';
     %     ab_beta=[1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.39,1.39,1.39,1.40,1.40,1.40,1.41,1.42,1.42,1.43,1.44,1.45,1.46,1.47,1.48,1.49,1.51,1.52,1.53,1.54,1.55,1.55,1.56,1.56,1.57,1.57,1.57,1.56,1.56,1.55,1.54,1.53,1.52,1.50,1.48,1.46,1.44,1.42,1.40,1.38,1.36,1.33,1.31,1.29,1.26,1.24,1.22,1.20,1.19,1.17,1.15,1.14,1.13,1.12,1.11,1.10,1.10,1.09,1.09,1.09,1.09,1.10,1.10,1.11,1.12,1.12,1.13,1.14,1.15,1.17,1.18,1.19,1.21,1.22,1.24,1.25,1.27,1.29,1.30,1.32,1.34,1.35,1.37,1.38,1.40,1.41,1.42,1.43,1.44,1.45,1.46,1.46,1.47,1.47,1.47,1.47,1.46,1.46,1.45,1.45,1.44,1.43,1.42,1.41,1.40,1.38,1.37,1.36,1.35,1.34,1.33,1.31,1.30,1.29,1.28,1.27,1.27,1.26,1.26,1.26,1.27,1.27,1.28,1.30,1.32,1.34,1.36,1.39,1.42,1.46,1.50,1.54,1.58,1.62,1.67,1.72,1.77,1.82,1.86,1.91,1.96,2.01,2.06,2.10,2.14,2.19,2.22,2.26,2.29,2.32,2.35,2.38,2.40,2.42,2.43,2.45,2.46,2.46,2.47,2.47,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48,2.48]';
@@ -314,10 +318,17 @@ if isempty(ab_alpha),
         beta=[0.6021 0.909 1.327 1.469 0.8994 1.695 0.633 0.633 0.633 0.633];
         idx={}; for n1=1:numel(alpha), idx{end+1}=round((n1-1)*(amax-amin+1)/numel(alpha))+1:round(n1*(amax-amin+1)/numel(alpha)); end
         ab_alpha=zeros(amax-amin,1);ab_beta=zeros(amax-amin,1);for n1=1:numel(idx),ab_alpha(idx{n1})=alpha(n1);ab_beta(idx{n1})=beta(n1);end; h=hanning(51)/sum(hanning(51));ab_alpha=convn(ab_alpha([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');ab_beta=convn(ab_beta([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');
+    elseif 0
+        amax=220;amin=-60;
+        abc=[2.58 -1.01 0.54];
+        ab_alpha=4+zeros(amax-amin+1,1);
+        ab_beta=max(.5,abc(1)+abc(2)*linspace(-1,1,amax-amin+1)'+abc(3)*linspace(-1,1,amax-amin+1)'.^2);
     elseif 1
         amax=220;amin=-60;
-        alpha=4*[.25, 1, 2, 2, 1, 1, 1];
-        beta=[1.25, 1.25, 1.25, 1.5, 1.5 1.5 1.5];
+        alpha=4*ones(1,7);
+        beta=1.5*ones(1,7);
+        %alpha=4*[.25, 1, 2, 2, 1, 1, 1];
+        %beta=[1.25, 1.25, 1.25, 1.5, 1.5 1.5 1.5];
         idx={}; for n1=1:numel(alpha), idx{end+1}=round((n1-1)*(amax-amin+1)/numel(alpha))+1:round(n1*(amax-amin+1)/numel(alpha)); end
         ab_alpha=zeros(amax-amin,1);ab_beta=zeros(amax-amin,1);for n1=1:numel(idx),ab_alpha(idx{n1})=alpha(n1);ab_beta(idx{n1})=beta(n1);end; h=hanning(51)/sum(hanning(51));ab_alpha=convn(ab_alpha([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');ab_beta=convn(ab_beta([ones(1,25),1:end,end+zeros(1,25)]),h,'valid');
     else
@@ -330,6 +341,7 @@ if isempty(ab_alpha),
     %sprintf('%0.2f,',ab_alpha(:)')
     %sprintf('%0.2f,',ab_beta(:)')
 end
+if isempty(vtscale), vtscale=0.80; end
 
 
 if nargin==1, x=exp(-1i*pi/12)*x; y=imag(x);x=real(x); end
@@ -338,7 +350,7 @@ x0=45;%90;      % quarter circle center
 y0=-100;%-60;   
 r=60;%30;       % quarter circle radius
 k=pi*r/2;
-d=1.5*.75/10;%unitstocm
+d=vtscale*1.5*.75/10;%unitstocm
 
 a=zeros(size(x));
 b=zeros(size(x));
