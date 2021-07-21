@@ -31,7 +31,7 @@ switch(lower(option))
             if needsom
                 for n1=1:size(Art,2),
                     [Outline{n1},P(n1),Aud{n1},Som{n1},af,d]=diva_synth_sample(Art(:,n1));
-                    if ~usefit, [filt,f]=a2h(max(0,af),d,fs/10,fs); Aud{n1}(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
+                    if ~usefit, [filt,f]=a2h(max(1e-2,af),d,fs/10,fs); Aud{n1}(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
                 end
             else
                 for n1=1:size(Art,2),[Outline{n1},P(n1),Aud{n1}]=diva_synth_sample(Art(:,n1));end
@@ -49,7 +49,7 @@ switch(lower(option))
         else
             if nargout>1&&needsom
                 [Outline,P,Aud,Som,af,d]=diva_synth_sample(Art);
-                if ~usefit, [filt,f]=a2h(max(0,af),d,fs/10,fs); Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
+                if ~usefit, [filt,f]=a2h(max(1e-2,af),d,fs/10,fs); Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
                 af=P;
             else
                 [Outline,P,Aud]=diva_synth_sample(Art);

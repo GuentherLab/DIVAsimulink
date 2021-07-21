@@ -71,7 +71,7 @@ params=struct('eps',.10,...      % pseudoinverse step-size
     'lambda',.05,...             % pseudoinverse regularization strength
     'maxiter',16,...             % if number of iterations above this, stop
     'maxerr',.01,...             % if error below this, stop
-    'stepiter',1,...             % iteration step size
+    'stepiter',.1,...            % iteration step size
     'center',[],...              % center position (for regularization)
     'bounded_motor',false,...    % bounds motor dimensions to -1:1 range
     'constrained_motor',[],...   % index to motor dimensions that are constrained (cannot change position)
@@ -143,6 +143,7 @@ switch(lower(style))
         Iy=eye(M);
 
         for niter=1:params.maxiter
+            %disp(x);
             dy=y_target-y;
             %dy(~valid)=0.5*dy(~valid);
             dy(~valid)=0;

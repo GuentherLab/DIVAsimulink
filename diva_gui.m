@@ -4,7 +4,7 @@ if ~nargin, option='init'; end
 %if ~isfield(DIVA_x,'guiinit'),DIVA_x.guiinit=1;end
 
 switch(lower(option)),
-    case {'init','simulation'}
+    case {'init','simulation','initblank'}
         if strcmp(lower(option),'simulation')&&DIVA_x.changed&&~strcmp(DIVA_x.production,'new@default')&&~strcmp(DIVA_x.production,'new@random')
             answ=questdlg({'Exiting the ''Targets'' tab without saving first will disregard','any unsaved edits to the current target','','Do you want to continue without saving?'},'','Yes (continue without saving)','No (save before continuing)','No (save before continuing)');
             if strcmp(answ,'No (save before continuing)')
@@ -14,12 +14,16 @@ switch(lower(option)),
             end
         end
         DIVA_x.gui=1;
-        DIVA_x.model=gcs;
-        idx=find(DIVA_x.model=='/');
-        if ~isempty(idx),DIVA_x.model=DIVA_x.model(1:idx(1)-1);end
-        if ~strncmpi(DIVA_x.model,'diva',4)
-            open diva;
+        if strcmpi(option,'initblank')
             DIVA_x.model='diva';
+        else
+            DIVA_x.model=gcs;
+            idx=find(DIVA_x.model=='/');
+            if ~isempty(idx),DIVA_x.model=DIVA_x.model(1:idx(1)-1);end
+            if ~strncmpi(DIVA_x.model,'diva',4)
+                open diva;
+                DIVA_x.model='diva';
+            end
         end
         DIVA_x.params=diva_vocaltract;
         DIVA_x.color=[.37,.74,1;1,1,1];
