@@ -190,7 +190,7 @@ switch(lower(option))
         catch, x=zeros(data.numSuppArt,1);
         end
         
-        if data.longsearch, solveinvoptions={'maxiter',100}; else solveinvoptions={}; end
+        if data.longsearch, solveinvoptions={'maxiter',100}; elseif ~data.LockOpen, solveinvoptions={'stepiter',1}; else solveinvoptions={}; end
         if isfield(data, 'newVocalT')
             x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'bounded_motor',data.motorxlim,'constrained_motor',data.LockValues,'constrained_open',false,solveinvoptions{:}); %,'center',data.oldVocalT);
             x=max(-data.motorxlim,min(data.motorxlim,x));
@@ -362,7 +362,7 @@ switch(lower(option))
             end
         end
         
-        d=1.5*.75/10;
+        d=diva_synth('vtscale')*1.5*.75/10;
         fs=4*11025;
         
         %pay attention here for real-time plot update

@@ -3,7 +3,7 @@ persistent usefit;
 
 if isempty(usefit), usefit=true; end
 if isequal(Art,'usefit'), usefit=option; return; end
-if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta'), xy2ab(Art,option); return; end
+if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta'), if nargin>1, Aud=xy2ab(Art,option); else Aud=xy2ab(Art); end; return; end
 if nargin<2, if size(Art,2)>1, option='sound'; else option='audsom'; end; end
 % Art(1:10) vocaltract shape params
 % Art(11:13) F0/P/V params
@@ -284,9 +284,9 @@ end
 % computes area function
 function [a,b,sc,af,d]=xy2ab(x,y)
 persistent ab_alpha ab_beta vtscale;
-if isequal(x,'vtscale'), vtscale=y; return; end
-if isequal(x,'ab_alpha'), ab_alpha=y; return; end
-if isequal(x,'ab_beta'), ab_beta=y; return; end
+if isequal(x,'vtscale')&&nargin>1, vtscale=y; end
+if isequal(x,'ab_alpha')&&nargin>1, ab_alpha=y; end
+if isequal(x,'ab_beta')&&nargin>1, ab_beta=y; end
 %ab_alpha=[];
 if isempty(ab_alpha),
     %     ab_alpha=[1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.79,1.78,1.78,1.78,1.77,1.77,1.76,1.75,1.74,1.73,1.72,1.71,1.69,1.67,1.65,1.63,1.60,1.58,1.55,1.52,1.49,1.46,1.43,1.40,1.37,1.34,1.31,1.29,1.26,1.24,1.22,1.20,1.19,1.17,1.16,1.16,1.15,1.15,1.15,1.15,1.16,1.17,1.17,1.19,1.20,1.21,1.23,1.24,1.25,1.27,1.28,1.30,1.31,1.32,1.34,1.35,1.36,1.37,1.37,1.38,1.38,1.38,1.39,1.39,1.39,1.39,1.39,1.39,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.38,1.37,1.37,1.37,1.37,1.37,1.36,1.36,1.36,1.36,1.36,1.35,1.35,1.35,1.35,1.35,1.35,1.36,1.36,1.37,1.37,1.38,1.39,1.40,1.41,1.43,1.44,1.46,1.47,1.49,1.51,1.53,1.55,1.57,1.60,1.62,1.64,1.66,1.69,1.71,1.73,1.75,1.77,1.79,1.82,1.84,1.87,1.90,1.94,1.98,2.02,2.07,2.13,2.19,2.25,2.32,2.40,2.48,2.56,2.65,2.75,2.85,2.95,3.05,3.16,3.27,3.37,3.48,3.59,3.69,3.79,3.89,3.99,4.07,4.16,4.24,4.31,4.38,4.44,4.49,4.54,4.58,4.62,4.64,4.67,4.69,4.70,4.71,4.71,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72,4.72]';
@@ -325,8 +325,10 @@ if isempty(ab_alpha),
         ab_beta=max(.5,abc(1)+abc(2)*linspace(-1,1,amax-amin+1)'+abc(3)*linspace(-1,1,amax-amin+1)'.^2);
     elseif 1
         amax=220;amin=-60;
-        alpha=4*ones(1,7);
-        beta=1.5*ones(1,7);
+        %alpha=4*ones(1,7);
+        %beta=1.5*ones(1,7);
+        alpha=4*[0.624958626749735 0.133516925489778 0.130217998611322 0.689829579750722 0.441794169351521 1 0.500408730050045]; % alpha/beta (see /Users/Shared/data/vtfit) optimized (minimum percent formant error after 100 iterations pseudoinverse solution from initial/rest configuration) over set of Hillenbrand et al. 1995 11 vowels
+        beta=[1.60482248654277 1.58646072027864 1.50447287238085 1.66428962959121 1.67299030407492 1.46197930695302 1.43774095159543]; 
         %alpha=4*[.25, 1, 2, 2, 1, 1, 1];
         %beta=[1.25, 1.25, 1.25, 1.5, 1.5 1.5 1.5];
         idx={}; for n1=1:numel(alpha), idx{end+1}=round((n1-1)*(amax-amin+1)/numel(alpha))+1:round(n1*(amax-amin+1)/numel(alpha)); end
@@ -342,6 +344,9 @@ if isempty(ab_alpha),
     %sprintf('%0.2f,',ab_beta(:)')
 end
 if isempty(vtscale), vtscale=0.80; end
+if isequal(x,'vtscale'), a=vtscale; return; end
+if isequal(x,'ab_alpha'), a=ab_alpha; return; end
+if isequal(x,'ab_beta'), a=ab_beta; return; end
 
 
 if nargin==1, x=exp(-1i*pi/12)*x; y=imag(x);x=real(x); end
