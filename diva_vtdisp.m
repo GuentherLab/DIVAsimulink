@@ -199,7 +199,7 @@ switch(lower(option))
         catch, x=zeros(data.numSuppArt,1);
         end
         
-        if data.longsearch, solveinvoptions={'maxiter',100}; elseif isfield(data, 'newVocalT')||~data.LockOpen, solveinvoptions={'stepiter',1}; else solveinvoptions={}; end
+        if data.longsearch, solveinvoptions={'maxiter',100}; elseif isfield(data, 'newVocalT')||~data.LockOpen, solveinvoptions={'stepiter',1,'nantoconstant',true}; else solveinvoptions={'nantoconstant',true}; end
         if isfield(data, 'newVocalT')
             x=diva_solveinv('target_outline',x,data.newVocalT,'lambda',1e-6,'center',data.oldstate.x(:,end),'bounded_motor',data.motorxlim,'constrained_motor',data.LockValues,'constrained_open',data.LockOpen,solveinvoptions{:}); %,'center',data.oldVocalT);
             x=max(-data.motorxlim,min(data.motorxlim,x));
@@ -449,9 +449,9 @@ switch(lower(option))
             data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.88,0.105,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
             data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.88,0.046,0.12,0.05],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','attempt to maintain the vocal tract open','callback',@lockopencheckbox);
             data.handles.UseFitCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Use forward model','value',true,'Units','norm','FontUnits','norm','FontSize',0.4,'Position', [0.52,0.0,0.12,0.04],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','estimate formants using forward model fit / approximation','callback',@usefitcheckbox);
-            data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'tooltipstring','enter target F1 value (in Hz)','Callback', @FboxEdited); 
-            data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'tooltipstring','enter target F2 value (in Hz)','Callback', @FboxEdited);
-            data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'tooltipstring','enter target F3 value (in Hz)','Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
+            data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'tooltipstring','enter target F1 value (in Hz) or leave empty to keep F1 unconstrained','Callback', @FboxEdited); 
+            data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'tooltipstring','enter target F2 value (in Hz) or leave empty to keep F2 unconstrained','Callback', @FboxEdited);
+            data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'tooltipstring','enter target F3 value (in Hz) or leave empty to keep F3 unconstrained','Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
             data.handles.f123apply = uicontrol('Style','pushbutton','Tag','f123apply','String','Apply','Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{4},'visible','off','tooltipstring','find articulatory configuration that approximates the specified formants','Callback', @ApplyFchanges);
             set(data.handles.h3F1, 'xdata',[audPeaks(1),audPeaks(1)],'ydata', maxminspec);
             set(data.handles.h3F2, 'xdata',[audPeaks(2),audPeaks(2)],'ydata', maxminspec);

@@ -76,6 +76,7 @@ params=struct('eps',.10,...      % pseudoinverse step-size
     'bounded_motor',false,...    % bounds motor dimensions to -1:1 range
     'constrained_motor',[],...   % index to motor dimensions that are constrained (cannot change position)
     'constrained_open',false,... % constrain solutions to always result in an open vocal cavity (no closure)
+    'nantoconstant',false,...    % set to true if targets with NaN values should remain at their current value; set to false if targets with NaN values may move to any arbitrary value
     'dodisp',false); 
 for n1=1:2:numel(varargin)-1, if ~isfield(params,lower(varargin{n1})), error('unknown option %s',lower(varargin{n1})); else params.(lower(varargin{n1}))=varargin{n1+1}; end; end
 
@@ -146,7 +147,7 @@ switch(lower(style))
             %disp(x);
             dy=y_target-y;
             %dy(~valid)=0.5*dy(~valid);
-            dy(~valid)=0;
+            dy(~valid)=0; 
             if ~isempty(h), dh=0-h; end
             err=mean(abs(dy(valid)));
             if err<params.maxerr, break; end
@@ -177,6 +178,7 @@ switch(lower(style))
                 DY(:,ndim)=yt-y;
                 if ~isempty(h), DH(:,ndim)=ht-h; end
             end
+            if ~params.nantoconstant, DY(~valid,:)=0; end
             if params.constrained_open&&(isaud||issom), dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor, DH, dh, 1e2);
             else dx=pseudoinv_fromjacobian(DY, dy, params.eps, params.lambda,params.constrained_motor);
             end
