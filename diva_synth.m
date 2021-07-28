@@ -1,9 +1,9 @@
-function [Aud,Som,Outline,af,filt]=diva_synth(Art,option)
+function [Aud,Som,Outline,af,filt,filtsample]=diva_synth(Art,option)
 persistent usefit;
 
 if isempty(usefit), usefit=true; end
 if isequal(Art,'usefit'), usefit=option; return; end
-if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta'), if nargin>1, Aud=xy2ab(Art,option); else Aud=xy2ab(Art); end; return; end
+if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta')||isequal(Art,'supraglot'), if nargin>1, Aud=xy2ab(Art,option); else Aud=xy2ab(Art); end; return; end
 if nargin<2, if size(Art,2)>1, option='sound'; else option='audsom'; end; end
 % Art(1:10) vocaltract shape params
 % Art(11:13) F0/P/V params
@@ -15,9 +15,24 @@ f=[];
 switch(lower(option))
     case 'explicit' 
         [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
+        if nargout>=6 % filtsample
+            f0=100*(1+.5*Art(11,end));
+            pressure=max(0,Art(12,end));
+            voicing=Art(13,end);
+            samplesperperiod=ceil(fs/f0);
+            %[filt,f]=a2h(max(0,af),d,samplesperperiod,fs);
+            [filt,f]=a2h(max(0,af),d,4*samplesperperiod,fs);
+            filt=mean(reshape(filt,4,[]),1).';
+            N=numel(filt);
+            glottalsource=glotlf(0,(0:N-1)/samplesperperiod)';
+            u=0.25*pressure*(sqrt(max(0,voicing))*glottalsource + .1*(1-sqrt(max(0,voicing)))*randn(N,1));
+            %if minaf0>0&&minaf0<=k, u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*randn(synth.samplesperperiod,1); end
+            v=real(ifft(fft(u).*filt));
+            filtsample=struct('glottis',u,'lips',v);
+        end
+        %filt=a2h(max(0,af),d,fs,fs); 
         [filt,f]=a2h(max(0,af),d,fs/10,fs);
         if ~usefit, try, Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); catch, Aud(2:4)=nan; end; end
-        %filt=a2h(max(0,af),d,fs,fs); 
     case 'outline' 
         Aud=diva_synth_sample(Art);
     case 'sound' % outputs soundwave associated with sequence of articulatory states
@@ -114,7 +129,7 @@ while time<(ndata+1)*dt;
     af=af(1:naf);
     FPV=max(-1,min(1, Art(end-2:end,min(ndata,1+t0))*(1-t1)+Art(end-2:end,min(ndata,2+t0))*t1 ));
     vt.voicing=(1+tanh(3*FPV(3)))/2;
-    vt.pressure=FPV(2);
+    vt.pressure=max(0,FPV(2));
     vt.pressure0=vt.pressure>.01;
     vt.f0=voices(opt.voices).F0*(1+.5*FPV(1));
     
@@ -283,8 +298,9 @@ end
 
 % computes area function
 function [a,b,sc,af,d]=xy2ab(x,y)
-persistent ab_alpha ab_beta vtscale;
+persistent ab_alpha ab_beta vtscale supraglot;
 if isequal(x,'vtscale')&&nargin>1, vtscale=y; end
+if isequal(x,'supraglot')&&nargin>1, supraglot=y; end
 if isequal(x,'ab_alpha')&&nargin>1, ab_alpha=y; end
 if isequal(x,'ab_beta')&&nargin>1, ab_beta=y; end
 %ab_alpha=[];
@@ -327,8 +343,10 @@ if isempty(ab_alpha),
         amax=220;amin=-60;
         %alpha=4*ones(1,7);
         %beta=1.5*ones(1,7);
-        alpha=4*[0.624958626749735 0.133516925489778 0.130217998611322 0.689829579750722 0.441794169351521 1 0.500408730050045]; % alpha/beta (see /Users/Shared/data/vtfit) optimized (minimum percent formant error after 100 iterations pseudoinverse solution from initial/rest configuration) over set of Hillenbrand et al. 1995 11 vowels
-        beta=[1.60482248654277 1.58646072027864 1.50447287238085 1.66428962959121 1.67299030407492 1.46197930695302 1.43774095159543]; 
+        %alpha=4*[0.624958626749735 0.133516925489778 0.130217998611322 0.689829579750722 0.441794169351521 1 0.500408730050045]; % alpha/beta (see /Users/Shared/data/vtfit) optimized (minimum percent formant error after 100 iterations pseudoinverse solution from initial/rest configuration) over set of Hillenbrand et al. 1995 11 vowels
+        %beta=[1.60482248654277 1.58646072027864 1.50447287238085 1.66428962959121 1.67299030407492 1.46197930695302 1.43774095159543]; 
+        alpha=[0.150127057197824 1.58459068128677 0.314875829831411 2.31926132786638 2.45907091514837 3.63571670500721 4.13889114185716];
+        beta=[1.39287932035786 1.88154844824375 1.54946486630883 2.14447357079157 2.21589971934825 1.32756688123311 1.25883565638672];
         %alpha=4*[.25, 1, 2, 2, 1, 1, 1];
         %beta=[1.25, 1.25, 1.25, 1.5, 1.5 1.5 1.5];
         idx={}; for n1=1:numel(alpha), idx{end+1}=round((n1-1)*(amax-amin+1)/numel(alpha))+1:round(n1*(amax-amin+1)/numel(alpha)); end
@@ -344,7 +362,9 @@ if isempty(ab_alpha),
     %sprintf('%0.2f,',ab_beta(:)')
 end
 if isempty(vtscale), vtscale=0.80; end
+if isempty(supraglot), supraglot=2; end
 if isequal(x,'vtscale'), a=vtscale; return; end
+if isequal(x,'supraglot'), a=supraglot; return; end
 if isequal(x,'ab_alpha'), a=ab_alpha; return; end
 if isequal(x,'ab_beta'), a=ab_beta; return; end
 
@@ -380,7 +400,7 @@ if nargout>2,
     owall=45:164;
     iwall=164+10:257;
     oall=15:164;
-    iall=164:287;
+    iall=172:287;
     xmin=-20;ymin=-160; %xmin=0;ymin=-140;
     amin=ymin-y0;amax=ceil((x0-xmin+k-amin));
     
@@ -410,12 +430,17 @@ if nargout>2,
         end
         df=d*sum(b2,2);
         idx1=find(df>0.1,1); % source position
+        if isempty(idx1), idx1=1; end
         idx2=idx1-1+find(isnan(df(idx1:end)),1); % source position
+        if isempty(idx2), idx2=numel(df)+1; end
         % save df0.mat df
         % af: area function
         %af=min(0,df)+ab_alpha.*max(0,df).^ab_beta./(1+max(0,df));
+        
         af=min(0,df)+ab_alpha.*max(0,df).^ab_beta;
         af=af(idx1:idx2-1);
+        if isempty(af), af=0; end
+        af=[linspace(sqrt(.1),sqrt(af(1)),round(supraglot/d))'.^2;af];
         %plot(a1,b1,'.-',a2(ok),b2(ok,nio),'o-')
         lipsab1=min(b(olips));
         lipsab2=max(b(ilips));

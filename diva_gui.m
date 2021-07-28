@@ -4,7 +4,7 @@ if ~nargin, option='init'; end
 %if ~isfield(DIVA_x,'guiinit'),DIVA_x.guiinit=1;end
 
 switch(lower(option)),
-    case {'init','simulation','initblank'}
+    case {'init','simulation','initgui'}
         if strcmp(lower(option),'simulation')&&DIVA_x.changed&&~strcmp(DIVA_x.production,'new@default')&&~strcmp(DIVA_x.production,'new@random')
             answ=questdlg({'Exiting the ''Targets'' tab without saving first will disregard','any unsaved edits to the current target','','Do you want to continue without saving?'},'','Yes (continue without saving)','No (save before continuing)','No (save before continuing)');
             if strcmp(answ,'No (save before continuing)')
@@ -14,16 +14,16 @@ switch(lower(option)),
             end
         end
         DIVA_x.gui=1;
-        if strcmpi(option,'initblank')
+        DIVA_x.model=gcs;
+        idx=find(DIVA_x.model=='/');
+        if ~isempty(idx),DIVA_x.model=DIVA_x.model(1:idx(1)-1);end
+        if ~strncmpi(DIVA_x.model,'diva',4)
+            if strcmpi(option,'initgui'), open diva;
+            else load_system diva; % hide SIMULINK GUI            
+            end 
+            %open diva; 
+            %if ~strcmpi(option,'initgui'),set_param('diva', 'Open', 'off');end % hide SIMULINK GUI            
             DIVA_x.model='diva';
-        else
-            DIVA_x.model=gcs;
-            idx=find(DIVA_x.model=='/');
-            if ~isempty(idx),DIVA_x.model=DIVA_x.model(1:idx(1)-1);end
-            if ~strncmpi(DIVA_x.model,'diva',4)
-                open diva;
-                DIVA_x.model='diva';
-            end
         end
         DIVA_x.params=diva_vocaltract;
         DIVA_x.color=[.37,.74,1;1,1,1];
@@ -82,6 +82,8 @@ switch(lower(option)),
         if isfield(DIVA_x,'production'),
             diva_gui('load',DIVA_x.production);
         end
+        diva_vtdisp init;
+        figure(DIVA_x.figure.handles.figure);
 
     case 'init_inputoutputplots',
         Vars={'Output','Input'};

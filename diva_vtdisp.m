@@ -12,13 +12,13 @@ switch(lower(option))
         if ~isempty(varargin); setupArt = varargin{1}; end
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.25 .35 .5 .5],'menubar','none','name','Articulatory Synthesizer','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue'); 
+        data.handles.hfig=figure('units','norm','position',[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue'); 
         
         mfigTitle = [];%uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
         
         % setting up 2D vocal tract
         %data.handles.hax1=axes('units','norm','position',[.05 .3 .45 .65],'color',1*[1 1 1]);
-        data.handles.hax1=axes('units','norm','position',[0 .26 .40 .615],'color',.975*[1 1 1]);
+        data.handles.hax1=axes('units','norm','position',[.05 .26 .40 .615],'color',.975*[1 1 1]);
         
         % memory first (h0 is outline, h1 is fill)
         % ver1 solid moving, dotted fixed
@@ -30,26 +30,31 @@ switch(lower(option))
             patch(nan,nan,'k','facecolor',.85*[1 1 1],'facealpha',.85,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
             patch(nan,nan,'k','facecolor',.85*[1 1 1],'facealpha',.85,'edgecolor','none','linewidth',1,'parent',data.handles.hax1),...
             patch(nan,nan,'k','facecolor',.85*[1 1 1],'facealpha',.85,'edgecolor','none','linewidth',1,'parent',data.handles.hax1)];
-        hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',2,'color',0.65*[1 1 1],'parent',data.handles.hax1,'tag','clickable'); hold(data.handles.hax1,'off');
+        hold(data.handles.hax1,'on'); data.handles.h0=plot(nan,nan,'k','linewidth',3,'color',0.65*[1 1 1],'parent',data.handles.hax1,'tag','clickable'); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.h0_memory=plot(nan,nan,'k','linestyle',':','linewidth',2,'color',.65*[1 1 1],'visible','off','parent',data.handles.hax1); hold(data.handles.hax1,'off');
         hold(data.handles.hax1,'on'); data.handles.mousepos1=plot(nan,nan,'.:','linewidth',1,'color',.85*[1 1 1],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
         
-        axis(data.handles.hax1,'equal','tight');
-        set(data.handles.hax1,'xcolor',.975*[1 1 1],'ycolor',.975*[1 1 1],'xtick',[],'ytick',[],'xdir','reverse');
+        axis(data.handles.hax1,'equal');
+        set(data.handles.hax1,'xcolor',.975*[1 1 1],'ycolor',.975*[1 1 1],'xtick',[],'ytick',[],'xdir','reverse','xlim',[-100  160]);
         %set(data.handles.h1,'xdata',real(data.state.Outline),'ydata',imag(data.state.Outline));
         
         % setting up supplementary plots for 2D vocal tract vocalization
-        data.handles.hax1a=axes('units','norm','position',[.30 .32 .04 .555],'color',.975*[1 1 1]);
-        data.handles.hax1b=axes('units','norm','position',[.34 .32 .04 .555],'color',.975*[1 1 1]);
-        data.handles.hax1c=axes('units','norm','position',[.38 .32 .04 .555],'color',.975*[1 1 1]);
-        % arc plot data
-        t = linspace(150, 210, 100); t2 = linspace(135, 225, 100); t3 = linspace(120, 240, 100);
-        x  = 3 * cosd(t);y  = 3 * sind(t);x2 = 4 * cosd(t2);y2 = 4 * sind(t2);x3 = 5 * cosd(t3);y3 = 5 * sind(t3);
-        data.handles.h1a = plot(-x+2, -y, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1a,'visible', 'on');
-        data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1b,'visible', 'on');
-        data.handles.h1c = plot(-x3, -y3, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1c,'visible', 'off');
-        set(data.handles.hax1a, 'YLim', [-4 4], 'XLim', [4.5 5]); set(data.handles.hax1b, 'YLim', [-4 4], 'XLim', [3.3 4]); set(data.handles.hax1c, 'YLim', [-6 6], 'XLim', [3.0 5]);
-        set(data.handles.hax1a,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1b,'box','off','xtick',[],'ytick',[], 'visible', 'off'); set(data.handles.hax1c,'box','off','xtick',[],'ytick',[], 'visible', 'off');
+        data.handles.hax1type=2;
+        if data.handles.hax1type==1
+            data.handles.hax1a=axes('units','norm','position',[.34 .32 .04 .555],'color',.975*[1 1 1]);
+            data.handles.hax1b=axes('units','norm','position',[.37 .32 .04 .555],'color',.975*[1 1 1]);
+            data.handles.hax1c=axes('units','norm','position',[.40 .32 .04 .555],'color',.975*[1 1 1]);
+            arc plot data
+            t = linspace(150, 210, 100); t2 = linspace(135, 225, 100); t3 = linspace(120, 240, 100);
+            x  = 3 * cosd(t);y  = 3 * sind(t);x2 = 4 * cosd(t2);y2 = 4 * sind(t2);x3 = 5 * cosd(t3);y3 = 5 * sind(t3);
+            data.handles.h1a = plot(-x+2, -y, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1a,'visible', 'on');
+            data.handles.h1b = plot(-x2, -y2, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1b,'visible', 'on');
+            data.handles.h1c = plot(-x3, -y3, 'k-', 'LineWidth', 2,'color',.75*[1 1 1], 'parent', data.handles.hax1c,'visible', 'off');
+            set(data.handles.hax1a, 'YLim', [-4 4], 'XLim', [4.5 5]); set(data.handles.hax1b, 'YLim', [-4 4], 'XLim', [3.3 4]); set(data.handles.hax1c, 'YLim', [-6 6], 'XLim', [3.0 5]);
+            set([data.handles.hax1a data.handles.hax1b data.handles.hax1c],'box','off','xtick',[],'ytick',[], 'visible', 'off');
+        else
+            hold(data.handles.hax1,'on'); data.handles.h1d=plot(nan,nan,'k-','linewidth',1,'color',[0 0.694 0.933],'parent',data.handles.hax1); hold(data.handles.hax1,'off');
+        end
         
         % plotting area function
         data.handles.hax2=axes('units','norm','position',[.1 .09 .3 .12],'color',.975*[1 1 1],'box','off');
@@ -59,7 +64,7 @@ switch(lower(option))
         ht=[xlabel(data.handles.hax2,'distance to glottis (cm)'); ylabel(data.handles.hax2,'Area (cm^2)')]; set(ht,'color',.25*[1 1 1],'fontunits','norm','fontsize',.20);
         
         % plotting frequency spectrum
-        data.handles.hax3=axes('units','norm','position',[.6 .09 .3 .12],'color',.975*[1 1 1],'box','off');
+        data.handles.hax3=axes('units','norm','position',[.55 .09 .3 .12],'color',.975*[1 1 1],'box','off');
         data.handles.h3=plot(nan,nan,'k','color',.85*[1 1 1],'linewidth',2,'parent',data.handles.hax3);
         %hold on; data.handles.h6=plot(nan,nan,'co','markerfacecolor','c'); hold off; If I wanted to add cyan markers on the plot 
         hold on; data.handles.h3F1=plot(nan,nan,'-','color','k','linewidth',2,'parent',data.handles.hax3,'tag','clickable');  hold off;
@@ -84,7 +89,7 @@ switch(lower(option))
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
         data.motorxlim=2; % range of motor articulatory dimensions
-        mArtAxPos = [.535 .275 .22 .6];
+        mArtAxPos = [.605 .275 .15 .6];
         data.handles.hax4 = axes('units','norm','position',mArtAxPos);
         data.handles.hplot4 = barh(zeros(1,numMainArt), 'BarWidth', 0.8); % psst you need to plot the bar first, before changing the axes properties
         set(data.handles.hplot4,'facecolor',[0.75 0.75 0.75],'edgecolor',[0.75 0.75 0.75]);
@@ -102,10 +107,9 @@ switch(lower(option))
         %data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',.975*[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
         data.LockOpen = false;
-        diva_synth('usefit',true);
         data.longsearch = false;
         for i = 0:numMainArt-1 % creating restrict / lock checkboxes
-            mArtLabelPos = [0.518, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
+            mArtLabelPos = [0.588, (mArtAxPos(2)*0.95)+(i*(mArtAxPos(4)/10))+(mArtAxPos(4)/10)/2 , 0.016, 0.0245];
             data.handles.mArtCheckboxes(10-i) = uicontrol('Style','checkbox','Tag',sprintf('mArtCheck%d', i+1),'Units','norm','FontUnits','norm','FontSize',0.35,'Position', mArtLabelPos,'BackgroundColor',.975*[1 1 1],'callback',@lockcheckbox,'tooltipstring','lock this articulator position');
         end
         % Glottis articulators (11:13 or [numMainArt+1]:[numMainArt+3])
@@ -147,15 +151,16 @@ switch(lower(option))
         set(data.handles.hfig,'WindowButtonDownFcn',@downcallback, 'WindowButtonUpFcn',@upcallback, 'WindowButtonMotionFcn',@overcallback); % callback for when mouse hovers over plot
 
         % reset button
-        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.40,'Position',[.25 .26 .15 .05],'Visible','on','tooltipstring','reset articulatory configuration to neutral / initial state','CallBack', @resetPushed);
+        data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .26 .15 .05],'Visible','on','tooltipstring','reset articulatory configuration to neutral / initial state','CallBack', @resetPushed);
         % create new target button
-        data.handles.cr8TargetButton = uicontrol('Style','pushbutton','String','Create new target','Units','normalized','FontUnits','norm','FontSize',0.40,'Position',[.25 .31 .15 .05],'Visible','on','tooltipstring','create new DIVA target based on some or all aspects of the current vocal tract state','CallBack', @cr8TargetPushed);
+        data.handles.cr8TargetButton = uicontrol('Style','pushbutton','String','Create new target','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .31 .15 .05],'Visible','on','tooltipstring','create new DIVA target based on some or all aspects of the current vocal tract state','CallBack', @cr8TargetPushed);
         % synthesize button
-        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.40,'Position',[.25 .36 .15 .05],'Visible','on','tooltipstring','synthesize sound from the current articulatory configuration','CallBack', @synthPushed);
+        data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .36 .15 .05],'Visible','on','tooltipstring','synthesize sound from the current articulatory configuration','CallBack', @synthPushed);
         
         % flag for first time setup
         data.setup = 1;
         clear diva_synth %on rare occasions the persistent vt variable needs to be updated
+        diva_synth('usefit',true);
         set(data.handles.hfig,'userdata',data);
         
         if exist('setupArt','var') == 1
@@ -235,15 +240,16 @@ switch(lower(option))
         updateTargetWindow(data)
         
         %%% for constriction values
-        x = varargin{1};
-        x=repmat(x,[1,100]);
-        n=[1:9:size(x,2)-1,size(x,2)];
-        n=n(end);
-        [test.state.Aud,test.state.Som,test.state.Outline,test.state.af,test.state.filt]=diva_synth(x(:,n), 'explicit');
-        constVals = test.state.Som(1:6);
-        isclosed=all(test.state.filt==0);
+        if numel(varargin)>=1, x = varargin{1};
+        else x = data.state.x(:,end);
+        end
+        data.state.x = x;
+        n=size(x,2);
+        [data.state.Aud,data.state.Som,data.state.Outline,data.state.af,data.state.filt,data.state.filtsample]=diva_synth(x(:,n), 'explicit');
+        constVals = data.state.Som(1:6);
+        isclosed=all(data.state.filt==0);
         
-        newVals = varargin{1}';
+        newVals = x';
         % for main articulators
         set(data.handles.hplot4, 'YData', newVals(1:data.numMainArt));
         set(data.handles.hplot5, 'XData', newVals(1:data.numMainArt));
@@ -281,7 +287,7 @@ switch(lower(option))
                     set(data.handles.h4btext(i-data.numMainArt),'horiz','right','Position', [newVals(i)-0.1,i,0],'Color', .5*[1 1 1]);
                 end
             end
-            if i == 12
+            if i == 12&&data.handles.hax1type==1
                 onoff={'off','on'};
                 set(data.handles.h1c, 'visible', onoff{1+(newVals(i) > 0.7&~isclosed)});
                 set(data.handles.h1b, 'visible', onoff{1+(newVals(i) > 0.35&~isclosed)});
@@ -289,6 +295,7 @@ switch(lower(option))
                 set(data.handles.hfig,'userdata',data);
             end
         end
+        
         % for constrictor articulators (section may change in future!!)
         set(data.handles.hplot4c, 'YData', constVals);
         set(data.handles.hplot5c, 'XData', constVals);
@@ -332,8 +339,9 @@ switch(lower(option))
         n=[1:9:size(data.state.x,2)-1,size(data.state.x,2)];
         n=n(end);
         %n = 100;
-        
-        [data.state.Aud,data.state.Som,data.state.Outline,data.state.af,data.state.filt]=diva_synth(data.state.x(:,n), 'explicit');
+
+        %[data.state.Aud,data.state.Som,data.state.Outline,data.state.af,data.state.filt]=diva_synth(data.state.x(:,n), 'explicit'); 
+        %data.state.sound=diva_synth(data.state.x(:,n+zeros(1,4)),'sound');
         
         % the following works, but it would be nicer for it to notify the
         % user and also not update the sliders / revert them to the last
@@ -356,6 +364,7 @@ switch(lower(option))
         xC=[xB(99:152); xB(99)];
         xD=[xB(1:35); xB(170:end)];
         xB=[xB(35:99); xB(152:170); xB(35)];
+        xE=(xC(23)+xA(69))/2;
         % plot(xA);hold on;plot(xB);plot(xC);plot(xD);hold off;
         %xC=[xA;xB];
         
@@ -389,6 +398,11 @@ switch(lower(option))
         % ver 2
         %set(data.handles.h0_memory,'xdata',real(x),'ydata',imag(x));
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
+        if isfield(data.state,'filtsample')&&data.handles.hax1type~=1, 
+            if all(data.state.filtsample.lips==0), set(data.handles.h1d,'xdata',nan,'ydata',nan);
+            else set(data.handles.h1d,'xdata',real(xE)-linspace(10,170,4*11025/10),'ydata',imag(xE)+100*data.state.filtsample.lips(1+mod(0:4*11025/10-1,numel(data.state.filtsample.lips)))); 
+            end
+        end
         
         
         % area function
@@ -396,7 +410,7 @@ switch(lower(option))
         %set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(8,max(data.state.af)/2)*[-1 1]);
         %set(data.handles.h2,'xdata',d*[1:numel(data.state.af)],'ydata',[max(0,data.state.af(:))']);
         set(data.handles.h2,'xdata',d*[1:numel(data.state.af) numel(data.state.af):-1:1],'ydata',[max(0,data.state.af(:))' zeros(1,numel(data.state.af))]);
-        set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(32,max(data.state.af))*[0 1]);
+        set(data.handles.hax2,'xlim',d*[.5 numel(data.state.af)+.5],'ylim',max(20,max(data.state.af))*[0 1]);
         
         % frequency spectrum
         calcPeaks = find(diff(sign(real(1./data.state.filt))))*fs/numel(data.state.filt); % calc freq peaks
@@ -421,7 +435,7 @@ switch(lower(option))
         %    Fpos{j} = [(0.58+(peakIdx(j)*0.3/800)),0.065,0.038,0.03]; %orig working pos
         %end
         
-        Fpos = {[0.95,0.18,0.038,0.03]; [0.95,0.14,0.038,0.03]; [0.95,0.1,0.038,0.03]; [0.91,0.02,0.078,0.026]};
+        Fpos = {[0.92,0.18,0.068,0.035]; [0.92,0.14,0.068,0.035]; [0.92,0.1,0.068,0.035]; [0.88,0.01,0.108,0.036]};
         
         if data.setup
             % Old ver (uses actual freq val)
@@ -430,11 +444,11 @@ switch(lower(option))
             
             % this version uses audPeaks values which are from
             % data.state.Aud or the diva_synth function
-            data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.185,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
-            data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.145,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
-            data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.91,0.105,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
-            data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.91,0.046,0.09,0.05],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','attempt to maintain the vocal tract open','callback',@lockopencheckbox);
-            data.handles.UseFitCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Use forward model','value',true,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.55,0.0,0.15,0.04],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','estimate formants using forward model fit / approximation','callback',@usefitcheckbox);
+            data.handles.f1txt = uicontrol('Style','text','Tag','f1txt','String','F1:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.88,0.185,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
+            data.handles.f2txt = uicontrol('Style','text','Tag','f2txt','String','F2:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.88,0.145,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
+            data.handles.f3txt = uicontrol('Style','text','Tag','f3txt','String','F3:','Units','norm','FontUnits','norm','FontSize',0.8,'Position', [0.88,0.105,0.038,0.03],'backgroundcolor',.975*[1 1 1]);
+            data.handles.VTopenCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Keep VT open','value',data.LockOpen,'Units','norm','FontUnits','norm','FontSize',0.35,'Position', [0.88,0.046,0.12,0.05],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','attempt to maintain the vocal tract open','callback',@lockopencheckbox);
+            data.handles.UseFitCheck = uicontrol('Style','checkbox','Tag','VTopen','String','Use forward model','value',true,'Units','norm','FontUnits','norm','FontSize',0.4,'Position', [0.52,0.0,0.12,0.04],'backgroundcolor',.975*[1 1 1],'visible','on','tooltipstring','estimate formants using forward model fit / approximation','callback',@usefitcheckbox);
             data.handles.f1edit = uicontrol('Style','edit','Tag','f1edit','String',string(audPeaks(1)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{1},'tooltipstring','enter target F1 value (in Hz)','Callback', @FboxEdited); 
             data.handles.f2edit = uicontrol('Style','edit','Tag','f2edit','String',string(audPeaks(2)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{2},'tooltipstring','enter target F2 value (in Hz)','Callback', @FboxEdited);
             data.handles.f3edit = uicontrol('Style','edit','Tag','f3edit','String',string(audPeaks(3)),'Units','norm','FontUnits','norm','FontSize',0.8,'Position', Fpos{3},'tooltipstring','enter target F3 value (in Hz)','Callback', @FboxEdited); %@(varargin)set(data.handles.f123apply,'visible','on');
@@ -501,6 +515,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
 
     function ApplyFchanges(ObjH, EventData)
         hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+        set(hfig,'pointer','watch'); drawnow
         data=get(hfig,'userdata');
         % ObjH is the button handle
         %sprintf('%s text box was edited to have %s value',ObjH.Tag,ObjH.String)
@@ -523,6 +538,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data.longsearch=true;
         set(data.handles.hfig,'userdata',data);
         diva_vtdisp(data.handles.hfig,'setslider',data);
+        set(hfig,'pointer','arrow');
     end
 
     function currAxis = findCurrAxis(handles,currPoint) 
@@ -561,8 +577,11 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data.reset = 1;
         data.ready2play = 0;
         set(data.handles.hfig,'userdata',data);
-        diva_vtdisp(hfig,'updsliders',[zeros(data.numMainArt,1);0;.5;.5],data);
-        diva_vtdisp(data.handles.hfig,'update',[zeros(data.numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
+        xold=data.state.x(:,end);
+        xnew=[zeros(data.numMainArt,1);0;.5;.5];
+        xnew(data.LockValues)=xold(data.LockValues);
+        diva_vtdisp(hfig,'updsliders',xnew,data);
+        diva_vtdisp(data.handles.hfig,'update',xnew); % uses 'update' case to initialize default plots
         drawnow;
     end
 
@@ -1073,6 +1092,7 @@ function usefitcheckbox(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 val=get(ObjH,'value');
 diva_synth('usefit',val);
+diva_vtdisp(hfig,'updsliders');
 diva_vtdisp(hfig,'update');
 end
 
