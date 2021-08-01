@@ -388,6 +388,7 @@ switch(lower(option)),
             end
         end
         % gui initialization
+        figure(DIVA_x.figure.handles.figure);
         idxremove=[DIVA_x.figure.handles.list1,DIVA_x.figure.handles.list2,DIVA_x.figure.handles.buttonlist1,DIVA_x.figure.handles.buttonlist2,DIVA_x.figure.handles.button4,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.ax1,DIVA_x.figure.handles.ax0,DIVA_x.figure.handles.pl0,DIVA_x.figure.handles.pl3,DIVA_x.figure.handles.ax2{2},DIVA_x.figure.handles.ax3{2},DIVA_x.figure.handles.text1,DIVA_x.figure.handles.text2,DIVA_x.figure.handles.button6,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.slider];
         delete(idxremove(ishandle(idxremove)));
         if isfield(DIVA_x.figure,'thandles')
@@ -451,7 +452,11 @@ switch(lower(option)),
     case 'targetsgui_load'
         if nargin>1,
             DIVA_x.production=varargin{1};
+            str=get(DIVA_x.figure.handles.list3,'string');
+            idxvalue=strmatch(DIVA_x.production,str,'exact'); if isempty(idxvalue), idxvalue=1; end
+            set(DIVA_x.figure.handles.list3,'value',idxvalue);
         else
+            figure(DIVA_x.figure.handles.figure);
             str=get(DIVA_x.figure.handles.list3,'string');
             value=get(DIVA_x.figure.handles.list3,'value');
             DIVA_x.production=str{value};
@@ -545,6 +550,12 @@ switch(lower(option)),
             diva_gui update_targetup;
             DIVA_x.changed=1;
         end
+        
+    case 'targetsgui_refresh'
+        DIVA_x.production_list=diva_targets('list');
+        list=cat(1,{'new@default';'new@random'},DIVA_x.production_list);
+        set(DIVA_x.figure.handles.list3,'string',list,'value',min(numel(list),get(DIVA_x.figure.handles.list3,'value')));
+        diva_gui targetsgui_load
         
     case 'targetsgui_delete'
         diva_targets('delete',DIVA_x.production);

@@ -9,10 +9,11 @@ switch(lower(option))
     case 'init'
         %data.state.x=zeros(13,1);
         %[data.state.y,data.state.z,data.state.Outline]=diva_synth(data.state.x);
-        if ~isempty(varargin); setupArt = varargin{1}; end
+        if ~isempty(findobj(0,'tag','diva_vtdisp')), return; end
+        if ~isempty(varargin), setupArt = varargin{1}; else setupArt=[]; end
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue'); 
+        data.handles.hfig=figure('units','norm','position',[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue','tag','diva_vtdisp'); 
         
         mfigTitle = [];%uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
         
@@ -85,7 +86,7 @@ switch(lower(option))
         % main articulators (1:10 or 1:numMainArt)
         %data.handles.hax4 = axes('units','norm','position',[.525 .325 .45 .625]);
         labels = diva_vocaltract();
-        numMainArt = length((labels.Input.Plots_label(2:end)));
+        numMainArt = length((labels.Input.Plots_label(2:11)));
         %numMainArt = length((labels.Input.Plots_label(2:end-3)));
         data.numMainArt = numMainArt;
         data.motorxlim=2; % range of motor articulatory dimensions
@@ -102,7 +103,7 @@ switch(lower(option))
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', data.motorxlim*[-1 1], 'YDir', 'reverse','xtick',[],'ytick',[],'box','off','xcolor',.975*[1 1 1],'ycolor',.975*[1 1 1],'color',.975*[1 1 1]);
         %motorArtLabels = labels.Input.Plots_label(2:end);
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),0), 'Fontunit', 'norm');
-        hold on; data.handles.h4labels=text(-data.motorxlim*1.25+zeros(1,numMainArt),1:numMainArt,labels.Input.Plots_label(2:end),'horizontalalignment','right','fontangle','italic','color',.25*[1 1 1],'fontunits','norm','fontsize',.032); hold off;
+        hold on; data.handles.h4labels=text(-data.motorxlim*1.25+zeros(1,numMainArt),1:numMainArt,labels.Input.Plots_label(2:11),'horizontalalignment','right','fontangle','italic','color',.25*[1 1 1],'fontunits','norm','fontsize',.032); hold off;
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
         %data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',.975*[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
@@ -162,16 +163,19 @@ switch(lower(option))
         clear diva_synth %on rare occasions the persistent vt variable needs to be updated
         diva_synth('usefit',true);
         set(data.handles.hfig,'userdata',data);
-        
-        if exist('setupArt','var') == 1
-            diva_vtdisp(data.handles.hfig,'updsliders',setupArt); 
-            diva_vtdisp(data.handles.hfig,'update',setupArt); % uses 'update' case to initialize default plots            
-        else
-            diva_vtdisp(data.handles.hfig,'updsliders',[zeros(numMainArt,1);0;.5;.5]); 
-            diva_vtdisp(data.handles.hfig,'update',[zeros(numMainArt,1);0;.5;.5]); % uses 'update' case to initialize default plots
-        end
+
+        if isempty(setupArt), setupArt=[zeros(numMainArt,1);0;.5;.5]; end
+        diva_vtdisp(data.handles.hfig,'updsliders',setupArt);
+        diva_vtdisp(data.handles.hfig,'update',setupArt); % uses 'update' case to initialize default plots
         drawnow;      
         
+    case 'set'
+        hfig=findobj(0,'tag','diva_vtdisp');
+        assert(~isempty(hfig),'unable to find diva_vtdisp figure');
+        setupArt=varargin{1};
+        diva_vtdisp(hfig,'updsliders',setupArt);
+        diva_vtdisp(hfig,'update',setupArt);
+
     case 'setslider' % called when a slider is moved, or mouse is released
         %stateData = varargin{1};
         if isempty(hfig), hfig=gcf; end
@@ -602,72 +606,73 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         data=get(hfig,'userdata'); 
         mainFigPos = data.handles.hfig.Position;
                 
-        data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2)-0.25 (mainFigPos(3)*0.45) mainFigPos(4)+0.25],'menubar','none','name','Create new target','numbertitle','off','color',.945*[1 1 1],'interruptible','on','busyaction','queue');
-        data.handles.tNameTxt = uicontrol('Style','text','String','Target name:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.02,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.tNameBox = uicontrol('Style','edit','String','default_target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.5,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.storeTxt = uicontrol('Style','text','String','Store in target:','Units','norm','FontUnits','norm','FontWeight','Bold','FontSize',0.65,'Position',[0.01,0.92,0.28,0.03], 'Parent', data.handles.cr8Tfig);
+        if isfield(data.handles,'cr8Tfig')&&ishandle(data.handles.cr8Tfig), figure(data.handles.cr8Tfig); return; end
+        data.handles.cr8Tfig=figure('units','norm','position',[(mainFigPos(1)+mainFigPos(3)) mainFigPos(2) (mainFigPos(3)*0.5) mainFigPos(4)+0.25],'menubar','none','name','Create new target','numbertitle','off','color',.975*[1 1 1],'tag','diva_vtdisp_target','interruptible','on','busyaction','queue');
+        data.handles.tNameTxt = uicontrol('Style','text','String','Target name:','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontWeight','Bold','FontSize',0.65,'horizontalalignment','left','Position',[0.03,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.tNameBox = uicontrol('Style','edit','String','new_target','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.5,0.96,0.45,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.storeTxt = uicontrol('Style','text','String','Store in target:','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontWeight','Bold','FontSize',0.65,'horizontalalignment','left','Position',[0.03,0.92,0.89,0.03], 'Parent', data.handles.cr8Tfig);
         
         labels = diva_vocaltract();
-        mArtLabels = labels.Input.Plots_label(2:end);
+        mArtLabels = labels.Input.Plots_label(2:11);
         mArtHval = 0.88;
-        data.handles.mArtTxt = uicontrol('Style','text','String','Motor Articulators:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,mArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.mArtLB = uicontrol('Style','text','String','Target LB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.34,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.mArtCurr = uicontrol('Style','text','String','Current','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.56,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.mArtUB = uicontrol('Style','text','String','Target UB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.78,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.mArtTxt = uicontrol('Style','text','String','Motor articulators','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.6,'fontweight','bold','horizontalalignment','left','Position',[0.04,mArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.mArtLB = uicontrol('Style','text','String','Target LB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.34,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig, 'visible','off');
+        data.handles.mArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.mArtUB = uicontrol('Style','text','String','Target UB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.78,mArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig, 'visible','off');
         mArtHval = mArtHval-0.03;
         mArtVals = data.handles.hplot4.YData;
         for m = 1:data.numMainArt
-            data.handles.mArtName(m) = uicontrol('Style','checkbox','String',mArtLabels(m),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,mArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.mArtMin(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)*.9,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtName(m) = uicontrol('Style','checkbox','String',mArtLabels(m),'value',0,'Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.04,mArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtMin(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)-0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'visible','off');
             data.handles.mArtBox(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.mArtMax(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.mArtMax(m) = uicontrol('Style','edit','String',num2str(round(mArtVals(m)+0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,mArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'visible','off');
             mArtHval = mArtHval-0.032; 
         end
               
         gArtHval = mArtHval-0.01;
         gArtLabels = {'Tension', 'Pressure', 'Voicing'};
-        data.handles.gArtTxt = uicontrol('Style','text','String','Glottis:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,gArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.gArtLB = uicontrol('Style','text','String','Target LB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.34,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.gArtCurr = uicontrol('Style','text','String','Current','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.56,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.gArtUB = uicontrol('Style','text','String','Target UB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.78,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.gArtTxt = uicontrol('Style','text','String','Glottis','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.6,'fontweight','bold','horizontalalignment','left','Position',[0.04,gArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.gArtLB = uicontrol('Style','text','String','Target LB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.34,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.gArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig,'enable','off');
+        data.handles.gArtUB = uicontrol('Style','text','String','Target UB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.78,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
         gArtHval = gArtHval-0.03;
         gArtVals = data.handles.hplot4b.YData;
         for g = 1:(data.numSuppArt-data.numMainArt)
-            data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Value', 1,'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,gArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.gArtMin(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)*.9,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.gArtBox(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.gArtMax(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Value',1,'Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.04,gArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtMin(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)-0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.gArtBox(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'enable','off');
+            data.handles.gArtMax(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)+0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             gArtHval = gArtHval - 0.032;
         end
                 
         cArtHval = gArtHval-0.01;
         cArtLabels = labels.Output(2).Plots_label(4:end);
-        data.handles.cArtTxt = uicontrol('Style','text','String','Constrictions:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.cArtLB = uicontrol('Style','text','String','Target LB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.34,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.cArtCurr = uicontrol('Style','text','String','Current','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.56,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.cArtUB = uicontrol('Style','text','String','Target UB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.78,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.cArtTxt = uicontrol('Style','text','String','Constrictions','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.6,'fontweight','bold','horizontalalignment','left','Position',[0.04,cArtHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.cArtLB = uicontrol('Style','text','String','Target LB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.34,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.cArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig,'enable','off');
+        data.handles.cArtUB = uicontrol('Style','text','String','Target UB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.78,cArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
         cArtHval = cArtHval-0.03;
         cArtVals = data.handles.hplot4c.YData;
         for c = 1:(data.numConstArt-data.numSuppArt)
-            data.handles.cArtName(c) = uicontrol('Style','checkbox','String',cArtLabels(c),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,cArtHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.cArtMin(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c)*.9,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,cArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.cArtBox(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,cArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.cArtMax(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c)*1.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,cArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtName(c) = uicontrol('Style','checkbox','String',cArtLabels(c),'value',0,'Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.04,cArtHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtMin(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c)-0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,cArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.cArtBox(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,cArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'enable','off');
+            data.handles.cArtMax(c) = uicontrol('Style','edit','String',num2str(round(cArtVals(c)+0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,cArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             cArtHval = cArtHval - 0.032;
         end
         
         formantHval = cArtHval-0.01;
         formantLabels = {'F1','F2','F3'};
-        data.handles.formantTxt = uicontrol('Style','text','String','Formants:','Units','norm','FontUnits','norm','FontSize',0.6,'Position',[0.02,formantHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.fArtLB = uicontrol('Style','text','String','Target LB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.34,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.fArtCurr = uicontrol('Style','text','String','Current','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.56,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.fArtUB = uicontrol('Style','text','String','Target UB','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.78,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.formantTxt = uicontrol('Style','text','String','Formants','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.6,'fontweight','bold','horizontalalignment','left','Position',[0.04,formantHval,0.30,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.fArtLB = uicontrol('Style','text','String','Target LB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.34,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
+        data.handles.fArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig,'enable','off');
+        data.handles.fArtUB = uicontrol('Style','text','String','Target UB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.78,formantHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
         formantHval = formantHval-0.03;
         fvals = {data.handles.f1edit.String data.handles.f2edit.String data.handles.f3edit.String};
         for f = 1:3
-            data.handles.formantName(f) = uicontrol('Style','checkbox','String',formantLabels(f),'Value', 1,'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.04,formantHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantName(f) = uicontrol('Style','checkbox','String',formantLabels(f),'Value', 1,'Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.04,formantHval,0.30,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.formantMin(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*0.9),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,formantHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.formantBox(f) = uicontrol('Style','edit','String',fvals(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
+            data.handles.formantBox(f) = uicontrol('Style','edit','String',fvals(f),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'enable','off');
             data.handles.formantMax(f) = uicontrol('Style','edit','String',num2str(str2double(fvals(f))*1.1),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,formantHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             formantHval = formantHval - 0.032;
         end
@@ -684,7 +689,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         
         data.handles.curTargetVals = curTargetVals; % [mArtVals gArtVals cArtVals fvals]; 
         
-        data.handles.saveTarget= uicontrol('Style','pushbutton','String','Save target','Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.55,0.005,0.4,0.045], 'Callback', @saveTarget, 'Parent', data.handles.cr8Tfig);
+        data.handles.saveTarget= uicontrol('Style','pushbutton','String','Save target','Units','norm','FontUnits','norm','FontSize',0.55,'Position',[0.55,0.005,0.4,0.045], 'Callback', @(varargin)saveTarget(data.handles.hfig), 'Parent', data.handles.cr8Tfig);
         set(data.handles.hfig,'userdata',data);
         updateTargetWindow(data)
     end
@@ -693,21 +698,21 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         if isfield(data.handles,'cr8Tfig')&&ishandle(data.handles.cr8Tfig)
             mArtVals = data.handles.hplot4.YData;
             for m = 1:data.numMainArt
-                set(data.handles.mArtMin(m),'String',num2str(round(mArtVals(m)*.9,2,'significant')));
+                set(data.handles.mArtMin(m),'String',num2str(round(mArtVals(m)-0.1,2,'significant')));
                 set(data.handles.mArtBox(m),'String',num2str(round(mArtVals(m),2,'significant')));
-                set(data.handles.mArtMax(m),'String',num2str(round(mArtVals(m)*1.1,2,'significant')));
+                set(data.handles.mArtMax(m),'String',num2str(round(mArtVals(m)+0.1,2,'significant')));
             end
             gArtVals = data.handles.hplot4b.YData;
             for g = 1:(data.numSuppArt-data.numMainArt)
-                set(data.handles.gArtMin(g),'String',num2str(round(gArtVals(g)*.9,2,'significant')));
+                set(data.handles.gArtMin(g),'String',num2str(round(gArtVals(g)-0.1,2,'significant')));
                 set(data.handles.gArtBox(g),'String',num2str(round(gArtVals(g),2,'significant')));
-                set(data.handles.gArtMax(g),'String',num2str(round(gArtVals(g)*1.1,2,'significant')));
+                set(data.handles.gArtMax(g),'String',num2str(round(gArtVals(g)+0.1,2,'significant')));
             end
             cArtVals = data.handles.hplot4c.YData;
             for c = 1:(data.numConstArt-data.numSuppArt)
-                set(data.handles.cArtMin(c),'String',num2str(round(cArtVals(c)*.9,2,'significant')));
+                set(data.handles.cArtMin(c),'String',num2str(round(cArtVals(c)-0.1,2,'significant')));
                 set(data.handles.cArtBox(c),'String',num2str(round(cArtVals(c),2,'significant')));
-                set(data.handles.cArtMax(c),'String',num2str(round(cArtVals(c)*1.1,2,'significant')));
+                set(data.handles.cArtMax(c),'String',num2str(round(cArtVals(c)+0.1,2,'significant')));
             end
             fvals = {data.handles.f1edit.String data.handles.f2edit.String data.handles.f3edit.String};
             for f = 1:3
@@ -719,17 +724,93 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         end
     end
 
-    function saveTarget(ObjH, EventData)
-        hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    function saveTarget(hfig)
         data=get(hfig,'userdata'); 
         curTargetData = data.handles.curTargetVals;
-        disp(curTargetData)
+        production=get(data.handles.tNameBox,'string');
+        if isempty(production), production='new_target'; end
+        names=diva_targets('list');
+        if ismember(production,names)
+            ok=questdlg('Overwrite existing target?','','Yes', 'No', 'Yes');
+            if ~isequal(ok,'Yes'), return; end
+        end
+        params=diva_vocaltract;
+        production_info = diva_targets('new','txt');
+        production_info.name=production;
+        duration=500; % ms
+        for n0=1:numel(params.Output),
+            for n1=1:numel(params.Output(n0).Plots_dim)
+                if numel(params.Output(n0).Plots_dim{n1})==1
+                    idx=params.Output(n0).Plots_dim{n1};
+                    fname=params.Output(n0).Plots_label{n1};
+                    if ismember(fname,curTargetData.formantArtLabels) % F1/F2/F3
+                        [nill,n2]=ismember(fname,curTargetData.formantArtLabels);
+                        if get(data.handles.formantName(n2),'value')
+                            production_info.([fname,'_control'])=0;
+                            production_info.([fname,'_min'])=str2double(get(data.handles.formantMin(n2),'string'));
+                            production_info.([fname,'_max'])=str2double(get(data.handles.formantMax(n2),'string'));
+                        end
+                    elseif strcmp(fname,'F0') % Tension
+                        if get(data.handles.gArtName(1),'value')
+                            production_info.([fname,'_control'])=0;
+                            production_info.([fname,'_min'])=100+50*str2double(get(data.handles.gArtMin(1),'string'));
+                            production_info.([fname,'_max'])=100+50*str2double(get(data.handles.gArtMax(1),'string'));
+                        end
+                    elseif ismember(fname,lower(curTargetData.glottArtLabels)) % Pressure Voicing
+                        [nill,n2]=ismember(fname,lower(curTargetData.glottArtLabels));
+                        if get(data.handles.gArtName(n2),'value')
+                            production_info.([fname,'_control'])=0;
+                            production_info.([fname,'_min'])=str2double(get(data.handles.gArtMin(n2),'string'));
+                            production_info.([fname,'_max'])=str2double(get(data.handles.gArtMax(n2),'string'));
+                        end
+                    elseif ismember(fname,curTargetData.constArtLabels) % PA_*
+                        [nill,n2]=ismember(fname,curTargetData.constArtLabels);
+                        if get(data.handles.cArtName(n2),'value')
+                            production_info.([fname,'_control'])=0;
+                            production_info.([fname,'_min'])=str2double(get(data.handles.cArtMin(n2),'string'));
+                            production_info.([fname,'_max'])=str2double(get(data.handles.cArtMax(n2),'string'));
+                        end
+                    end
+                end
+            end
+        end
+        production_info=diva_targets('format',production_info,true);
+        timeseries=diva_targets('timeseries',production_info);
+        for n0=1:numel(params.Input),
+            for n1=1:numel(params.Input(n0).Plots_dim)
+                if numel(params.Input(n0).Plots_dim{n1})==1
+                    idx=params.Input(n0).Plots_dim{n1};
+                    fname=params.Input(n0).Plots_label{n1};
+                    if ismember(fname,curTargetData.motorArtLabels) % ART
+                        [nill,n2]=ismember(fname,curTargetData.motorArtLabels);
+                        if get(data.handles.mArtName(n2),'value')
+                            timeseries.Art(:,idx)=str2double(get(data.handles.mArtBox(n2),'string'));
+                        end
+                    end
+                end
+            end
+        end
+        diva_targets('save','txt',production,production_info);
+        diva_targets('save','mat',production,production_info,true);
+        diva_targets('save','art',production,timeseries.Art,production_info);
+        fprintf('Target %s saved\n',production);
+        try, 
+            diva_gui targets; 
+            diva_gui('targetsgui_load',production);
+        end
+        %           name            : target name
+        %           length          : total duration (in ms)
+        %           interpolation   : interpolation type 'linear' or 'none'
+        %           sampling        : temporal sampling type 'sparse' (one target per control-point) or 'fixed rate' (one target per time-point)
+        %           <var>_control   : list of control-points or time-points (in ms)
+        %           <var>_min       : minimum value of target <var> parameter
+        %           <var>_max       : maximum value of target <var> parameter
+
     end
 
 
     function downcallback(ObjH,varargin)
         hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
-        if isequal(get(hfig,'pointer'),'arrow'), return; end % note: disregards clicks far away from control points
         data=get(hfig,'userdata'); 
         if isfield(data, 'curBar')
             data = rmfield(data,'curBar');
@@ -750,6 +831,7 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
             data = rmfield(data,'curFpoint');
         end
         set(hfig,'userdata',data);
+        if isequal(get(hfig,'pointer'),'arrow'), return; end % note: disregards clicks far away from control points
         currPoint = get(data.handles.hfig,'currentpoint');
         currAxis = findCurrAxis(data.handles,currPoint);
         mArtPos=get(data.handles.hax4,'currentpoint');  % get current point rel to axes [x y -; x y -] for main articulators

@@ -1,4 +1,39 @@
 function varargout=diva_targets(option,varargin)
+% diva_targets
+% internal function: manages target info/files
+% 
+% to fully define a target:                 target = diva_targets('format', target)
+%   where target is a structure with some of the following fields:
+%           name            : target name
+%           length          : total duration (in ms)
+%           interpolation   : interpolation type 'linear' or 'none'
+%           sampling        : temporal sampling type 'sparse' (one target per control-point) or 'fixed rate' (one target per time-point)
+%           <var>_control   : list of control-points or time-points (in ms)
+%           <var>_min       : minimum value of target <var> parameter
+%           <var>_max       : maximum value of target <var> parameter
+%                             see diva_vocaltract for list of <var> parameters
+%                             currently F0/F1/F2/F3/pressure/voicing/PA_pharyngeal/PA_uvular/PA_velar/PA_palatal/PA_alveolardental/PA_labial
+% to read production data from target:      [production, time] = diva_targets('timeseries', target, 'header')
+%   where production is a structure with fields:
+%           Aud_min         : [Ntime, Nparamsaud] matrix of auditory target minimum values
+%           Aud_max         : [Ntime, Nparamsaud] matrix of auditory target maximum values
+%           Som_min         : [Ntime, Nparamssom] matrix of somatosensory target minimum values
+%           Som_max         : [Ntime, Nparamssom] matrix of somatosensory target maximum values
+%           Art             : [Ntime, Nparamsart] matrix of motor production values         
+%           time            : [Ntime, 1] vector of timepoints (in ms)
+% to create a new empty target:             target = diva_targets('new','txt')
+% to create a new empty production:         production = diva_targets('new','mat')
+% to create a new random target:            target = diva_targets('random','txt')
+% to create a new random production:        target = diva_targets('random','mat')
+% to load existing target:                  target = diva_targets('load','txt',targetname)
+% to load existing production:              target = diva_targets('load','mat',targetname)
+% to save new target:                       diva_targets('save',fileformat,targetname,target [,overwrite])
+% to delete a target:                       diva_targets('delete',targetname) 
+% to list current targets:                  targetnames = diva_targets('list')
+% to combine two targets:                   target = diva_targets('combine', target1, target2, duration_transition, duration2 [, production1, production2])
+% to temporally resample a target:          target = diva_targets('resampletime', target, time1, time2)
+%
+
 global DIVA_x;
 
 switch(lower(option))
