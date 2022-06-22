@@ -13,7 +13,7 @@ switch(lower(option))
         if ~isempty(varargin), setupArt = varargin{1}; else setupArt=[]; end
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue','tag','diva_vtdisp'); 
+        data.handles.hfig=figure('units','norm','position',1*[.1,.125,.8,.4]+0*[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue','tag','diva_vtdisp'); 
         
         mfigTitle = [];%uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
         
@@ -169,6 +169,10 @@ switch(lower(option))
         diva_vtdisp(data.handles.hfig,'update',setupArt); % uses 'update' case to initialize default plots
         drawnow;      
         
+    case 'close'
+        hfig=findobj(0,'tag','diva_vtdisp');
+        if all(ishandle(hfig)), close(hfig); end
+        
     case 'set'
         hfig=findobj(0,'tag','diva_vtdisp');
         assert(~isempty(hfig),'unable to find diva_vtdisp figure');
@@ -235,7 +239,6 @@ switch(lower(option))
         end 
         diva_vtdisp(hfig,'update',x,data);
         set(hfig,'busyaction',busyaction);
-        
         
     case 'updsliders'
         if isempty(hfig), hfig=gcf; end
@@ -404,7 +407,7 @@ switch(lower(option))
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
         if isfield(data.state,'filtsample')&&data.handles.hax1type~=1, 
             if all(data.state.filtsample.lips==0), set(data.handles.h1d,'xdata',nan,'ydata',nan);
-            else set(data.handles.h1d,'xdata',real(xE)-linspace(10,170,4*11025/10),'ydata',imag(xE)+100*data.state.filtsample.lips(1+mod(0:4*11025/10-1,numel(data.state.filtsample.lips)))); 
+            else set(data.handles.h1d,'xdata',real(xE)-linspace(10,170,4*11025/10),'ydata',imag(xE)+50*data.state.filtsample.lips(1+mod(0:4*11025/10-1,numel(data.state.filtsample.lips)))); 
             end
         end
         
@@ -432,6 +435,15 @@ switch(lower(option))
         %set(data.handles.h3,'xdata',(0:numel(data.state.filt)-1)*fs/numel(data.state.filt)*1e0,'ydata',x);
         %set(data.handles.hax3,'xlim',[0 min(8000,fs/2)]*1e0,'ylim',[-15 max(15,max(x))],'box','off','xtick',combPeaks);
         set(data.handles.hax3,'xlim',[0 min(4000,fs/2)]*1e0,'ylim',maxminspec,'box','off','xtick',calcPeaks);
+        
+        % DIVA_gui
+        try, 
+            global DIVA_x;
+            tx=data.state.Outline;
+            tx([353 354])=nan;
+            set(DIVA_x.figure.handles.h1,'xdata',real([tx;tx(1)]),'ydata',imag([tx;tx(1)]));
+            %diva_vocaltract('output',data.state.x(:,n),true); 
+        end
         
         % old code, when basing position on formant position
         %Fpos = cell(3,1);
@@ -633,14 +645,14 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
         gArtLabels = {'Tension', 'Pressure', 'Voicing'};
         data.handles.gArtTxt = uicontrol('Style','text','String','Glottis','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.6,'fontweight','bold','horizontalalignment','left','Position',[0.04,gArtHval,0.3,0.03], 'Parent', data.handles.cr8Tfig);
         data.handles.gArtLB = uicontrol('Style','text','String','Target LB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.34,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
-        data.handles.gArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig,'enable','off');
+        data.handles.gArtCurr = uicontrol('Style','text','String','Current','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.56,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);%,'enable','off');
         data.handles.gArtUB = uicontrol('Style','text','String','Target UB','Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.55,'Position',[0.78,gArtHval,0.2,0.03], 'Parent', data.handles.cr8Tfig);
         gArtHval = gArtHval-0.03;
         gArtVals = data.handles.hplot4b.YData;
         for g = 1:(data.numSuppArt-data.numMainArt)
             data.handles.gArtName(g) = uicontrol('Style','checkbox','String',gArtLabels(g),'Value',1,'Units','norm','backgroundcolor',.975*[1 1 1],'FontUnits','norm','FontSize',0.65,'Position',[0.04,gArtHval,0.28,0.025], 'Parent', data.handles.cr8Tfig);
             data.handles.gArtMin(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)-0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.34,gArtHval,0.2,0.025], 'Parent', data.handles.cr8Tfig);
-            data.handles.gArtBox(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig,'enable','off');
+            data.handles.gArtBox(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g),2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.56,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);%,'enable','off');
             data.handles.gArtMax(g) = uicontrol('Style','edit','String',num2str(round(gArtVals(g)+0.1,2,'significant')),'Units','norm','FontUnits','norm','FontSize',0.65,'Position',[0.78,gArtHval,0.20,0.025], 'Parent', data.handles.cr8Tfig);
             gArtHval = gArtHval - 0.032;
         end
@@ -785,6 +797,11 @@ end % note-alf: all of the functions below would seem to be fine if located OUTS
                         [nill,n2]=ismember(fname,curTargetData.motorArtLabels);
                         if get(data.handles.mArtName(n2),'value')
                             timeseries.Art(:,idx)=str2double(get(data.handles.mArtBox(n2),'string'));
+                        end
+                    elseif ismember(fname,curTargetData.glottArtLabels) % Tension/Pressure/Voicing
+                        [nill,n2]=ismember(fname,curTargetData.glottArtLabels);
+                        if get(data.handles.gArtName(n2),'value')
+                            timeseries.Art(:,idx)=str2double(get(data.handles.gArtBox(n2),'string'));
                         end
                     end
                 end

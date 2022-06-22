@@ -65,13 +65,13 @@ switch(lower(option)),
         DIVA_x.figure.handles.button8=uicontrol('units','norm','position',[.82,.005,.15,.045],'style','pushbutton','string','Replay last production','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''replay'')','tooltipstring','replay last simulation (with no learning)');
         
         % center plot
-        DIVA_x.figure.handles.ax1=axes('units','norm','position',[.35,.2,.15,.6],'color',DIVA_x.color(2,:));
+        DIVA_x.figure.handles.ax1=axes('units','norm','position',[.35,.2,.15,.4],'color',DIVA_x.color(2,:));
         diva_vocaltract('output',zeros(DIVA_x.params.Input.Dimensions,1),-1); 
-        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.48,.46,.12,.16],'color',DIVA_x.color(2,:));
+        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.48,.36,.12,.16],'color',DIVA_x.color(2,:));
         DIVA_x.figure.handles.pl0=plot([1,2],[0,0],'-','color',.75*[0,0,1]);axis off;
         hold on; DIVA_x.figure.handles.pl3=plot([nan,nan],2*[-1,1],'k--'); hold off
         set(DIVA_x.figure.handles.ax0,'xcolor',DIVA_x.color(2,:),'ycolor',DIVA_x.color(2,:));
-        DIVA_x.figure.handles.slider=uicontrol('units','norm','position',[.35,.15,.15,.05],'style','slider','min',0,'max',1,'SliderStep',[.01 .1],'callback','diva_gui(''replay_slider'')','visible','off');
+        DIVA_x.figure.handles.slider=uicontrol('units','norm','position',[.40,.15,.20,.05],'style','slider','min',0,'max',1,'SliderStep',[.01 .1],'callback','diva_gui(''replay_slider'')','visible','off');
         DIVA_x.figure.handles.slider_text=uicontrol('units','norm','position',[.35,.105,.15,.045],'style','text','string','','horizontalalignment','center','backgroundcolor','w','visible','off');
         try, addlistener(DIVA_x.figure.handles.slider, 'ContinuousValueChange',@(varargin)diva_gui('replay_slider')); end
 
@@ -239,6 +239,7 @@ switch(lower(option)),
                 diva_gui save
             end
         end
+        diva_vtdisp close;
         DIVA_x.gui=0;
         delete(gcbf);
         
@@ -285,6 +286,7 @@ switch(lower(option)),
         for n2=1:numel(DIVA_x.params.Plots_.Output.plotindex),set(DIVA_x.figure.handles.pl2{1}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         for n2=1:numel(DIVA_x.params.Plots_.Input.plotindex),set(DIVA_x.figure.handles.pl2{2}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         set(DIVA_x.figure.handles.pl3,'xdata',DIVA_x.logs.time(n)*1000*[1 1],'visible','on');
+        try, diva_vtdisp('set',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)'); end
         
     case 'replay'
         diva_callback_stopfcn;

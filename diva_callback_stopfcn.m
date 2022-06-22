@@ -53,6 +53,7 @@ if DIVA_x.gui
         try, audiowrite(fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'.wav']),s,fs); end
     end
     diva_gui update_inputoutputplots;
+    try, diva_vtdisp('set',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(end,:)'); end
 end
 if ~isfield(DIVA_x,'logs_history'), DIVA_x.logs_history={}; end
 DIVA_x.logs_history{end+1}=DIVA_x.logs;
