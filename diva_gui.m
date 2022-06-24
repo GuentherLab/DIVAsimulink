@@ -602,6 +602,7 @@ switch(lower(option)),
         end
         b=cat(1,b{:});
         c=cat(1,c{:});
+        [b,c]=deal(abs(c-b)/2,(b+c)/2); % from (b,c) = (min,max) to (b,c) = (range,center)
         delete(DIVA_x.figure.thandles.field5(ishandle(DIVA_x.figure.thandles.field5)));DIVA_x.figure.thandles.field5=[]; 
         delete(DIVA_x.figure.thandles.buttonfield5(ishandle(DIVA_x.figure.thandles.buttonfield5)));DIVA_x.figure.thandles.buttonfield5=[]; 
         delete(DIVA_x.figure.thandles.field6(ishandle(DIVA_x.figure.thandles.field6)));DIVA_x.figure.thandles.field6=[]; 
@@ -625,12 +626,12 @@ switch(lower(option)),
             %end
         end
         if true||~DIVA_x.guioptions.editableduration, DIVA_x.figure.thandles.buttonfield5=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.70,2*min(.02,1/2*.40/numel(a)),.05],'style','pushbutton','string','new','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback','diva_gui(''update_newsegment'');','tooltipstring','<HTML>Add a new segment after the last segment, extending the duration of this target<br/> - note: the new segment will be created for the selected target field(s) only, other fields will extend their last segment to accomodate the new total target duration</HTML>'); end
-        DIVA_x.figure.thandles.text7=uicontrol('units','norm','position',[.31,.80,.13,.05],'style','text','string','target field(s) maximum','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
-        DIVA_x.figure.thandles.text6=uicontrol('units','norm','position',[.31,.75,.13,.05],'style','text','string','target field(s) minimum','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
+        DIVA_x.figure.thandles.text7=uicontrol('units','norm','position',[.31,.80,.13,.05],'style','text','string','target field(s) value','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
+        DIVA_x.figure.thandles.text6=uicontrol('units','norm','position',[.31,.75,.13,.05],'style','text','string','target field(s) range','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
         DIVA_x.figure.thandles.text9=uicontrol('units','norm','position',[.31,.65,.13,.05],'style','text','string','absolute time (ms)','backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','right');
         for n1=1:numel(a)
-            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.75,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter minimum value of the target field(s) during each segment<br/> - enter X to indicate the absolute minimum value of this parameter</HTML>');
-            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.80,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter maximum value of the target field(s) during each segment<br/> - enter X to indicate the absolute maximum value of this parameter</HTML>');
+            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.80,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the point target value of the target field(s) during each segment<br/> - enter X to indicate the entire range of this parameter</HTML>');
+            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.75,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the tolerance/range of the target field(s) during each segment (valid target values would range between value-range to value+range)<br/></HTML>');
             DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a)-min(.02,.95/2*.40/numel(a)),.65,2*min(.02,.95/2*.40/numel(a)),.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Absolute time (ms) of each boundary between two adjacent segments<br/> - leave empty to remove this boundary (merge the two corresponding adjacent segments)<br/> - note: changes in these values do not typically affect the total duration of the target</HTML>');
             if n1==1||n1==numel(a), set(DIVA_x.figure.thandles.field9(n1),'enable','off'); end
             %DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*a(n1)/max(a)-.02,.11,.04,.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown_control'');');
@@ -817,8 +818,10 @@ switch(lower(option)),
                     onset=tonset;
                     a=[a onset];
                 end
-                valueb=str2num(char(regexprep(get(DIVA_x.figure.thandles.field6(nval),'string'),'X','NaN')));
                 valuec=str2num(char(regexprep(get(DIVA_x.figure.thandles.field7(nval),'string'),'X','NaN')));
+                valueb=str2num(char(regexprep(get(DIVA_x.figure.thandles.field6(nval),'string'),'X','NaN')));
+                valueb(isnan(valueb))=0;
+                [valueb,valuec]=deal(valuec-valueb,valuec+valueb); % from (b,c) = (range,center) to (b,c) = (min,max)
                 minvalue=min(valueb,valuec);
                 maxvalue=max(valueb,valuec);
                 minvalue(isnan(valueb))=nan;
@@ -860,6 +863,7 @@ switch(lower(option)),
                     end
                 end
                 if ok
+                    [valueb,valuec]=deal((valuec-valueb)/2,(valuec+valueb)/2); % from (b,c) = (min,max) to (b,c) = (range,center)
                     set(DIVA_x.figure.thandles.field6(nval),'string',regexprep(num2str(valueb(:)'),{'NaN','\s+'},{'X',' '}));
                     set(DIVA_x.figure.thandles.field7(nval),'string',regexprep(num2str(valuec(:)'),{'NaN','\s+'},{'X',' '}));
                     if nval<=length(DIVA_x.figure.thandles.button2field5collapsed)&&DIVA_x.figure.thandles.button2field5collapsed(nval) % collapsed (show centered-right)
