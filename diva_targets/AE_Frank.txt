@@ -1,80 +1,82 @@
 #name
-P
+AE_Frank
 #length
-20 
+200 
+#wrapper
+0 
 #interpolation
 linear
 #F0_control
-0 
+0 200 
 #F0_min
-X 
+X X 
 #F0_max
-X 
+X X 
 #F1_control
-0 
+0 200 
 #F1_min
--50 
+563 563 
 #F1_max
-0 
+613 613 
 #F2_control
-0 
+0 200 
 #F2_min
-650 
+1602 1602 
 #F2_max
-750 
+1702 1702 
 #F3_control
-0 
+0 200 
 #F3_min
-X
+2401 2401 
 #F3_max
-X 
+2801 2801 
 #pressure_control
-0 
+0 200 
 #pressure_min
-0.75 
+0.75 0.75 
 #pressure_max
-1 
+1 1 
 #voicing_control
-0 
+0 200 
 #voicing_min
-0 
+0.75 0.75 
 #voicing_max
-0
+1 1 
 #PA_pharyngeal_control
-0 
+0 200 
 #PA_pharyngeal_min
--1 
+-1 -1 
 #PA_pharyngeal_max
--0.25 
+-0.3 -0.3 
 #PA_uvular_control
-0 
+0 200 
 #PA_uvular_min
--1 
+-1 -1 
 #PA_uvular_max
--0.25 
+-0.3 -0.3 
 #PA_velar_control
-0 
+0 200 
 #PA_velar_min
--1 
+-1 -1 
 #PA_velar_max
--0.25 
+-0.5 -0.5 
 #PA_palatal_control
-0 
+0 200 
 #PA_palatal_min
--1 
+-1 -1 
 #PA_palatal_max
--0.25 
+-0.5 -0.5 
 #PA_alveolardental_control
-0 
+0 200 
 #PA_alveolardental_min
--0.75 
+-1 -1 
 #PA_alveolardental_max
--0.25 
+-0.5 -0.5 
 #PA_labial_control
-0 
+0 200 
 #PA_labial_min
-0.5 
+-1 -1 
 #PA_labial_max
-1 
-#wrapper
-0 
+-0.5 -0.5 
+#sampling
+sparse

@@ -103,7 +103,7 @@ switch(lower(option))
         set(data.handles.hax4, 'YLimMode', 'manual', 'YLim', [0.5 numMainArt+0.5], 'XLimMode', 'manual', 'XLim', data.motorxlim*[-1 1], 'YDir', 'reverse','xtick',[],'ytick',[],'box','off','xcolor',.975*[1 1 1],'ycolor',.975*[1 1 1],'color',.975*[1 1 1]);
         %motorArtLabels = labels.Input.Plots_label(2:end);
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),0), 'Fontunit', 'norm');
-        hold on; data.handles.h4labels=text(-data.motorxlim*1.25+zeros(1,numMainArt),1:numMainArt,labels.Input.Plots_label(2:11),'horizontalalignment','right','fontangle','italic','color',.25*[1 1 1],'fontunits','norm','fontsize',.032); hold off;
+        hold on; data.handles.h4labels=text(-data.motorxlim*1.25+zeros(1,numMainArt),1:numMainArt,regexprep(labels.Input.Plots_label(2:11),'_',' '),'horizontalalignment','right','fontangle','italic','color',.25*[1 1 1],'fontunits','norm','fontsize',.032); hold off;
         %set(data.handles.hax4, 'FontUnits','norm','FontSize',0.04,'YTickLabel', pad(labels.Input.Plots_label(2:end),18), 'Fontunit', 'norm');
         %data.handles.lockTxt = uicontrol('Style','text','String','Lock:','Tag','lockTxt','Units','norm','FontUnits','norm','FontWeight','bold','FontSize',0.65,'Position',[0.505,0.86,0.029,0.025] ,'BackgroundColor',.975*[1 1 1],'ForegroundColor',[0 0 0]);
         data.LockValues = [];
@@ -145,7 +145,7 @@ switch(lower(option))
         data.handles.hplot4c.CData=repmat([0.75 0.75 0.75],numConstArt-numSuppArt,1); 
         set(data.handles.hax4c, 'YLimMode', 'manual', 'YLim', [numSuppArt+0.5 numConstArt+0.5], 'XLimMode', 'manual', 'XLim', [-1 1], 'YDir', 'reverse','xtick',[],'ytick',[],'box','off','xcolor',.975*[1 1 1],'ycolor',.975*[1 1 1],'color',.975*[1 1 1]);
         % formatting constriction labels
-        constLabels = cellfun(@(x) [upper(x(4)) x(5:end)], labels.Output(2).Plots_label(4:end), 'UniformOutput', false);
+        constLabels = cellfun(@(x) [upper(x(4)) x(5:end)], labels.Output(2).Plots_label(3:8), 'UniformOutput', false);
         hold on; data.handles.h4clabels=text(-1.1+zeros(1,numConstArt-numSuppArt),numSuppArt+1:numConstArt,constLabels,'horizontalalignment','right','fontangle','italic','color',.25*[1 1 1],'fontunits','norm','fontsize',.05); hold off;
         %set(data.handles.hax4c, 'FontUnits','norm','FontSize',0.056,'YTickLabel', constLabels , 'Fontunit', 'norm');        
         

@@ -304,11 +304,18 @@ end
 
 function production_info=diva_targets_format(production_info,doextend)
 if nargin<2||isempty(doextend), doextend=false; end
+temp=[];
 params=diva_vocaltract;
 for n0=1:numel(params.Output),
     for n1=1:numel(params.Output(n0).Plots_dim)
         if numel(params.Output(n0).Plots_dim{n1})==1
             idx=params.Output(n0).Plots_dim{n1};
+            if ~isfield(production_info, [params.Output(n0).Plots_label{n1},'_control']), % allows incomplete targets (for back-compatibility)
+                if isempty(temp), temp=diva_targets_initstruct; end
+                production_info.([params.Output(n0).Plots_label{n1},'_control'])=[0 production_info.length];
+                production_info.([params.Output(n0).Plots_label{n1},'_min'])=temp.([params.Output(n0).Plots_label{n1},'_min']);
+                production_info.([params.Output(n0).Plots_label{n1},'_max'])=temp.([params.Output(n0).Plots_label{n1},'_max']);
+            end
             x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
             x1=production_info.([params.Output(n0).Plots_label{n1},'_min']);
             x2=production_info.([params.Output(n0).Plots_label{n1},'_max']);

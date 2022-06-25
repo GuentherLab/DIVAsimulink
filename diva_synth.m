@@ -1,8 +1,10 @@
 function [Aud,Som,Outline,af,filt,filtsample]=diva_synth(Art,option)
-persistent usefit;
+persistent usefit artinsom;
 
-if isempty(usefit), usefit=true; end
-if isequal(Art,'usefit'), usefit=option; return; end
+if isempty(usefit), usefit=true; end % usefit=true uses forward model fit
+if isempty(artinsom), artinsom=true; end % somatosensory signal contains afferent copy of art signal
+if isequal(Art,'usefit'), if nargin>1, usefit=option; else Aud=usefit; end; return; end
+if isequal(Art,'artinsom'), if nargin>1, artinsom=option; else Aud=artinsom; end; return; end
 if isequal(Art,'vtscale')||isequal(Art,'ab_alpha')||isequal(Art,'ab_beta')||isequal(Art,'supraglot'), if nargin>1, Aud=xy2ab(Art,option); else Aud=xy2ab(Art); end; return; end
 if nargin<2, if size(Art,2)>1, option='sound'; else option='audsom'; end; end
 % Art(1:10) vocaltract shape params
@@ -33,6 +35,7 @@ switch(lower(option))
         %filt=a2h(max(0,af),d,fs,fs); 
         [filt,f]=a2h(max(0,af),d,fs/10,fs);
         if ~usefit, try, Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); catch, Aud(2:4)=nan; end; end
+        if artinsom, Som=[Som(1:6,:);Art]; end
     case 'outline' 
         Aud=diva_synth_sample(Art);
     case 'sound' % outputs soundwave associated with sequence of articulatory states
@@ -53,6 +56,7 @@ switch(lower(option))
             end
             Aud=cat(2,Aud{:});
             Som=cat(2,Som{:});
+            if artinsom, Som=[Som(1:6,:);Art]; end
             Outline=cat(2,Outline{:});
             af=P; % note: returns also p / distance-to-training-samples
 %             if nargout>3,
@@ -65,6 +69,7 @@ switch(lower(option))
             if nargout>1&&needsom
                 [Outline,P,Aud,Som,af,d]=diva_synth_sample(Art);
                 if ~usefit, [filt,f]=a2h(max(1e-2,af),d,fs/10,fs); Aud(2:4)=f(1+find(diff(sign(real(1./filt))),3)); end
+                if artinsom, Som=[Som(1:6,:);Art]; end
                 af=P;
             else
                 [Outline,P,Aud]=diva_synth_sample(Art);
