@@ -1,5 +1,5 @@
 #name
-AA
+AA_Frank
 #length
 200 
 #wrapper
@@ -15,21 +15,21 @@ X X
 #F1_control
 0 200 
 #F1_min
-750 750 
+743 743 
 #F1_max
-800 800 
+793 793 
 #F2_control
 0 200 
 #F2_min
-1300 1300 
+1283 1283 
 #F2_max
-1400 1400 
+1383 1383 
 #F3_control
 0 200 
 #F3_min
-2300 2300 
+2322 2322 
 #F3_max
-2700 2700 
+2722 2722 
 #pressure_control
 0 200 
 #pressure_min
