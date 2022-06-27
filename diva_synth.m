@@ -19,7 +19,7 @@ switch(lower(option))
         [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
         if nargout>=6 % filtsample
             f0=100*(1+.5*Art(11,end));
-            pressure=max(0,Art(12,end));
+            pressure=max(0,Art(12,end)-0.1);
             voicing=Art(13,end);
             samplesperperiod=ceil(fs/f0);
             %[filt,f]=a2h(max(0,af),d,samplesperperiod,fs);
@@ -134,7 +134,7 @@ while time<(ndata+1)*dt;
     af=af(1:naf);
     FPV=max(-1,min(1, Art(end-2:end,min(ndata,1+t0))*(1-t1)+Art(end-2:end,min(ndata,2+t0))*t1 ));
     vt.voicing=(1+tanh(3*FPV(3)))/2;
-    vt.pressure=max(0,FPV(2));
+    vt.pressure=max(0,FPV(2)-0.1);
     vt.pressure0=vt.pressure>.01;
     vt.f0=voices(opt.voices).F0*(1+.5*FPV(1));
     
@@ -169,7 +169,8 @@ while time<(ndata+1)*dt;
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
                     synth.pressure=vt.pressure; synth.f0=1.25*vt.f0; 
                     synth.pressure=1;%synth.modulation=1; 
-    elseif  (~vt.pressure0&&synth.pressure0&&~vt.closed), synth.pressure=synth.pressure/10;
+    elseif  (~vt.pressure0&&synth.pressure0&&~vt.closed), 
+        synth.pressure=synth.pressure/10;
     end
     
     % computes glottal source
@@ -239,7 +240,7 @@ while time<(ndata+1)*dt;
     
     % computes f0/amp/voicing/pressurebuildup modulation
     synth.pressure0=vt.pressure0;
-    alpha=min(1,(.1)*synth.numberofperiods);beta=100/synth.numberofperiods;
+    alpha=min(1,(.5)*synth.numberofperiods);beta=100/synth.numberofperiods;
     synth.pressure=synth.pressure+alpha*(vt.pressure*(max(1,1.5-vt.opening_time/beta))-synth.pressure);
     alpha=min(1,.5*synth.numberofperiods);beta=100/synth.numberofperiods;
     synth.f0=synth.f0+0*sqrt(alpha)*randn+alpha*(vt.f0*max(1,1.25-vt.opening_time/beta)-synth.f0);%147;%120;
