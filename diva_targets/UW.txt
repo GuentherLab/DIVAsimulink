@@ -45,39 +45,39 @@ X X
 #PA_pharyngeal_control
 0 170 
 #PA_pharyngeal_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_pharyngeal_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #PA_uvular_control
 0 170 
 #PA_uvular_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_uvular_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #PA_velar_control
 0 170 
 #PA_velar_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_velar_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #PA_palatal_control
 0 170 
 #PA_palatal_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_palatal_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #PA_alveolardental_control
 0 170 
 #PA_alveolardental_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_alveolardental_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #PA_labial_control
 0 170 
 #PA_labial_min
--1.2000000 -1.2000000 
+0.1 0.1 
 #PA_labial_max
--0.1000000 -0.1000000 
+1.2 1.2 
 #sampling
 sparse
 #ART_Jaw_control

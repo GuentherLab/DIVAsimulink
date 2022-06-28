@@ -104,7 +104,7 @@ DIVA_x.debug=0;
           case 'somatosensory&aperture'
               if numel(varargin)>=3, varargin{3}=true; end
               [nill,out{1},out{2}]=diva_vocaltractcompute(varargin{:});
-              ht=max(out{1}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(-out{1}(1:6)); % note: assumes first 6 som variables are PA_*
               ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
               varargout={cat(1,out{1},ht),out{2}};
           case 'auditory&somatosensory'
@@ -114,7 +114,7 @@ DIVA_x.debug=0;
           case 'auditory&aperture'
               if numel(varargin)>=3, varargin{3}=true; end
               [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
-              ht=max(out{2}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(-out{2}(1:6)); % note: assumes first 6 som variables are PA_*
               ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
               varargout={cat(1,out{1},ht),out{3}};
           case 'formant'
@@ -131,7 +131,7 @@ DIVA_x.debug=0;
               if numel(varargin)>=3, varargin{3}=true; end
               [out{1},out{2},out{3}]=diva_vocaltractcompute(varargin{:});
               out{1}=out{1}.*DIVA_x.params.Output(1).Scale;
-              ht=max(out{2}(1:6)); % note: assumes first 6 som variables are PA_*
+              ht=max(-out{2}(1:6)); % note: assumes first 6 som variables are PA_*
               ht=max(0,ht./(1-exp(-32*ht))); % ~max(0,ht) but smooth around 0
               varargout={cat(1,out{1},ht),out{3}};
           case 'output'
@@ -221,7 +221,7 @@ function [y,z,p0]=diva_vocaltractcompute(x,dodisp,needsom)
 global DIVA_x;
 if nargin<2||isempty(dodisp), dodisp=0; end
 if nargin<3||isempty(needsom), needsom=true; end
-
+dodisp=false; % note: removed real-time vt display
   if ~DIVA_x.debug
       x=x.*DIVA_x.params.Input.Scale;
       if needsom, 

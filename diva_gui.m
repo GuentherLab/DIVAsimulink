@@ -35,7 +35,7 @@ switch(lower(option)),
         DIVA_x.changed=0;
 
         if ~isfield(DIVA_x,'figure')||isempty(DIVA_x.figure.handles.figure)||~ishandle(DIVA_x.figure.handles.figure),
-            DIVA_x.figure.handles.figure=figure('units','norm','position',[.1,.55,.8,.4],'menubar','none','name',['diva_gui (model: ',DIVA_x.model,')'],'numbertitle','off','color',DIVA_x.color(2,:),'tag','diva_gui','closerequestfcn','diva_gui(''close'')');
+            DIVA_x.figure.handles.figure=figure('units','norm','position',[.1,.55,.8,.4],'menubar','none','name',['DIVA simulation (model: ',DIVA_x.model,')'],'numbertitle','off','color',DIVA_x.color(2,:),'tag','diva_gui','closerequestfcn','diva_gui(''close'')');
         else
             figure(DIVA_x.figure.handles.figure);
             clf;
@@ -65,14 +65,15 @@ switch(lower(option)),
         DIVA_x.figure.handles.button8=uicontrol('units','norm','position',[.82,.005,.15,.045],'style','pushbutton','string','Replay last production','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''replay'')','tooltipstring','replay last simulation (with no learning)');
         
         % center plot
-        DIVA_x.figure.handles.ax1=axes('units','norm','position',[.35,.2,.15,.4],'color',DIVA_x.color(2,:));
-        diva_vocaltract('output',zeros(DIVA_x.params.Input.Dimensions,1),-1); 
-        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.48,.36,.12,.16],'color',DIVA_x.color(2,:));
-        DIVA_x.figure.handles.pl0=plot([1,2],[0,0],'-','color',.75*[0,0,1]);axis off;
+        DIVA_x.figure.handles.ax1=[];%axes('units','norm','position',[.35,.2,.15,.4],'color',DIVA_x.color(2,:)); % note: removed real-time vt display
+        %diva_vocaltract('output',zeros(DIVA_x.params.Input.Dimensions,1),-1); 
+        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.40,.41,.20,.16],'color',DIVA_x.color(2,:));
+        DIVA_x.figure.handles.pl0=plot([1,2],[0,0],'-','color',.75*[0,0,1]);%axis off;
         hold on; DIVA_x.figure.handles.pl3=plot([nan,nan],2*[-1,1],'k--'); hold off
-        set(DIVA_x.figure.handles.ax0,'xcolor',DIVA_x.color(2,:),'ycolor',DIVA_x.color(2,:));
-        DIVA_x.figure.handles.slider=uicontrol('units','norm','position',[.40,.15,.20,.05],'style','slider','min',0,'max',1,'SliderStep',[.01 .1],'callback','diva_gui(''replay_slider'')','visible','off');
-        DIVA_x.figure.handles.slider_text=uicontrol('units','norm','position',[.35,.105,.15,.045],'style','text','string','','horizontalalignment','center','backgroundcolor','w','visible','off');
+        set(DIVA_x.figure.handles.ax0,'xcolor',.75*DIVA_x.color(2,:),'ycolor',.75*DIVA_x.color(2,:),'box','off','fontsize',8);
+        xlabel('time (ms)');
+        DIVA_x.figure.handles.slider=uicontrol('units','norm','position',[.40,.20,.20,.05],'style','slider','min',0,'max',1,'SliderStep',[.01 .1],'callback','diva_gui(''replay_slider'')','visible','off');
+        DIVA_x.figure.handles.slider_text=uicontrol('units','norm','position',[.40,.155,.20,.045],'style','text','string','','horizontalalignment','center','backgroundcolor','w','visible','off');
         try, addlistener(DIVA_x.figure.handles.slider, 'ContinuousValueChange',@(varargin)diva_gui('replay_slider')); end
 
         % Input/Output plots
@@ -282,7 +283,7 @@ switch(lower(option)),
         n=get(DIVA_x.figure.handles.slider,'val');
         n=max(1,min(size(DIVA_x.logs.ArticulatoryPosition,1), round(1+(size(DIVA_x.logs.ArticulatoryPosition,1)-1)*n)));
         diva_vocaltract('output',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)',1);
-        set(DIVA_x.figure.handles.slider_text,'visible','on','string',sprintf('%d ms',round(1000*DIVA_x.logs.time(n))));
+        set(DIVA_x.figure.handles.slider_text,'visible','on','string',sprintf('time = %d ms',round(1000*DIVA_x.logs.time(n))));
         for n2=1:numel(DIVA_x.params.Plots_.Output.plotindex),set(DIVA_x.figure.handles.pl2{1}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         for n2=1:numel(DIVA_x.params.Plots_.Input.plotindex),set(DIVA_x.figure.handles.pl2{2}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         set(DIVA_x.figure.handles.pl3,'xdata',DIVA_x.logs.time(n)*1000*[1 1],'visible','on');

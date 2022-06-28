@@ -275,7 +275,7 @@ if nargout<=1, return; end
 Som=zeros(8,1);
 if nargout>3
     [a,b,sc,af,d]=xy2ab(Outline);
-    Som(1:6)=max(-1,min(1, -tanh(1*sc) )); % place of articulation
+    Som(1:6)=max(-1,min(1, tanh(1*sc) )); % place of articulation
     Som(7:8)=Art(end-1:end);               % Pressure/Voicing
     %Som(7)=min(Som(7),tanh((min(af)-0)/.10)); % note: Pressure som for closed configurations
 %         [a,b,sc]=xy2ab(Outline);

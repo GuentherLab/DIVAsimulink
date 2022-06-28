@@ -13,7 +13,7 @@ switch(lower(option))
         if ~isempty(varargin), setupArt = varargin{1}; else setupArt=[]; end
         
         % setting up figure
-        data.handles.hfig=figure('units','norm','position',1*[.1,.125,.8,.4]+0*[.1 .15 .4 .4],'menubar','none','name','Vocal Tract','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue','tag','diva_vtdisp'); 
+        data.handles.hfig=figure('units','norm','position',1*[.1,.125,.8,.4]+0*[.1 .15 .4 .4],'menubar','none','name','DIVA vocal tract state','numbertitle','off','color',.975*[1 1 1],'interruptible','on','busyaction','queue','tag','diva_vtdisp'); 
         
         mfigTitle = [];%uicontrol('Style','text','String','Articulatory Synthesizer','Units','normalized','FontUnits','norm','FontSize',0.8, 'HorizontalAlignment', 'center', 'Position', [0 0.955, 1, 0.05],'BackgroundColor',[1 1 1]);
         
@@ -154,7 +154,7 @@ switch(lower(option))
         % reset button
         data.handles.resetButton = uicontrol('Style','pushbutton','String','Reset','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .26 .15 .05],'Visible','on','tooltipstring','reset articulatory configuration to neutral / initial state','CallBack', @resetPushed);
         % create new target button
-        data.handles.cr8TargetButton = uicontrol('Style','pushbutton','String','Create new target','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .31 .15 .05],'Visible','on','tooltipstring','create new DIVA target based on some or all aspects of the current vocal tract state','CallBack', @cr8TargetPushed);
+        data.handles.cr8TargetButton = uicontrol('Style','pushbutton','String','Export to target','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .31 .15 .05],'Visible','on','tooltipstring','create new DIVA target based on some or all aspects of the current vocal tract state','CallBack', @cr8TargetPushed);
         % synthesize button
         data.handles.synthButton = uicontrol('Style','pushbutton','String','Synthesize','Units','normalized','FontUnits','norm','FontSize',0.5,'Position',[.3 .36 .15 .05],'Visible','on','tooltipstring','synthesize sound from the current articulatory configuration','CallBack', @synthPushed);
         
