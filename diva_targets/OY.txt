@@ -1,0 +1,148 @@
+#name
+OY
+#length
+190 
+#wrapper
+0 
+#interpolation
+linear
+#sampling
+sparse
+#F0_control
+0 100 150 190 
+#F0_min
+0 0 0 0 
+#F0_max
+200 200 200 200 
+#F1_control
+0 100 150 190 
+#F1_min
+627 627 402 402 
+#F1_max
+677 677 452 452 
+#F2_control
+0 100 150 190 
+#F2_min
+947 947 1984 1984 
+#F2_max
+1047 1047 2084 2084 
+#F3_control
+0 100 150 190 
+#F3_min
+2438 2438 2584 2584 
+#F3_max
+2638 2638 2784 2784 
+#PA_pharyngeal_control
+0 100 150 190 
+#PA_pharyngeal_min
+0.1 0.1 0.1 0.1 
+#PA_pharyngeal_max
+1.2 1.2 1.2 1.2 
+#PA_uvular_control
+0 100 150 190 
+#PA_uvular_min
+0.1 0.1 0.1 0.1 
+#PA_uvular_max
+1.2 1.2 1.2 1.2 
+#PA_velar_control
+0 100 150 190 
+#PA_velar_min
+0.1 0.1 0.1 0.1 
+#PA_velar_max
+1.2 1.2 1.2 1.2 
+#PA_palatal_control
+0 100 150 190 
+#PA_palatal_min
+0.1 0.1 0.1 0.1 
+#PA_palatal_max
+1.2 1.2 1.2 1.2 
+#PA_alveolardental_control
+0 100 150 190 
+#PA_alveolardental_min
+0.1 0.1 0.1 0.1 
+#PA_alveolardental_max
+1.2 1.2 1.2 1.2 
+#PA_labial_control
+0 100 150 190 
+#PA_labial_min
+0.1 0.1 0.1 0.1 
+#PA_labial_max
+1.2 1.2 1.2 1.2 
+#ART_Jaw_control
+0 100 150 190 
+#ART_Jaw_min
+-1 -1 -1 -1 
+#ART_Jaw_max
+1 1 1 1 
+#ART_Lip_opening_control
+0 100 150 190 
+#ART_Lip_opening_min
+-1 -1 -1 -1 
+#ART_Lip_opening_max
+1 1 1 1 
+#ART_Lip_protrusion_control
+0 100 150 190 
+#ART_Lip_protrusion_min
+-1 -1 -1 -1 
+#ART_Lip_protrusion_max
+1 1 1 1 
+#ART_Soft_palate_control
+0 100 150 190 
+#ART_Soft_palate_min
+-1 -1 -1 -1 
+#ART_Soft_palate_max
+1 1 1 1 
+#ART_Larynx_height_control
+0 100 150 190 
+#ART_Larynx_height_min
+-1 -1 -1 -1 
+#ART_Larynx_height_max
+1 1 1 1 
+#ART_Tongue_1_control
+0 100 150 190 
+#ART_Tongue_1_min
+-1 -1 -1 -1 
+#ART_Tongue_1_max
+1 1 1 1 
+#ART_Tongue_2_control
+0 100 150 190 
+#ART_Tongue_2_min
+-1 -1 -1 -1 
+#ART_Tongue_2_max
+1 1 1 1 
+#ART_Tongue_3_control
+0 100 150 190 
+#ART_Tongue_3_min
+-1 -1 -1 -1 
+#ART_Tongue_3_max
+1 1 1 1 
+#ART_Tongue_4_control
+0 100 150 190 
+#ART_Tongue_4_min
+-1 -1 -1 -1 
+#ART_Tongue_4_max
+1 1 1 1 
+#ART_Tongue_5_control
+0 100 150 190 
+#ART_Tongue_5_min
+-1 -1 -1 -1 
+#ART_Tongue_5_max
+1 1 1 1 
+#ART_Testion_control
+0 100 150 190 
+#ART_Testion_min
+-1 -1 -1 -1 
+#ART_Testion_max
+1 1 1 1 
+#ART_Pressure_control
+0 100 150 190 
+#ART_Pressure_min
+0.75 0.75 0.75 0.75 
+#ART_Pressure_max
+1 1 1 1 
+#ART_Voicing_control
+0 100 150 190 
+#ART_Voicing_min
+0.75 0.75 0.75 0.75 
+#ART_Voicing_max
+1 1 1 1 
