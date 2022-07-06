@@ -15,7 +15,7 @@ DIVA_x.debug=0;
               'DefaultSound',[repmat([-1,1],[10,1]);-1,1;0,1;-1,1],...
               'BlockDiagonal',bsxfun(@eq,[ones(1,10),2,3,4],[ones(1,10),2,3,4]'),...
               'Plots_dim',{[{1:10},num2cell(1:10),{11:13},num2cell(11:13)]},...
-              'Plots_label',{[{'VocalTract'},{'Jaw','Lip_opening','Lip_protrusion','Soft_palate','Larynx_height','Tongue_1','Tongue_2','Tongue_3','Tongue_4','Tongue_5','Glottis','Testion','Pressure','Voicing'}]} );
+              'Plots_label',{[{'VocalTract'},{'Jaw','Lip_opening','Lip_protrusion','Soft_palate','Larynx_height','Tongue_1','Tongue_2','Tongue_3','Tongue_4','Tongue_5','Glottis','Tension','Pressure','Voicing'}]} );
           Output1=struct(...
               'Name','Auditory',...
               'Dimensions',4,...
@@ -183,7 +183,7 @@ function setup(block)
   block.RegBlockMethod('SetInputPortSamplingMode',@SetInputSampling);
   %block.RegBlockMethod('SetInputPortDimensions',  @SetInputDims);
   block.RegBlockMethod('Outputs',                 @Output);  
-  
+  Output(); % resets t=0
 end
 
 
@@ -202,11 +202,18 @@ end
 %% Output & Update equations   
 function Output(block)
 persistent t lastx
+if ~nargin, t=0; lastx=[]; return; end
 if isempty(t),t=0;end
 t=t+1;
 
   % system output
   x=block.InputPort(1).Data;
+  if ~isempty(lastx), 
+     maxdx=.5; % maximum change in art positions per unit time (5ms)
+     dx=x-lastx; 
+     if ~isinf(maxdx), x=lastx+tanh(dx/maxdx)*maxdx; end % limits fast transitions of motor dimensions
+     %if ~isinf(maxdx), x(1:10)=lastx(1:10)+tanh(dx(1:10)/maxdx)*maxdx; end % limits fast transitions of articulatory (10) dimensions
+  end
   %if all(x==0)&~isempty(lastx), x=lastx; end
   [y,z]=diva_vocaltractcompute(x,rem(t,10)==1);
   lastx=x;

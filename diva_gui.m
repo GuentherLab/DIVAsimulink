@@ -67,7 +67,7 @@ switch(lower(option)),
         % center plot
         DIVA_x.figure.handles.ax1=[];%axes('units','norm','position',[.35,.2,.15,.4],'color',DIVA_x.color(2,:)); % note: removed real-time vt display
         %diva_vocaltract('output',zeros(DIVA_x.params.Input.Dimensions,1),-1); 
-        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.40,.41,.20,.16],'color',DIVA_x.color(2,:));
+        DIVA_x.figure.handles.ax0=axes('units','norm','position',[.40,.41,.20,.26],'color',DIVA_x.color(2,:));
         DIVA_x.figure.handles.pl0=plot([1,2],[0,0],'-','color',.75*[0,0,1]);%axis off;
         hold on; DIVA_x.figure.handles.pl3=plot([nan,nan],2*[-1,1],'k--'); hold off
         set(DIVA_x.figure.handles.ax0,'xcolor',.75*DIVA_x.color(2,:),'ycolor',.75*DIVA_x.color(2,:),'box','off','fontsize',8);
@@ -282,18 +282,40 @@ switch(lower(option)),
     case 'replay_slider'
         n=get(DIVA_x.figure.handles.slider,'val');
         n=max(1,min(size(DIVA_x.logs.ArticulatoryPosition,1), round(1+(size(DIVA_x.logs.ArticulatoryPosition,1)-1)*n)));
-        diva_vocaltract('output',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)',1);
+        %diva_vocaltract('output',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ActualArticulatoryPosition(n,:)',1);
         set(DIVA_x.figure.handles.slider_text,'visible','on','string',sprintf('time = %d ms',round(1000*DIVA_x.logs.time(n))));
         for n2=1:numel(DIVA_x.params.Plots_.Output.plotindex),set(DIVA_x.figure.handles.pl2{1}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         for n2=1:numel(DIVA_x.params.Plots_.Input.plotindex),set(DIVA_x.figure.handles.pl2{2}(n2),'xdata',DIVA_x.logs.time(n)*1000*[1 1]);end
         set(DIVA_x.figure.handles.pl3,'xdata',DIVA_x.logs.time(n)*1000*[1 1],'visible','on');
-        try, diva_vtdisp('set',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)'); end
+        try, diva_vtdisp('set',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ActualArticulatoryPosition(n,:)'); end
         
     case 'replay'
         diva_callback_stopfcn;
         %for n=1:size(DIVA_x.logs.ArticulatoryPosition,1), 
         %    diva_vocaltract('output',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)',1); 
         %end
+        
+    case 'savemovie'
+        hfig=findobj(0,'tag','diva_vtdisp');
+        if isempty(hfig), return; end
+        videoformats={'*.avi','Motion JPEG AVI (*.avi)';'*.mj2','Motion JPEG 2000 (*.mj2)';'*.mp4;*.m4v','MPEG-4 (*.mp4;*.m4v)';'*.avi','Uncompressed AVI (*.avi)'; '*.avi','Indexed AVI (*.avi)'; '*.avi','Grayscale AVI (*.avi)'};
+        [filename, pathname,filterindex]=uiputfile(videoformats,'Save video as','diva_video01.mp4');
+        if isequal(filename,0), return; end
+        defs_videowriteframerate=200; % fps
+        objvideo = VideoWriter(fullfile(pathname,filename),regexprep(videoformats{filterindex,2},'\s*\(.*$',''));
+        set(objvideo,'FrameRate',defs_videowriteframerate);
+        open(objvideo);
+        DT=.005;
+        for n=1:size(DIVA_x.logs.ActualArticulatoryPosition,1)
+            val=(n-1)/(size(DIVA_x.logs.ArticulatoryPosition,1)-1);
+            set(DIVA_x.figure.handles.slider,'val',val);
+            diva_gui replay_slider;
+            currFrame=getframe(hfig);
+            writeVideo(objvideo,currFrame);
+        end
+        close(objvideo);
+        fprintf('File %s created',fullfile(pathname,filename));
+        
         
     case {'load','noload'}
         if strcmp(lower(option),'load')
@@ -340,6 +362,7 @@ switch(lower(option)),
         DIVA_x.logs.AuditorySomatosensoryError=nan(size(DIVA_x.logs.AuditorySomatosensoryTargetMax));
         DIVA_x.logs.FeedForwardMotorCommand=timeseries.Art*diag(1./DIVA_x.params.Input(1).Scale);
         DIVA_x.logs.ArticulatoryPosition=nan(size(DIVA_x.logs.FeedForwardMotorCommand));
+        DIVA_x.logs.ActualArticulatoryPosition=nan(size(DIVA_x.logs.FeedForwardMotorCommand));
         DIVA_x.logs.FeedBackMotorCommand=nan(size(DIVA_x.logs.FeedForwardMotorCommand));
         %set(DIVA_x.figure.handles.list1,'value',1);
         %set(DIVA_x.figure.handles.list2,'value',2);

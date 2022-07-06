@@ -21,6 +21,9 @@ catch % newer releases
     end
 end
 
+% note: keep in DIVA_x.logs.ArticulatoryPosition actual positions of the articulator (possibly different from motor command positions)
+DIVA_x.logs.ActualArticulatoryPosition=DIVA_x.logs.SomatosensoryState([5:end, end, end, end, end],7:end); % note: copy of actual articulator positions is in somatosensory representation but with an additional delay
+
 % display
 if DIVA_x.gui
     % collapse AuditorySomatosensory logs
@@ -44,12 +47,13 @@ if DIVA_x.gui
         end
     end    
     if DIVA_x.params.dosound&&DIVA_x.dosound
-        s=diva_synth(diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition','sound');
+        s=diva_synth(diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ActualArticulatoryPosition','sound');
         fs=4*11025;
         sound(s,fs);
         set(DIVA_x.figure.handles.pl0,'xdata',1000*(0:numel(s)-1)/fs,'ydata',s);
         set(DIVA_x.figure.handles.ax0,'xlim',1000*[0,numel(s)/fs],'ylim',2*[-1,1]);
         set(DIVA_x.figure.handles.pl3,'visible','off');
+        if any(abs(s)>1), s=s/max(abs(s)); end
         try, audiowrite(fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'.wav']),s,fs); end
     end
     diva_gui update_inputoutputplots;
