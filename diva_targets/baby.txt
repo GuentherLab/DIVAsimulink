@@ -1,0 +1,148 @@
+#name
+baby
+#length
+410 
+#wrapper
+0 
+#interpolation
+linear
+#sampling
+sparse
+#F0_control
+0 10 35 95 135 185 210 220 245 410 
+#F0_min
+0 0 0 0 0 0 0 0 0 0 
+#F0_max
+200 200 200 200 200 200 200 200 200 200 
+#F1_control
+0 10 35 95 135 185 210 220 245 410 
+#F1_min
+0 0 555 555 355 355 0 0 317 317 
+#F1_max
+1000 1000 605 605 405 405 1000 1000 367 367 
+#F2_control
+0 10 35 95 135 185 210 220 245 410 
+#F2_min
+500 500 1749 1749 2100 2100 500 500 2272 2272 
+#F2_max
+3000 3000 1849 1849 2200 2200 3000 3000 2372 2372 
+#F3_control
+0 10 35 95 135 185 210 220 245 410 
+#F3_min
+2000 2000 2505 2505 2740 2740 2000 2000 2900 2900 
+#F3_max
+4000 4000 2705 2705 2940 2940 4000 4000 3100 3100 
+#PA_pharyngeal_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_pharyngeal_min
+0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 
+#PA_pharyngeal_max
+1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 
+#PA_uvular_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_uvular_min
+0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 
+#PA_uvular_max
+1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 
+#PA_velar_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_velar_min
+0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 
+#PA_velar_max
+1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 
+#PA_palatal_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_palatal_min
+0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 
+#PA_palatal_max
+1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 1.2 
+#PA_alveolardental_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_alveolardental_min
+-0.1 -0.1 0.1 0.1 0.1 0.1 -0.1 -0.1 0.1 0.1 
+#PA_alveolardental_max
+1.100 1.100 1.2 1.2 1.2 1.2 1.100 1.100 1.2 1.2 
+#PA_labial_control
+0 10 35 95 135 185 210 220 245 410 
+#PA_labial_min
+-0.75 -0.75 0.1 0.1 0.1 0.1 -0.75 -0.75 0.1 0.1 
+#PA_labial_max
+-0.25 -0.25 1.2 1.2 1.2 1.2 -0.25 -0.25 1.2 1.2 
+#ART_Jaw_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Jaw_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Jaw_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Lip_opening_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Lip_opening_min
+-0.75 -0.75 -1 -1 -1 -1 -0.75 -0.75 -1 -1 
+#ART_Lip_opening_max
+-0.25 -0.25 1 1 1 1 -0.25 -0.25 1 1 
+#ART_Lip_protrusion_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Lip_protrusion_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Lip_protrusion_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Soft_palate_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Soft_palate_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Soft_palate_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Larynx_height_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Larynx_height_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Larynx_height_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Tongue_1_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Tongue_1_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Tongue_1_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Tongue_2_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Tongue_2_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Tongue_2_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Tongue_3_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Tongue_3_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Tongue_3_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Tongue_4_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Tongue_4_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Tongue_4_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Tongue_5_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Tongue_5_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Tongue_5_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Testion_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Testion_min
+-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 
+#ART_Testion_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Pressure_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Pressure_min
+0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 
+#ART_Pressure_max
+1 1 1 1 1 1 1 1 1 1 
+#ART_Voicing_control
+0 10 35 95 135 185 210 220 245 410 
+#ART_Voicing_min
+0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 0.75 
+#ART_Voicing_max
+1 1 1 1 1 1 1 1 1 1 
