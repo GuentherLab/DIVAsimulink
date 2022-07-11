@@ -62,7 +62,8 @@ switch(lower(option)),
         DIVA_x.figure.handles.button5=uicontrol('units','norm','position',[.21,.02,.09,.06],'style','pushbutton','string','Save FF command','foregroundcolor','k','backgroundcolor',1-.5*(1-DIVA_x.color(1,:)),'fontweight','normal','callback','diva_gui(''save'')','enable','off','tooltipstring','save current target definition (and learned feedforward command if applicable)');
         DIVA_x.figure.handles.button7=uicontrol('units','norm','position',[.31,.02,.09,.06],'style','pushbutton','string','Reset FF command','foregroundcolor','k','backgroundcolor',1-.5*(1-DIVA_x.color(1,:)),'fontweight','normal','callback','diva_gui(''reset'')','tooltipstring','reset learned feedforward command to last saved state or to zero (initial state, no learning)');
         DIVA_x.figure.handles.button6=uicontrol('units','norm','position',[.82,.05,.15,.045],'style','checkbox','string','Enable sound','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''soundonoff'')','value',DIVA_x.dosound,'tooltipstring','enable/disable sound reproduction after each simulation');
-        DIVA_x.figure.handles.button8=uicontrol('units','norm','position',[.82,.005,.15,.045],'style','pushbutton','string','Replay last production','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''replay'')','tooltipstring','replay last simulation (with no learning)');
+        DIVA_x.figure.handles.button8=uicontrol('units','norm','position',[.82,.005,.075,.045],'style','pushbutton','string','Play/export audio','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''replay'')','tooltipstring','replay last simulation (with no learning) and save diva.wav audio file');
+        DIVA_x.figure.handles.button9=uicontrol('units','norm','position',[.895,.005,.075,.045],'style','pushbutton','string','Play/export movie','foregroundcolor','k','backgroundcolor',DIVA_x.color(1,:),'fontweight','normal','callback','diva_gui(''savemovie'')','tooltipstring','replay last simulation (with no learning) and save diva.avi video file');
         
         % center plot
         DIVA_x.figure.handles.ax1=[];%axes('units','norm','position',[.35,.2,.15,.4],'color',DIVA_x.color(2,:)); % note: removed real-time vt display
@@ -261,7 +262,7 @@ switch(lower(option)),
         %assignin('base','Target_duration',Target_duration);
         
         set(DIVA_x.figure.handles.button4,'string','Stop','callback','diva_gui(''stop'')');
-        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8],'enable','off');
+        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.button9],'enable','off');
         set([DIVA_x.figure.handles.slider DIVA_x.figure.handles.slider_text],'visible','off');
         evalin('base','global DIVA_x');
         for nrun=1:nruns
@@ -270,12 +271,12 @@ switch(lower(option)),
             if simout(end)<time/1000 || ~strcmp(get(DIVA_x.figure.handles.button4,'string'),'Stop'), break; end
         end
         set(DIVA_x.figure.handles.button4,'string','Start','callback','diva_gui(''start'')');
-        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8],'enable','on');
+        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.button9],'enable','on');
         set(DIVA_x.figure.handles.slider,'visible','on','sliderstep',min(1,[1,10]/max(1,size(DIVA_x.logs.ArticulatoryPosition,1))));
         
     case 'stop'
         set(DIVA_x.figure.handles.button4,'string','Start','callback','diva_gui(''start'')');
-        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8],'enable','on');
+        set([DIVA_x.figure.handles.button2,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.list3,DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.button9],'enable','on');
         set(DIVA_x.figure.handles.slider,'visible','on','sliderstep',min(1,[1,10]/max(1,size(DIVA_x.logs.ArticulatoryPosition,1))));
         set_param(DIVA_x.model,'simulationcommand','stop') ;
 
@@ -290,31 +291,66 @@ switch(lower(option)),
         try, diva_vtdisp('set',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ActualArticulatoryPosition(n,:)'); end
         
     case 'replay'
+        hw=waitbar(0,'Creating audio file. Please wait...');
         diva_callback_stopfcn;
+        if ishandle(hw), delete(hw); end
+        fprintf('File %s created\n',fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'.wav']));
         %for n=1:size(DIVA_x.logs.ArticulatoryPosition,1), 
         %    diva_vocaltract('output',diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ArticulatoryPosition(n,:)',1); 
         %end
         
-    case 'savemovie'
-        hfig=findobj(0,'tag','diva_vtdisp');
-        if isempty(hfig), return; end
-        videoformats={'*.avi','Motion JPEG AVI (*.avi)';'*.mj2','Motion JPEG 2000 (*.mj2)';'*.mp4;*.m4v','MPEG-4 (*.mp4;*.m4v)';'*.avi','Uncompressed AVI (*.avi)'; '*.avi','Indexed AVI (*.avi)'; '*.avi','Grayscale AVI (*.avi)'};
-        [filename, pathname,filterindex]=uiputfile(videoformats,'Save video as','diva_video01.mp4');
-        if isequal(filename,0), return; end
-        defs_videowriteframerate=200; % fps
-        objvideo = VideoWriter(fullfile(pathname,filename),regexprep(videoformats{filterindex,2},'\s*\(.*$',''));
-        set(objvideo,'FrameRate',defs_videowriteframerate);
-        open(objvideo);
-        DT=.005;
-        for n=1:size(DIVA_x.logs.ActualArticulatoryPosition,1)
-            val=(n-1)/(size(DIVA_x.logs.ArticulatoryPosition,1)-1);
-            set(DIVA_x.figure.handles.slider,'val',val);
+    case {'savemovie'}
+        if DIVA_x.params.dosound&&DIVA_x.dosound
+            hfig=findobj(0,'tag','diva_vtdisp');
+            if isempty(hfig), return; end
+            
+            hw=waitbar(0,'Creating video file. Please wait...');
+            filename=[DIVA_x.model,'.avi'];
+            pathname=fileparts(which(DIVA_x.model));
+            s=diva_synth(diag(DIVA_x.params.Input.Scale)*DIVA_x.logs.ActualArticulatoryPosition','sound');
+            if any(abs(s)>1), s=s/max(abs(s)); end
+            fs=4*11025;
+        
+            OFFSET=0;
+            SCALEDOWN=4;
+            DT=.005*SCALEDOWN;
+            defs_videowriteframerate=1/DT; % fps
+            objvideo = vision.VideoFileWriter(fullfile(pathname,filename), 'FileFormat', 'AVI', 'AudioInputPort', true, 'FrameRate',defs_videowriteframerate);%,'VideoCompressor','MJPEG Compressor','AudioCompressor','MJPEG Compressor');
+            %objvideo = VideoWriter(fullfile(pathname,filename),regexprep(videoformats{filterindex,2},'\s*\(.*$',''));
+            %set(objvideo,'FrameRate',defs_videowriteframerate);
+            %open(objvideo);
+            framelength=DT*fs;
+            
+            diva_vtdisp visiblebuttons off;
+            s=[zeros(round(OFFSET*fs),1);s]; % note: manual delay to match ActualArticulatoryPosition
+            set(DIVA_x.figure.handles.slider,'val',0);
             diva_gui replay_slider;
             currFrame=getframe(hfig);
-            writeVideo(objvideo,currFrame);
+            currAudio=int16(zeros(framelength,1));
+            for frame=1:defs_videowriteframerate %(1s)
+                objvideo(double(currFrame.cdata)/255, currAudio);
+            end
+            for frame=1:ceil(size(DIVA_x.logs.ActualArticulatoryPosition,1)/SCALEDOWN)
+                n=SCALEDOWN*(frame-1)+1;
+                val=(max(1,min(size(DIVA_x.logs.ArticulatoryPosition,1),n))-1)/(size(DIVA_x.logs.ArticulatoryPosition,1)-1);
+                set(DIVA_x.figure.handles.slider,'val',val);
+                diva_gui replay_slider;
+                currFrame=getframe(hfig);
+                currAudio=int16(round(32767*max(-1, min(1, s(max(1,min(numel(s), floor(framelength*(frame-1))+1:floor(framelength*frame)) )) ))));
+                objvideo(double(currFrame.cdata)/255, currAudio);
+                %writeVideo(objvideo,currFrame);
+                if ishandle(hw), waitbar(frame/(size(DIVA_x.logs.ActualArticulatoryPosition,1)/SCALEDOWN),hw); end
+            end
+            currAudio=int16(zeros(framelength,1));
+            for frame=1:defs_videowriteframerate %(1s)
+                objvideo(double(currFrame.cdata)/255, currAudio);
+            end
+            release(objvideo);
+            %close(objvideo);
+            if ishandle(hw), delete(hw); end
+            diva_vtdisp visiblebuttons on;
+            fprintf('File %s created\n',fullfile(pathname,filename));
         end
-        close(objvideo);
-        fprintf('File %s created',fullfile(pathname,filename));
         
         
     case {'load','noload'}
@@ -341,6 +377,7 @@ switch(lower(option)),
             DIVA_x.changed=0;
             set(DIVA_x.figure.handles.button5,'enable','off');
             if ishandle(DIVA_x.figure.handles.button8), set(DIVA_x.figure.handles.button8,'enable','off'); end
+            if ishandle(DIVA_x.figure.handles.button9), set(DIVA_x.figure.handles.button9,'enable','off'); end
         end
         timeseries=diva_preparesimulation(DIVA_x.production_info,DIVA_x.production_art);
         maxt=max(timeseries.time)/1000;
@@ -415,7 +452,7 @@ switch(lower(option)),
         end
         % gui initialization
         figure(DIVA_x.figure.handles.figure);
-        idxremove=[DIVA_x.figure.handles.list1,DIVA_x.figure.handles.list2,DIVA_x.figure.handles.buttonlist1,DIVA_x.figure.handles.buttonlist2,DIVA_x.figure.handles.button4,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.ax1,DIVA_x.figure.handles.ax0,DIVA_x.figure.handles.pl0,DIVA_x.figure.handles.pl3,DIVA_x.figure.handles.ax2{2},DIVA_x.figure.handles.ax3{2},DIVA_x.figure.handles.text1,DIVA_x.figure.handles.text2,DIVA_x.figure.handles.button6,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.slider];
+        idxremove=[DIVA_x.figure.handles.list1,DIVA_x.figure.handles.list2,DIVA_x.figure.handles.buttonlist1,DIVA_x.figure.handles.buttonlist2,DIVA_x.figure.handles.button4,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.ax1,DIVA_x.figure.handles.ax0,DIVA_x.figure.handles.pl0,DIVA_x.figure.handles.pl3,DIVA_x.figure.handles.ax2{2},DIVA_x.figure.handles.ax3{2},DIVA_x.figure.handles.text1,DIVA_x.figure.handles.text2,DIVA_x.figure.handles.button6,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.button9,DIVA_x.figure.handles.slider];
         delete(idxremove(ishandle(idxremove)));
         if isfield(DIVA_x.figure,'thandles')
             idxremove={DIVA_x.figure.thandles.button6,DIVA_x.figure.thandles.button9,DIVA_x.figure.thandles.text1,DIVA_x.figure.thandles.field1,DIVA_x.figure.thandles.text2,DIVA_x.figure.thandles.field2,DIVA_x.figure.thandles.text3,DIVA_x.figure.thandles.field3,DIVA_x.figure.thandles.text4,DIVA_x.figure.thandles.field4,DIVA_x.figure.thandles.text5,DIVA_x.figure.thandles.field5,DIVA_x.figure.thandles.buttonfield5,DIVA_x.figure.thandles.text6,DIVA_x.figure.thandles.field6,DIVA_x.figure.thandles.text7,DIVA_x.figure.thandles.field7,DIVA_x.figure.thandles.text9,DIVA_x.figure.thandles.field9,DIVA_x.figure.thandles.button2field5,DIVA_x.figure.thandles.text8,DIVA_x.figure.thandles.field8,DIVA_x.figure.thandles.frame8};

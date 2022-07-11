@@ -173,6 +173,11 @@ switch(lower(option))
         hfig=findobj(0,'tag','diva_vtdisp');
         if all(ishandle(hfig)), close(hfig); end
         
+    case 'visiblebuttons'
+        if isempty(hfig), hfig=findobj(0,'tag','diva_vtdisp'); end
+        data=get(hfig,'userdata');
+        set([data.handles.resetButton,data.handles.cr8TargetButton,data.handles.synthButton, data.handles.VTopenCheck, data.handles.UseFitCheck ],'visible',varargin{1});
+        
     case 'set'
         hfig=findobj(0,'tag','diva_vtdisp');
         assert(~isempty(hfig),'unable to find diva_vtdisp figure');
