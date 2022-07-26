@@ -350,9 +350,25 @@ switch(lower(option)),
             if ishandle(hw), delete(hw); end
             diva_vtdisp visiblebuttons on;
             fprintf('File %s created\n',fullfile(pathname,filename));
+            diva_gui('convertmovie',fullfile(pathname,filename));
         end
         
-        
+    case 'convertmovie'
+        if nargin>1, file=varargin{1};
+        else file=fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'.avi']);
+        end
+        [filepath,filename,fileext]=fileparts(file);
+        cwd=pwd;
+        cd(filepath);
+        if ispc,
+            [ok,msg]=system(sprintf('"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe" -I dummy "%s" --sout=#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=%s} vlc://quit',fullfile(filepath,[filename,fileext]),[filename,'.mpg']));
+            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); end
+        elseif ismac, 
+            [ok,msg]=system(sprintf('/Applications/VLC.app/Contents/MacOS/VLC -I dummy ''%s'' --sout="#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=''%s''}" vlc://quit',fullfile(filepath,[filename,fileext]),[filename,'.mpg']));
+            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); end
+        end
+        cd(cwd);
+
     case {'load','noload'}
         if strcmp(lower(option),'load')
             if nargin>1,
