@@ -1,7 +1,9 @@
 .DS_Store
 *.asv
 *.m~
+*.avi
 *.wav
+*.mpg
 *.autosave
 ~*
 diva_targets/slprj

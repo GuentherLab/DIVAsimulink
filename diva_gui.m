@@ -362,10 +362,14 @@ switch(lower(option)),
         cd(filepath);
         if ispc,
             [ok,msg]=system(sprintf('"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe" -I dummy %s --sout=#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=%s} vlc://quit',[filename,fileext],[filename,'.mpg']));
-            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); end
+            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); 
+            else disp(msg); 
+            end
         elseif ismac, 
             [ok,msg]=system(sprintf('/Applications/VLC.app/Contents/MacOS/VLC -I dummy ''%s'' --sout="#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=''%s''}" vlc://quit',fullfile(filepath,[filename,fileext]),[filename,'.mpg']));
-            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); end
+            if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); 
+            else disp(msg);
+            end
         end
         cd(cwd);
 
