@@ -173,7 +173,7 @@ while time<(ndata+1)*dt;
     
     if release>0, % air starts flowing at release point
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
-                    synth.pressure=2+2*tanh(synth.pressurebuildup); %modulation=0; 
+                    synth.pressure=1+1*tanh(synth.pressurebuildup); %modulation=0; 
                     synth.f0=1.25*vt.f0; 
     elseif  (vt.pressure0&&~synth.pressure0) % air starts flowing at glottal source
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
@@ -199,7 +199,7 @@ while time<(ndata+1)*dt;
     numberofperiods=synth.numberofperiods;
         
     % computes vocal tract filter
-    resf=16;
+    resf=8;
     [synth.filt,synth.f,synth.filt_closure]=a2h(af0,d,resf*synth.samplesperperiod,synth.fs,vt.closure_position,minaf0);
 %synth.filt=fft(synth.filt); synth.filt(2+lpk:end-lpk)=0;  synth.filt=ifft(synth.filt); 
 %fhanning=hanning(numel(synth.filt));synth.filt=ifft(fft(synth.filt).*fhanning/sum(fhanning));
@@ -212,7 +212,9 @@ while time<(ndata+1)*dt;
     synth.filt_closure(1)=0;
     %synth.randomsource=randn(synth.samplesperperiod,1);
     %synth.randomsource=fft(randn(synth.samplesperperiod,1)); synth.randomsource=real(ifft(synth.randomsource.*min(0:numel(synth.randomsource)-1,numel(synth.randomsource):-1:1)'/numel(synth.randomsource)*10)); 
-    synth.randomsource=fft(randn(synth.samplesperperiod,1)); synth.randomsource(2+30:end-30)=0; synth.randomsource=2*real(ifft(synth.randomsource)); 
+    synth.randomsource=fft(randn(synth.samplesperperiod,1)); fs0=min(0:synth.samplesperperiod-1,synth.samplesperperiod:-1:1)'; synth.randomsource=real(ifft(synth.randomsource.*(1./sqrt(1+fs0))));
+
+    %synth.randomsource(2+30:end-30)=0; synth.randomsource=2*real(ifft(synth.randomsource)); 
     %synth.randomsource=real(ifft(fft(synth.glottalsource).*exp(1i*2*pi*rand(size(synth.glottalsource)))));
 
     % computes sound signal
@@ -244,7 +246,7 @@ while time<(ndata+1)*dt;
 %             (1-sqrt(max(0,synth.voicing)))* ...
 %                 0.025*synth.pressure*synth.randomsource;
 
-        % if minaf0>0&&minaf0<=k,u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*synth.randomsource; end % fricatives? 
+        if minaf0>0&&minaf0<=k,u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*synth.randomsource; end % fricatives
         
         %temp=ifft(synth.filt); temp=temp.*conn_hanning(numel(temp)).^2; temp=fft(temp);
         %v=real(ifft(fft(u).*temp));
@@ -271,7 +273,7 @@ while time<(ndata+1)*dt;
     
     % computes f0/amp/voicing/pressurebuildup modulation
     synth.pressure0=vt.pressure0;
-    alpha=min(1,(1)*synth.numberofperiods);beta=100/synth.numberofperiods;
+    alpha=min(.5,(1)*synth.numberofperiods);beta=100/synth.numberofperiods;
     synth.pressure=synth.pressure+alpha*(vt.pressure*(max(1,1.5-vt.opening_time/beta))-synth.pressure);
     alpha=min(1,.5*synth.numberofperiods);beta=100/synth.numberofperiods;
     synth.f0=synth.f0 + 0*sqrt(alpha)*randn + alpha*(1*randn + vt.f0*max(1,1.25-vt.opening_time/beta)-synth.f0);%147;%120;

@@ -5,6 +5,12 @@ function s=diva_glottalsystem_waveform(GLOTART, nsamples)
 %    s   : [nx1] vector containing n samples covering one period of glottal waveform
 %
 
+% unvoiced source
+s0 = fft(.10*randn(nsamples,1)); 
+fs0=min(0:numel(s0)-1,numel(s0):-1:1)'; 
+s0=s0.*(1./sqrt(1+fs0)); 
+s0=real(ifft(s0)); 
+
 % voiced LF source
 FPV=diva_glottalsystem_forwardmodel(GLOTART);
 voicing=(1+tanh(3*FPV(3)))/2;
@@ -21,14 +27,9 @@ s1 =    ppp(1)*glotlf(0,tt,pp)+...
 s1 = fft(s1); 
 s1(2+nsamples:end-nsamples)=0;
 s1=real(ifft(s1)); s1=mean(reshape(s1,resf,[]),1)';
-s1=pressure * s1 .* (1+.05*randn(nsamples,1));
-
-% unvoiced source
-s0 = pressure * fft(.10*randn(nsamples,1)); 
-fs0=min(0:numel(s0)-1,numel(s0):-1:1)'; 
-s0=s0.*(1./sqrt(1+fs0)); 
-s0=real(ifft(s0)); 
+%s1=s1 .* (1+4*s0);
+s1=s1 .* (1+.05*randn(nsamples,1));
 
 % combined voiced/unvoiced sources
 wvoiced = sqrt(max(0,voicing));
-s =  wvoiced * s1 + (1-wvoiced) * s0;
+s =  pressure * (wvoiced * s1 + (1-wvoiced) * s0);
