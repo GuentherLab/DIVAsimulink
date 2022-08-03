@@ -412,7 +412,7 @@ switch(lower(option))
         %set(data.handles.h1_memory,'xdata',real(x),'ydata',imag(x));
         if isfield(data.state,'filtsample')&&data.handles.hax1type~=1, 
             if all(data.state.filtsample.lips==0), set(data.handles.h1d,'xdata',nan,'ydata',nan);
-            else set(data.handles.h1d,'xdata',real(xE)-linspace(10,170,4*11025/10),'ydata',imag(xE)+50*data.state.filtsample.lips(1+mod(0:4*11025/10-1,numel(data.state.filtsample.lips)))); 
+            else set(data.handles.h1d,'xdata',real(xE)-linspace(10,170,4*11025/10),'ydata',imag(xE)+25*data.state.filtsample.lips(1+mod(0:4*11025/10-1,numel(data.state.filtsample.lips)))); 
             end
         end
         

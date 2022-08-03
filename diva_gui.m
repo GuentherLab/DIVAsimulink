@@ -361,7 +361,9 @@ switch(lower(option)),
         cwd=pwd;
         cd(filepath);
         if ispc,
-            [ok,msg]=system(sprintf('"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe" -I dummy %s --sout=#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=%s} vlc://quit',[filename,fileext],[filename,'.mpg']));
+            
+            %[ok,msg]=system(sprintf('"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe" -I dummy %s --sout=#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=%s} vlc://quit',[filename,fileext],[filename,'.mpg']));
+            [ok,msg]=system(sprintf('"%ProgramFiles%\\VideoLAN\\VLC\\vlc.exe" -I dummy %s --sout=#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2}:standard{access=file,mux=ps,dst=%s} vlc://quit',[filename,fileext],[filename,'.mpg']));
             if ~ok, fprintf('File %s created\n',fullfile(filepath,[filename,'.mpg'])); 
             else disp(msg); 
             end

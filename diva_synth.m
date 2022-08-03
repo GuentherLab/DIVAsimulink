@@ -18,17 +18,24 @@ switch(lower(option))
     case 'explicit' 
         [Outline,p,Aud,Som,af,d]=diva_synth_sample(Art);
         if nargout>=6 % filtsample
-            f0=100*(1+.5*Art(11,end));
-            pressure=max(0,Art(12,end)-0.1);
-            voicing=Art(13,end);
+            nFPV=diva_glottalsystem_forwardmodel;
+            GLOTART=max(-1,min(1, Art(end-nFPV+1:end,end) ));
+            FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
+            f0=100*(1+.5*FPV(1));
+            %pressure=max(0,Art(12,end)-0.1);
+            %voicing=Art(13,end);
+            %f0=100*(1+.5*Art(11,end));
             samplesperperiod=ceil(fs/f0);
-            %[filt,f]=a2h(max(0,af),d,samplesperperiod,fs);
+            %%[filt,f]=a2h(max(0,af),d,samplesperperiod,fs);
             [filt,f]=a2h(max(0,af),d,4*samplesperperiod,fs);
             filt=mean(reshape(filt,4,[]),1).';
             N=numel(filt);
-            glottalsource=glotlf(0,(0:N-1)/samplesperperiod)';
-            u=0.25*pressure*(sqrt(max(0,voicing))*glottalsource + .1*(1-sqrt(max(0,voicing)))*randn(N,1));
-            %if minaf0>0&&minaf0<=k, u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*randn(synth.samplesperperiod,1); end
+
+            u=diva_glottalsystem_waveform(GLOTART, N);
+            %glottalsource=glotlf(0,(0:N-1)/samplesperperiod)';
+            %u=0.25*pressure*(sqrt(max(0,voicing))*glottalsource + .1*(1-sqrt(max(0,voicing)))*randn(N,1));
+
+            %%if minaf0>0&&minaf0<=k, u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*randn(synth.samplesperperiod,1); end
             v=real(ifft(fft(u).*filt));
             filtsample=struct('glottis',u,'lips',v);
         end
@@ -91,7 +98,7 @@ end
 synth=struct('fs',4*11025,'update_fs',200); 
 synth.f0=100;
 synth.samplesperperiod=ceil(synth.fs/synth.f0);
-synth.glottalsource=glotlf(0,(0:1/synth.samplesperperiod:1-1/synth.samplesperperiod)');
+synth.glottalsource=zeros(synth.samplesperperiod,1); %glotlf(0,(0:1/synth.samplesperperiod:1-1/synth.samplesperperiod)');
 synth.f=[0,1];
 synth.filt=[0,0];
 synth.pressure=0; % glottal pressure now
@@ -132,7 +139,9 @@ while time<(ndata+1)*dt;
     af=af1*(1-t1)+af2*t1; 
     naf=round(naf1*(1-t1)+naf2*t1);
     af=af(1:naf);
-    FPV=max(-1,min(1, Art(end-2:end,min(ndata,1+t0))*(1-t1)+Art(end-2:end,min(ndata,2+t0))*t1 ));
+    nFPV=diva_glottalsystem_forwardmodel; 
+    GLOTART=max(-1,min(1, Art(end-nFPV+1:end,min(ndata,1+t0))*(1-t1)+Art(end-nFPV+1:end,min(ndata,2+t0))*t1 )); % glottal articulatory dimensions
+    FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
     vt.voicing=(1+tanh(3*FPV(3)))/2;
     vt.pressure=max(0,FPV(2)-0.1);
     vt.pressure0=vt.pressure>.01;
@@ -164,7 +173,7 @@ while time<(ndata+1)*dt;
     
     if release>0, % air starts flowing at release point
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
-                    synth.pressure=2+2*tanh(synth.pressurebuildup);%modulation=0; 
+                    synth.pressure=2+2*tanh(synth.pressurebuildup); %modulation=0; 
                     synth.f0=1.25*vt.f0; 
     elseif  (vt.pressure0&&~synth.pressure0) % air starts flowing at glottal source
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
@@ -176,19 +185,21 @@ while time<(ndata+1)*dt;
     end
     
     % computes glottal source
-    resf=16;
+%     resf=16;
     synth.samplesperperiod=ceil(synth.fs/synth.f0/2)*2;
-    pp=[.6,.2-.1*synth.voicing,.1+.1*synth.voicing]';%10+.15*max(0,min(1,1-vt.opening_time/100))];
-    ppp=[1 -1*.050 0*.002];
-    tt=(0:1/resf/synth.samplesperperiod:1-1/resf/synth.samplesperperiod);
-    synth.glottalsource=    2*ppp(1)*glotlf(0,tt',pp)+...
-                            2*ppp(2)*synth.k1*glotlf(1,tt',pp)+...
-                            2*ppp(3)*synth.k1*glotlf(2,tt',pp);
-    lpk=synth.samplesperperiod;
-    synth.glottalsource=fft(synth.glottalsource); synth.glottalsource(2+lpk:end-lpk)=0;  synth.glottalsource=real(ifft(synth.glottalsource)); synth.glottalsource=mean(reshape(synth.glottalsource,resf,[]),1)';
+    synth.glottalsource=diva_glottalsystem_waveform(GLOTART, synth.samplesperperiod);
+%         pp=[.6,.2-.1*synth.voicing,.1+.1*synth.voicing]';%10+.15*max(0,min(1,1-vt.opening_time/100))];
+%         ppp=[1 -1*.050 0*.002];
+%         tt=(0:1/resf/synth.samplesperperiod:1-1/resf/synth.samplesperperiod);
+%         synth.glottalsource=    2*ppp(1)*glotlf(0,tt',pp)+...
+%                                 2*ppp(2)*synth.k1*glotlf(1,tt',pp)+...
+%                                 2*ppp(3)*synth.k1*glotlf(2,tt',pp);
+%     lpk=synth.samplesperperiod;
+%     synth.glottalsource=fft(synth.glottalsource); synth.glottalsource(2+lpk:end-lpk)=0;  synth.glottalsource=real(ifft(synth.glottalsource)); synth.glottalsource=mean(reshape(synth.glottalsource,resf,[]),1)';
     numberofperiods=synth.numberofperiods;
         
     % computes vocal tract filter
+    resf=16;
     [synth.filt,synth.f,synth.filt_closure]=a2h(af0,d,resf*synth.samplesperperiod,synth.fs,vt.closure_position,minaf0);
 %synth.filt=fft(synth.filt); synth.filt(2+lpk:end-lpk)=0;  synth.filt=ifft(synth.filt); 
 %fhanning=hanning(numel(synth.filt));synth.filt=ifft(fft(synth.filt).*fhanning/sum(fhanning));
@@ -207,15 +218,16 @@ while time<(ndata+1)*dt;
     % computes sound signal
     w=linspace(0,1,synth.samplesperperiod)';
     if release>0&&synth.pressure>0,
-        u=  sqrt(max(0,synth.voicing))*...
-                0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
-            (1-sqrt(max(0,synth.voicing)))*...
-                0.025*synth.pressure*synth.randomsource;
-%         if release_closure_time<40
-%             u=1*.010*synth.pressure*synth.glottalsource;%.*(0.25+.025*synth.randomsource); % vocal tract filter
-%         else
-%             u=1*.010*(synth.pressure+synth.pressurebuildup)*synth.randomsource;
-%         end
+        u=synth.pressure*synth.glottalsource;
+%         u=  sqrt(max(0,synth.voicing))*...
+%                 0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
+%             (1-sqrt(max(0,synth.voicing)))*...
+%                 0.025*synth.pressure*synth.randomsource;
+% %         if release_closure_time<40
+% %             u=1*.010*synth.pressure*synth.glottalsource;%.*(0.25+.025*synth.randomsource); % vocal tract filter
+% %         else
+% %             u=1*.010*(synth.pressure+synth.pressurebuildup)*synth.randomsource;
+% %         end
         v0=real(ifft(fft(u).*synth.filt_closure));
         numberofperiods=numberofperiods-1;
         %synth.pressure=synth.pressure/10;
@@ -226,11 +238,13 @@ while time<(ndata+1)*dt;
     if numberofperiods>0,
         %u=0.25*synth.modulation*synth.pressure*synth.glottalsource.*(1+.1*randn(synth.samplesperperiod,1)); % vocal tract filter
         %u=0.25*synth.pressure*synth.glottalsource.*(1+.1*randn(synth.samplesperperiod,1)); % vocal tract filter
-        u=  sqrt(max(0,synth.voicing))*...
-                0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
-            (1-sqrt(max(0,synth.voicing)))* ...
-                0.025*synth.pressure*synth.randomsource;
-        if minaf0>0&&minaf0<=k, u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*synth.randomsource; end
+        u=synth.pressure*synth.glottalsource;
+%         u=  sqrt(max(0,synth.voicing))*...
+%                 0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
+%             (1-sqrt(max(0,synth.voicing)))* ...
+%                 0.025*synth.pressure*synth.randomsource;
+
+        % if minaf0>0&&minaf0<=k,u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*synth.randomsource; end % fricatives? 
         
         %temp=ifft(synth.filt); temp=temp.*conn_hanning(numel(temp)).^2; temp=fft(temp);
         %v=real(ifft(fft(u).*temp));
