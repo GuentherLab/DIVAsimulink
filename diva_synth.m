@@ -147,21 +147,42 @@ while time<(ndata+1)*dt;
     vt.pressure0=vt.pressure>.01;
     vt.f0=voices(opt.voices).F0*(1+.5*FPV(1));
     
+    af0=af;
+    k=.025;af0(af0>=-k&af0<=k)=k;
     af0=max(0,af);
-    k=.025;af0(af0>0&af0<k)=k;
     minaf=min(af);
     minaf0=min(af0);
     vt.af=af;
     
     % tracks place of articulation
-    if minaf0==0, 
+    % detects release, plosive, fricative
+    if minaf0==0, % closed vocal tract
         release=0;
+        plosive=0;
+        fricative=0;
         vt.opening_time=0; vt.closure_time=vt.closure_time+1;
         vt.closure_position=find(af0==0,1,'last');
-        if ~vt.closed, closure=vt.closure_position; else closure=0; end;
-        vt.closed=1;
-    else
-        if vt.closed, release=vt.closure_position; release_closure_time=vt.closure_time; else release=0; end;
+        if ~vt.closed, closure=vt.closure_position; else closure=0; end; % just closed
+        vt.closed=1; 
+    else % open vocal tract
+        if vt.closed, 
+            release=vt.closure_position; release_closure_time=vt.closure_time; % just open
+            if release>0&vt.pressure>0, 
+                if GLOTART(3)>0, % voiced
+                    plosive=1; % change this value to control amplitude of voiced plosive
+                else
+                    plosive=4; % change this value to control amplitude of unvoiced plosive
+                end
+            else plosive=0;
+            end
+            fricative=0;
+        else 
+            release=0; 
+            plosive=0;
+            if minaf0==k, fricative=2; % change this value to control amplitude of fricatives
+            else fricative=0;
+            end
+        end
         if (vt.pressure0&&~synth.pressure0) vt.opening_time=0; end;
         vt.opening_time=vt.opening_time+1;
         vt.closure_time=0;
@@ -169,7 +190,7 @@ while time<(ndata+1)*dt;
         closure=0;
         vt.closed=0;
     end
-    if release>0  af=max(k,af);minaf=max(k,minaf);minaf0=max(k,minaf0); end
+    if release>0, af=max(k,af);minaf=max(k,minaf);minaf0=max(k,minaf0); end
     
     if release>0, % air starts flowing at release point
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
@@ -219,8 +240,8 @@ while time<(ndata+1)*dt;
 
     % computes sound signal
     w=linspace(0,1,synth.samplesperperiod)';
-    if release>0&&synth.pressure>0,
-        u=synth.pressure*synth.glottalsource;
+    if plosive, %release>0&&synth.pressure>0, % opening
+        u=(synth.pressure+plosive)*synth.glottalsource;
 %         u=  sqrt(max(0,synth.voicing))*...
 %                 0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
 %             (1-sqrt(max(0,synth.voicing)))*...
@@ -240,21 +261,25 @@ while time<(ndata+1)*dt;
     if numberofperiods>0,
         %u=0.25*synth.modulation*synth.pressure*synth.glottalsource.*(1+.1*randn(synth.samplesperperiod,1)); % vocal tract filter
         %u=0.25*synth.pressure*synth.glottalsource.*(1+.1*randn(synth.samplesperperiod,1)); % vocal tract filter
-        u=synth.pressure*synth.glottalsource;
+%         u=synth.pressure*synth.glottalsource;
 %         u=  sqrt(max(0,synth.voicing))*...
 %                 0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
 %             (1-sqrt(max(0,synth.voicing)))* ...
 %                 0.025*synth.pressure*synth.randomsource;
 
-        if minaf0>0&&minaf0<=k,u=minaf/k*u+(1-minaf/k)*.02*synth.pressure*synth.randomsource; end % fricatives
+        if fricative, % fricatives
+            u=(synth.pressure+fricative)*synth.randomsource; 
+            v=real(ifft(fft(u).*synth.filt_closure));
+        else
+            u=synth.pressure*synth.glottalsource;
+            v=real(ifft(fft(u).*synth.filt));
+        end 
         
         %temp=ifft(synth.filt); temp=temp.*conn_hanning(numel(temp)).^2; temp=fft(temp);
         %v=real(ifft(fft(u).*temp));
         %v=u;
         %figure(21);subplot(211);plot(abs(synth.filt)); subplot(212);plot(af0); drawnow;
         %disp([d,synth.samplesperperiod,synth.fs,vt.closure_position,minaf0])
-        
-        v=real(ifft(fft(u).*synth.filt));
         
         vnew=v(1:synth.samplesperperiod);
         v=(1-w).*synth.sample(ceil(numel(synth.sample)*(1:synth.samplesperperiod)'/synth.samplesperperiod))+w.*vnew;

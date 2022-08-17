@@ -13,7 +13,7 @@ s0=real(ifft(s0));
 
 % voiced LF source
 FPV=diva_glottalsystem_forwardmodel(GLOTART);
-voicing=(1+tanh(3*FPV(3)))/2;
+voicing=(1+tanh(10*FPV(3)))/2;
 pressure=max(0,FPV(2)-0.1);
 
 pp=[.6,.2-.1*voicing,.1+.1*voicing]'; % LF model parameters
@@ -27,9 +27,8 @@ s1 =    ppp(1)*glotlf(0,tt,pp)+...
 s1 = fft(s1); 
 s1(2+nsamples:end-nsamples)=0;
 s1=real(ifft(s1)); s1=mean(reshape(s1,resf,[]),1)';
-%s1=s1 .* (1+4*s0);
 s1=s1 .* (1+.05*randn(nsamples,1));
 
 % combined voiced/unvoiced sources
-wvoiced = sqrt(max(0,voicing));
+wvoiced = (max(0,voicing));
 s =  pressure * (wvoiced * s1 + (1-wvoiced) * s0);
