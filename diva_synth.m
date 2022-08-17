@@ -106,6 +106,8 @@ synth.pressure=0; % glottal pressure now
 synth.voicing=1;
 synth.pressurebuildup=0;
 synth.pressure0=0; % vt.pressure0 last time
+synth.plosive=0;
+synth.fricative=0;
 synth.sample=zeros(synth.samplesperperiod,1);
 synth.k1=1;
 synth.numberofperiods=1;
@@ -148,11 +150,12 @@ while time<(ndata+1)*dt;
     vt.f0=voices(opt.voices).F0*(1+.5*FPV(1));
     
     af0=af;
-    k=.025;af0(af0>=-k&af0<=k)=k;
-    af0=max(0,af);
+    k=.025; af0(af0>=-k&af0<=k)=k;
+    af0=max(0,af0);
     minaf=min(af);
     minaf0=min(af0);
     vt.af=af;
+    disp([minaf, minaf0]);
     
     % tracks place of articulation
     % detects release, plosive, fricative
@@ -179,7 +182,7 @@ while time<(ndata+1)*dt;
         else 
             release=0; 
             plosive=0;
-            if minaf0==k, fricative=2; % change this value to control amplitude of fricatives
+            if minaf0==k, fricative=.5; % change this value to control amplitude of fricatives
             else fricative=0;
             end
         end
@@ -222,18 +225,23 @@ while time<(ndata+1)*dt;
     % computes vocal tract filter
     resf=8;
     [synth.filt,synth.f,synth.filt_closure]=a2h(af0,d,resf*synth.samplesperperiod,synth.fs,vt.closure_position,minaf0);
+    synth.filt=mean(reshape(synth.filt,resf,[]),1).';
+    synth.filt=2*synth.filt/max(eps,synth.filt(1));
+    synth.filt(1)=0;
+    if plosive||fricative,
+        [synth.filt_closure]=a2h(max(.1,af0(vt.closure_position+1:end)),d,resf*synth.samplesperperiod,synth.fs,[],minaf0);
+    end
+    synth.filt_closure=mean(reshape(synth.filt_closure,resf,[]),1).';
+    synth.filt_closure=2*synth.filt_closure/max(eps,synth.filt_closure(1));
+    synth.filt_closure(1)=0;
 %synth.filt=fft(synth.filt); synth.filt(2+lpk:end-lpk)=0;  synth.filt=ifft(synth.filt); 
 %fhanning=hanning(numel(synth.filt));synth.filt=ifft(fft(synth.filt).*fhanning/sum(fhanning));
 %fhanning=hanning(2*floor(resf)+1);synth.filt=convn(synth.filt,fhanning/sum(fhanning),'same');
-    synth.filt=mean(reshape(synth.filt,resf,[]),1).';synth.filt_closure=mean(reshape(synth.filt_closure,resf,[]),1).';
     %synth.filt=synth.filt(1:resf:end);synth.filt_closure=synth.filt_closure(1:resf:end);
-    synth.filt=2*synth.filt/max(eps,synth.filt(1));
-    synth.filt(1)=0;
-    synth.filt_closure=2*synth.filt_closure/max(eps,synth.filt_closure(1));
-    synth.filt_closure(1)=0;
     %synth.randomsource=randn(synth.samplesperperiod,1);
     %synth.randomsource=fft(randn(synth.samplesperperiod,1)); synth.randomsource=real(ifft(synth.randomsource.*min(0:numel(synth.randomsource)-1,numel(synth.randomsource):-1:1)'/numel(synth.randomsource)*10)); 
-    synth.randomsource=fft(randn(synth.samplesperperiod,1)); fs0=min(0:synth.samplesperperiod-1,synth.samplesperperiod:-1:1)'; synth.randomsource=real(ifft(synth.randomsource.*(1./sqrt(1+fs0))));
+    s0 = fft(.10*randn(synth.samplesperperiod,1));fs0=min(0:numel(s0)-1,numel(s0):-1:1)';s0=s0.*(1./sqrt(1+fs0));s0=real(ifft(s0));synth.randomsource=s0;
+    %synth.randomsource=fft(randn(synth.samplesperperiod,1)); fs0=min(0:synth.samplesperperiod-1,synth.samplesperperiod:-1:1)'; synth.randomsource=real(ifft(synth.randomsource.*(1./sqrt(1+fs0))));
 
     %synth.randomsource(2+30:end-30)=0; synth.randomsource=2*real(ifft(synth.randomsource)); 
     %synth.randomsource=real(ifft(fft(synth.glottalsource).*exp(1i*2*pi*rand(size(synth.glottalsource)))));
@@ -241,7 +249,7 @@ while time<(ndata+1)*dt;
     % computes sound signal
     w=linspace(0,1,synth.samplesperperiod)';
     if plosive, %release>0&&synth.pressure>0, % opening
-        u=(synth.pressure+plosive)*synth.glottalsource;
+        u=(plosive)*synth.glottalsource;
 %         u=  sqrt(max(0,synth.voicing))*...
 %                 0.25*synth.pressure*synth.glottalsource.*(1+.05*randn(synth.samplesperperiod,1)) + ...
 %             (1-sqrt(max(0,synth.voicing)))*...
@@ -267,11 +275,14 @@ while time<(ndata+1)*dt;
 %             (1-sqrt(max(0,synth.voicing)))* ...
 %                 0.025*synth.pressure*synth.randomsource;
 
-        if fricative, % fricatives
-            u=(synth.pressure+fricative)*synth.randomsource; 
-            v=real(ifft(fft(u).*synth.filt_closure));
+        if (fricative&&synth.fricative)||plosive, % fricatives
+            u=(fricative)*synth.randomsource; 
         else
             u=synth.pressure*synth.glottalsource;
+        end 
+        if fricative||plosive, % fricatives
+            v=real(ifft(fft(u).*synth.filt_closure));
+        else
             v=real(ifft(fft(u).*synth.filt));
         end 
         
@@ -307,6 +318,9 @@ while time<(ndata+1)*dt;
     alpha=min(1,.1*synth.numberofperiods);
     synth.pressurebuildup=max(0,min(1, synth.pressurebuildup+alpha*(2*(vt.pressure>0&minaf<0)-1) ));
     synth.numberofperiods=max(1,numberofperiods);
+    synth.plosive=plosive;
+    synth.fricative=fricative;
+
 end
 s=s(1:ceil(synth.fs*ndata*dt));
 end
