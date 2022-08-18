@@ -155,7 +155,6 @@ while time<(ndata+1)*dt;
     minaf=min(af);
     minaf0=min(af0);
     vt.af=af;
-    disp([minaf, minaf0]);
     
     % tracks place of articulation
     % detects release, plosive, fricative
