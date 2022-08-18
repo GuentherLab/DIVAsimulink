@@ -127,6 +127,7 @@ opt.voices=1;
 ndata=size(Art,2);
 dt=.005;
 time=0;
+lastV=[];
 s=zeros(ceil((ndata+1)*dt*synth.fs),1);
 while time<(ndata+1)*dt;
     % sample articulatory parameters
@@ -144,7 +145,10 @@ while time<(ndata+1)*dt;
     nFPV=diva_glottalsystem_forwardmodel; 
     GLOTART=max(-1,min(1, Art(end-nFPV+1:end,min(ndata,1+t0))*(1-t1)+Art(end-nFPV+1:end,min(ndata,2+t0))*t1 )); % glottal articulatory dimensions
     FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
-    vt.voicing=(1+tanh(3*FPV(3)))/2;
+    if isempty(lastV)||abs(lastV-FPV(3))<.01||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
+    %fprintf('%f %f\n',FPV(3),newV);
+    lastV=FPV(3);
+    vt.voicing=(1+tanh(10*newV))/2; 
     vt.pressure=max(0,FPV(2)-0.1);
     vt.pressure0=vt.pressure>.01;
     vt.f0=voices(opt.voices).F0*(1+.5*FPV(1));
@@ -173,7 +177,7 @@ while time<(ndata+1)*dt;
                 if GLOTART(3)>0, % voiced
                     plosive=1; % change this value to control amplitude of voiced plosive
                 else
-                    plosive=4; % change this value to control amplitude of unvoiced plosive
+                    plosive=2; % change this value to control amplitude of unvoiced plosive
                 end
             else plosive=0;
             end
@@ -196,7 +200,7 @@ while time<(ndata+1)*dt;
     
     if release>0, % air starts flowing at release point
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
-                    synth.pressure=1+1*tanh(synth.pressurebuildup); %modulation=0; 
+                    synth.pressure=1+2*tanh(10*synth.pressurebuildup); %modulation=0; 
                     synth.f0=1.25*vt.f0; 
     elseif  (vt.pressure0&&~synth.pressure0) % air starts flowing at glottal source
                     vt.f0=(1+.0*rand)*voices(opt.voices).F0;
@@ -224,12 +228,13 @@ while time<(ndata+1)*dt;
     % computes vocal tract filter
     resf=8;
     [synth.filt,synth.f,synth.filt_closure]=a2h(af0,d,resf*synth.samplesperperiod,synth.fs,vt.closure_position,minaf0);
+    if plosive||fricative,
+        [synth.filt_closure]=a2h(max(k,af0(vt.closure_position+1:end)),d,resf*synth.samplesperperiod,synth.fs,[],minaf0);
+        %synth.filt_closure=synth.filt;
+    end
     synth.filt=mean(reshape(synth.filt,resf,[]),1).';
     synth.filt=2*synth.filt/max(eps,synth.filt(1));
     synth.filt(1)=0;
-    if plosive||fricative,
-        [synth.filt_closure]=a2h(max(.1,af0(vt.closure_position+1:end)),d,resf*synth.samplesperperiod,synth.fs,[],minaf0);
-    end
     synth.filt_closure=mean(reshape(synth.filt_closure,resf,[]),1).';
     synth.filt_closure=2*synth.filt_closure/max(eps,synth.filt_closure(1));
     synth.filt_closure(1)=0;
@@ -274,7 +279,7 @@ while time<(ndata+1)*dt;
 %             (1-sqrt(max(0,synth.voicing)))* ...
 %                 0.025*synth.pressure*synth.randomsource;
 
-        if (fricative&&synth.fricative)||plosive, % fricatives
+        if (fricative&&synth.fricative), % fricatives
             u=(fricative)*synth.randomsource; 
         else
             u=synth.pressure*synth.glottalsource;
