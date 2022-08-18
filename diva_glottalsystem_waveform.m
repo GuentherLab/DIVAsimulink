@@ -1,8 +1,9 @@
-function s=diva_glottalsystem_waveform(GLOTART, nsamples)
-% s=diva_glottalsystem_forwardmodel(ART, n)
+function s=diva_glottalsystem_waveform(GLOTART, nsamples, Voicing)
+% s=diva_glottalsystem_forwardmodel(ART, n [, Voicing])
 % outputs one period of glottal waveform
-%    ART : [Nx1] vector of glottal articulatory dimensions (e.g 3x1 vector for LF F0/Pressure/Voicing model) 
-%    s   : [nx1] vector containing n samples covering one period of glottal waveform
+%    ART        : [Nx1] vector of glottal articulatory dimensions (e.g 3x1 vector for LF F0/Pressure/Voicing model) 
+%    Voicing    : optional mixture with noise source (-1 to +1 values, set to +1 for no mixture) 
+%    s          : [nx1] vector containing n samples covering one period of glottal waveform
 %
 
 gname='LF'; % name of glottal model used by default
@@ -17,7 +18,9 @@ switch(gname) % note: to add new glottal model add a new 'case' below with its d
 
         % voiced LF source
         FPV=diva_glottalsystem_forwardmodel(GLOTART);
-        voicing=(1+tanh(10*FPV(3)))/2;
+        if nargin<3||isempty(Voicing), voicing=(1+tanh(10*FPV(3)))/2;
+        else voicing=(1+tanh(10*Voicing))/2; 
+        end
         pressure=max(0,FPV(2)-0.1);
 
         pp=[.6,.2-.1*voicing,.1+.1*voicing]'; % LF model parameters
@@ -34,7 +37,7 @@ switch(gname) % note: to add new glottal model add a new 'case' below with its d
         s1=s1 .* (1+.05*randn(nsamples,1));
 
         % combined voiced/unvoiced sources
-        wvoiced = (max(0,voicing));
+        wvoiced = max(0,voicing);
         s =  pressure * (wvoiced * s1 + (1-wvoiced) * s0);
 end
 

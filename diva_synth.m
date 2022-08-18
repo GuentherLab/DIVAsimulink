@@ -127,7 +127,7 @@ opt.voices=1;
 ndata=size(Art,2);
 dt=.005;
 time=0;
-lastV=[];
+lastV=[];lastTime=0;
 s=zeros(ceil((ndata+1)*dt*synth.fs),1);
 while time<(ndata+1)*dt;
     % sample articulatory parameters
@@ -145,9 +145,9 @@ while time<(ndata+1)*dt;
     nFPV=diva_glottalsystem_forwardmodel; 
     GLOTART=max(-1,min(1, Art(end-nFPV+1:end,min(ndata,1+t0))*(1-t1)+Art(end-nFPV+1:end,min(ndata,2+t0))*t1 )); % glottal articulatory dimensions
     FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
-    if isempty(lastV)||abs(lastV-FPV(3))<.01||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
+    if isempty(lastV)||abs(lastV-FPV(3))<1*(time-lastTime)||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
     %fprintf('%f %f\n',FPV(3),newV);
-    lastV=FPV(3);
+    lastV=FPV(3);lastTime=time;
     vt.voicing=(1+tanh(10*newV))/2; 
     vt.pressure=max(0,FPV(2)-0.1);
     vt.pressure0=vt.pressure>.01;
@@ -174,10 +174,10 @@ while time<(ndata+1)*dt;
         if vt.closed, 
             release=vt.closure_position; release_closure_time=vt.closure_time; % just open
             if release>0&vt.pressure>0, 
-                if GLOTART(3)>0, % voiced
+                if newV>0, % voiced
                     plosive=1; % change this value to control amplitude of voiced plosive
                 else
-                    plosive=2; % change this value to control amplitude of unvoiced plosive
+                    plosive=1; % change this value to control amplitude of unvoiced plosive
                 end
             else plosive=0;
             end
@@ -214,7 +214,7 @@ while time<(ndata+1)*dt;
     % computes glottal source
 %     resf=16;
     synth.samplesperperiod=ceil(synth.fs/synth.f0/2)*2;
-    synth.glottalsource=diva_glottalsystem_waveform(GLOTART, synth.samplesperperiod);
+    synth.glottalsource=diva_glottalsystem_waveform(GLOTART, synth.samplesperperiod, newV);
 %         pp=[.6,.2-.1*synth.voicing,.1+.1*synth.voicing]';%10+.15*max(0,min(1,1-vt.opening_time/100))];
 %         ppp=[1 -1*.050 0*.002];
 %         tt=(0:1/resf/synth.samplesperperiod:1-1/resf/synth.samplesperperiod);
@@ -305,6 +305,10 @@ while time<(ndata+1)*dt;
         end
     else v=[]; end
     v=cat(1,v0,v);
+    %if newV<-.5&~plosive, 
+    %    fprintf('.');
+    %    v=v(1:min(numel(v),16)); 
+    %end
     %v=v+.0001*randn(size(v));
     %v=(1-exp(-v))./(1+exp(-v));
     s(synth.samplesoutput+(1:numel(v)))=v;
