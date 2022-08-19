@@ -147,7 +147,9 @@ while time<(ndata+1)*dt;
     nFPV=diva_glottalsystem_forwardmodel; 
     GLOTART=max(-1,min(1, Art(end-nFPV+1:end,min(ndata,1+t0))*(1-t1)+Art(end-nFPV+1:end,min(ndata,2+t0))*t1 )); % glottal articulatory dimensions
     FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
-    if isempty(lastV)||abs(lastV-FPV(3))<1*(time-lastTime)||newV==0||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
+    if isempty(lastV)||abs(lastV-FPV(3))<1*(time-lastTime)||newV==0, newV=FPV(3); 
+    elseif sign(FPV(3)-lastV)==sign(newV-lastV), newV=lastV; 
+    end
     %fprintf('%f %f\n',FPV(3),newV);
     lastV=FPV(3);lastTime=time;
     vt.voicing=(1+tanh(10*newV))/2; 
@@ -190,7 +192,6 @@ while time<(ndata+1)*dt;
             release=0; 
             plosive=0;
             if minaf0==k, 
-                if debuginfo, fprintf(' fricative '); end
                 fricative=.5; % change this value to control amplitude of fricatives
             else fricative=0;
             end
@@ -286,6 +287,7 @@ while time<(ndata+1)*dt;
 %                 0.025*synth.pressure*synth.randomsource;
 
         if (fricative&&synth.fricative), % fricatives
+            if debuginfo, fprintf(' fricative '); end
             u=(fricative)*synth.randomsource; 
         else
             u=synth.pressure*synth.glottalsource;
