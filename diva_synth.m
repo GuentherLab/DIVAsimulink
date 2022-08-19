@@ -123,12 +123,14 @@ vt.opening_time=0;
 
 voices=struct('F0',{100,340},'size',{1,.7});
 opt.voices=1;
+debuginfo=true;
 
 ndata=size(Art,2);
 dt=.005;
 time=0;
 lastV=[];lastTime=0;
 s=zeros(ceil((ndata+1)*dt*synth.fs),1);
+if debuginfo, fprintf('\n'); end
 while time<(ndata+1)*dt;
     % sample articulatory parameters
     t0=floor(time/dt);
@@ -145,7 +147,7 @@ while time<(ndata+1)*dt;
     nFPV=diva_glottalsystem_forwardmodel; 
     GLOTART=max(-1,min(1, Art(end-nFPV+1:end,min(ndata,1+t0))*(1-t1)+Art(end-nFPV+1:end,min(ndata,2+t0))*t1 )); % glottal articulatory dimensions
     FPV=diva_glottalsystem_forwardmodel(GLOTART); % F0/Pressure/Voicing articulatory dimensions
-    if isempty(lastV)||abs(lastV-FPV(3))<1*(time-lastTime)||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
+    if isempty(lastV)||abs(lastV-FPV(3))<1*(time-lastTime)||newV==0||sign(FPV(3)-lastV)==sign(newV-lastV), newV=FPV(3); end
     %fprintf('%f %f\n',FPV(3),newV);
     lastV=FPV(3);lastTime=time;
     vt.voicing=(1+tanh(10*newV))/2; 
@@ -175,8 +177,10 @@ while time<(ndata+1)*dt;
             release=vt.closure_position; release_closure_time=vt.closure_time; % just open
             if release>0&vt.pressure>0, 
                 if newV>0, % voiced
+                    if debuginfo, fprintf(' plosive-voiced '); end
                     plosive=1; % change this value to control amplitude of voiced plosive
                 else
+                    if debuginfo, fprintf(' plosive-unvoiced '); end
                     plosive=1; % change this value to control amplitude of unvoiced plosive
                 end
             else plosive=0;
@@ -185,7 +189,9 @@ while time<(ndata+1)*dt;
         else 
             release=0; 
             plosive=0;
-            if minaf0==k, fricative=.5; % change this value to control amplitude of fricatives
+            if minaf0==k, 
+                if debuginfo, fprintf(' fricative '); end
+                fricative=.5; % change this value to control amplitude of fricatives
             else fricative=0;
             end
         end
@@ -331,6 +337,7 @@ while time<(ndata+1)*dt;
 
 end
 s=s(1:ceil(synth.fs*ndata*dt));
+if debuginfo, fprintf('\n'); end
 end
 
 % computes auditory/somatosensory representations
