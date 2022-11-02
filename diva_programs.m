@@ -12,6 +12,8 @@ function varargout=diva_programs(option,varargin)
 %       s                     : audio signal output
 %       fs                    : sampling frequency (Hz)
 %
+% e.g. [s, fs]= diva_programs('play', {'buy','puppy'});
+%
 % [s,fs] = diva_programs('play_gestures', programID  [, transition_durations, gesture_durations]); 
 % [s,fs] = diva_programs('play_phonemes', programID  [, transition_durations, phoneme_durations]); 
 % [s,fs] = diva_programs('play_syllables', programID  [, transition_durations, syllable_durations]); 
@@ -21,6 +23,8 @@ function varargout=diva_programs(option,varargin)
 %       phoneme_durations     : cell array of length N, with durations{n} in ms units specifying the durations of each phoneme in programID{n} (one value per phoneme) 
 %       syllable_durations    : cell array of length N, with durations{n} in ms units specifying the durations of each syllable in programID{n} (one value per syllable) 
 %       word_durations        : cell array of length N, with durations{n} in ms units specifying the durations of each word in programID{n} (one value per word) 
+%
+% e.g. [s, fs]= diva_programs('play_syllables', {'buy','puppy'}, 40, {200, [500,40,250]});
 %
 % diva_programs('play####', ...)
 %    same as corresponding 'play' option but playing the output over the speakers
