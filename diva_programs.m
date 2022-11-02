@@ -6,24 +6,26 @@ function varargout=diva_programs(option,varargin)
 % -------------------------------------------------------
 %
 % [s,fs] = diva_programs('play', programID [, transition_durations]); 
+%   produces programID, optionally specifying durations of transitions between each program 
+%       programID             : cell array indicating of N existing DIVA programs (in diva_targets directory) to be produced 
+%       transition_durations  : vector of length N-1, with durations{n} in ms units specifying the duration of the transition between programID{n} and programID{n+1}  
+%       s                     : audio signal output
+%       fs                    : sampling frequency (Hz)
+%
 % [s,fs] = diva_programs('play_gestures', programID  [, transition_durations, gesture_durations]); 
 % [s,fs] = diva_programs('play_phonemes', programID  [, transition_durations, phoneme_durations]); 
 % [s,fs] = diva_programs('play_syllables', programID  [, transition_durations, syllable_durations]); 
 % [s,fs] = diva_programs('play_words', programID  [, transition_durations, word_durations]); 
-%   produces programID, optionally specifying durations of each phoneme/syllable/word
-%       programID             : cell array indicating of N existing DIVA programs (in diva_targets directory) to be produced 
-%       transition_durations  : vector of length N-1, with durations{n} in ms units specifying the duration of the transition between programID{n} and programID{n+1}  
+%   same as 'play' option but also specifying the durations of each gesture/phoneme/syllable/word within each program 
 %       gesture_durations     : cell array of length N, with durations{n} in ms units specifying the durations of each gesture in programID{n} (one value per gesture) 
 %       phoneme_durations     : cell array of length N, with durations{n} in ms units specifying the durations of each phoneme in programID{n} (one value per phoneme) 
 %       syllable_durations    : cell array of length N, with durations{n} in ms units specifying the durations of each syllable in programID{n} (one value per syllable) 
 %       word_durations        : cell array of length N, with durations{n} in ms units specifying the durations of each word in programID{n} (one value per word) 
-%       s                     : audio signal output
-%       fs                    : sampling frequency (Hz)
 %
 % diva_programs('play####', ...)
 %    same as corresponding 'play' option but playing the output over the speakers
 %
-% diva_programs('play####', ..., 'saveas', newprogramID)
+% [s,fs] = diva_programs('play####', ..., 'saveas', newprogramID)
 %    same as corresponding 'play' option but also saving the result as a new program with name <newprogramID> 
 %
 % [target,timeseries] = diva_programs('combine####', ...)
