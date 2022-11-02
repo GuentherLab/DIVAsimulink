@@ -146,3 +146,33 @@ sparse
 0.75 0.75 0.75 0.75 0.75 0.75 
 #ART_Voicing_max
 1 1 1 1 1 1 
+#ART_Tension_control
+0 230 
+#ART_Tension_min
+-1 -1 
+#ART_Tension_max
+1 1 
+#gestures_duration
+10 30 100 50 40 
+#gestures_name
+b,-,u,-,y
+#gestures_durationfixed
+1 1 0 0 0 
+#phonemes_duration
+1 1 1 1 1 
+#phonemes_name
+b,-,u,-,y
+#phonemes_durationfixed
+1 1 0 0 0 
+#syllables_duration
+5 
+#syllables_name
+buy
+#syllables_durationfixed
+0 
+#words_duration
+1 
+#words_name
+buy
+#words_durationfixed
+0 

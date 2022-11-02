@@ -8,11 +8,21 @@ function varargout=diva_targets(option,varargin)
 %           length          : total duration (in ms)
 %           interpolation   : interpolation type 'linear' or 'none'
 %           sampling        : temporal sampling type 'sparse' (one target per control-point) or 'fixed rate' (one target per time-point)
-%           <var>_control   : list of control-points or time-points (in ms)
-%           <var>_min       : minimum value of target <var> parameter
-%           <var>_max       : maximum value of target <var> parameter
-%                             see diva_vocaltract for list of <var> parameters
-%                             currently F0/F1/F2/F3/pressure/voicing/PA_pharyngeal/PA_uvular/PA_velar/PA_palatal/PA_alveolardental/PA_labial
+%       for each <var> = F0|F1|F2|F3|pressure|voicing|PA_pharyngeal|PA_uvular|PA_velar|PA_palatal|PA_alveolardental|PA_labial|ART_Jaw|ART_Lip_opening|Art_Lip_protrusion|ART_Soft_palate|ART_Larynx_height|ART_Tongue_#|ART_Tension|ART_Pressure|ART_Voicing (see diva_vocaltract for complete list of <var> parameters) 
+%           <var>_control             : list of control-points or time-points (in ms)
+%           <var>_min                 : minimum value of target <var> parameter
+%           <var>_max                 : maximum value of target <var> parameter
+%       for each <segment> = gestures | phonemes | syllables | words
+%           <segment>_duration        : list of target segment durations 
+%                                        for <segment> = gestures, durations are specified in ms units (note: if unspecified gestures_length = diff(union([<var>_control]))) 
+%                                        for <segment> = phonemes, durations are specified in number of control points 
+%                                        for <segment> = syllables, durations are specified in number of phonemes
+%                                        for <segment> = words, durations are specified in number of syllables 
+%           <segment>_name            : list of target segment names
+%           <segment>_durationfixed   : list of 1/0 values indicating whether the duration of this segment is fixed irrespective of production speed 
+%
+% to edit an existing target:               target = diva_targets('edit', target, field1, value1, ..., fieldn, valuen)
+%
 % to read production data from target:      [production, time] = diva_targets('timeseries', target, 'header')
 %   where production is a structure with fields:
 %           Aud_min         : [Ntime, Nparamsaud] matrix of auditory target minimum values
@@ -21,20 +31,32 @@ function varargout=diva_targets(option,varargin)
 %           Som_max         : [Ntime, Nparamssom] matrix of somatosensory target maximum values
 %           Art             : [Ntime, Nparamsart] matrix of motor production values         
 %           time            : [Ntime, 1] vector of timepoints (in ms)
+%
 % to create a new empty target:             target = diva_targets('new','txt')
+%
 % to create a new empty production:         production = diva_targets('new','mat')
+%
 % to create a new random target:            target = diva_targets('random','txt')
+%
 % to create a new random production:        target = diva_targets('random','mat')
+%
 % to load existing target:                  target = diva_targets('load','txt',targetname)
+%
 % to load existing production:              target = diva_targets('load','mat',targetname)
+%
 % to save new target:                       diva_targets('save',fileformat,targetname,target [,overwrite])
+%
 % to delete a target:                       diva_targets('delete',targetname) 
+%
 % to list current targets:                  targetnames = diva_targets('list')
+%
 % to combine two targets:                   target = diva_targets('combine', target1, target2, duration_transition, duration2 [, production1, production2])
+%
 % to temporally resample a target:          target = diva_targets('resampletime', target, time1, time2)
 %
 
 global DIVA_x;
+if ~isfield(DIVA_x,'model'), DIVA_x.model='diva'; end
 
 switch(lower(option))
     case 'list' % target files in diva_targets folder
@@ -94,6 +116,32 @@ switch(lower(option))
     case 'format'
         production_info=diva_targets_format(varargin{:});
         varargout{1}=production_info;
+    case 'edit',
+        production_info=varargin{1};
+        for nfield=2:2:numel(varargin)-1
+            if ~isfield(production_info,varargin{nfield}), fprintf('warning: field %s does not exist. Disregarding\n',varargin{nfield});
+            else 
+                if isequal(varargin{nfield},'gestures_duration') % note: change *_control values from gestures_duration
+                    oldx0=[];
+                    newx0=[0 cumsum(varargin{nfield+1})];
+                    params=diva_vocaltract;
+                    for n0=1:numel(params.Output), for n1=1:numel(params.Output(n0).Plots_dim), if numel(params.Output(n0).Plots_dim{n1})==1&&isfield(production_info, [params.Output(n0).Plots_label{n1},'_control']),
+                                x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
+                                oldx0=union(oldx0,x0);
+                    end; end; end
+                    assert(numel(oldx0)==numel(newx0),'incorrect size of field ''gestures_duration''');
+                    for n0=1:numel(params.Output), for n1=1:numel(params.Output(n0).Plots_dim), if numel(params.Output(n0).Plots_dim{n1})==1&&isfield(production_info, [params.Output(n0).Plots_label{n1},'_control']),
+                                x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
+                                [nill,idx]=ismember(x0,oldx0);
+                                production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(idx);
+                    end; end; end
+                    production_info.length=newx0(end);
+                end
+                production_info.(varargin{nfield})=varargin{nfield+1}; 
+            end
+        end
+        production_info=diva_targets_format(production_info);
+        varargout{1}=production_info;
     case 'resampletime',
         production_info=diva_targets_resampletime(varargin{:});
         varargout{1}=production_info;
@@ -132,6 +180,7 @@ switch(lower(option))
             end
         else
             disp(['warning: no entry matching ',production,' in ',filename]); 
+            varargout{1}=[];
         end
     case 'reset'
         production_info=varargin{1};
@@ -164,6 +213,10 @@ switch(lower(option))
                 production_info.name=production;
                 filename=[filename,'.txt'];
                 diva_targets_struct2txt(production_info,filename);
+            case 'matoverwrite'
+                filename=[filename,'.mat'];
+                timeseries=production_info;
+                save(filename,'timeseries');
             case 'mat'
                 production_info.name=production;
                 filename=[filename,'.mat'];
@@ -223,13 +276,14 @@ switch(lower(option))
         end
         varargout{1}=struct('Aud_min',Aud_min,'Aud_max',Aud_max,'Som_min',Som_min,'Som_max',Som_max,'Art',Art,'time',Time);
         varargout{2}=Time;
-    case 'combine'
+    case 'combine' % target = diva_targets('combine', target1, target2, duration_transition, duration2 [, production1, production2, segmentID])
         production_info1=varargin{1};
         production_info2=varargin{2};
         if numel(varargin)<3, duration_transition=40; else duration_transition=varargin{3}; end
         if numel(varargin)<4, duration2=[]; else duration2=varargin{4}; end
         if numel(varargin)<5, timeseries1=[]; else timeseries1=varargin{5}; end
         if numel(varargin)<6, timeseries2=[]; else timeseries2=varargin{6}; end
+        if numel(varargin)<7, segmentID='gestures'; else segmentID=varargin{7}; end
         %production_info <- production_info1 & production_info2;
         production_info.name='';
         if ~isempty(duration2), production_info2.length=duration2; end
@@ -240,6 +294,10 @@ switch(lower(option))
         if ~isequal(production_info2.interpolation,'linear'), fprintf('warning: interpolation methods changed from %s to linear\n',production_info2.interpolation); end
         if ~isfield(production_info1,'sampling'), production_info1.sampling='sparse'; end
         if ~isfield(production_info2,'sampling'), production_info2.sampling='sparse'; end
+        %if ~isfield(production_info1,'segment_lengths'), production_info1.segment_lengths=production_info1.length; end
+        %if ~isfield(production_info2,'segment_lengths'), production_info2.segment_lengths=production_info2.length; end
+        %if ~isfield(production_info1,'segment_names'), production_info1.segment_names=arrayfun(@(n)sprintf('segment #%d',n),1:numel(production_info1.segment_lengths),'uni',0); end
+        %if ~isfield(production_info2,'segment_names'), production_info2.segment_names=arrayfun(@(n)sprintf('segment #%d',n),1:numel(production_info2.segment_lengths),'uni',0); end
         if ~isequal(production_info1.sampling,production_info2.sampling), fprintf('warning: sampling methods changed to ''sparse''\n'); production_info.sampling='sparse'; 
         else production_info.sampling=production_info1.sampling;
         end
@@ -282,6 +340,25 @@ switch(lower(option))
                 end
             end
         end
+        segments={'gestures','phonemes','syllables','words'};
+        nlen=duration_transition;
+        for n1=1:numel(segments)
+            if isempty(segmentID), n2=inf;
+            else [nill,n2]=ismember(segmentID,segments);
+            end
+            if n1<=n2
+                production_info.([segments{n1},'_duration'])=[production_info1.([segments{n1},'_duration']) nlen production_info2.([segments{n1},'_duration'])];
+                production_info.([segments{n1},'_name'])=[production_info1.([segments{n1},'_name']) {'-'} production_info2.([segments{n1},'_name'])];
+                production_info.([segments{n1},'_durationfixed'])=[production_info1.([segments{n1},'_durationfixed']) true production_info2.([segments{n1},'_durationfixed'])];
+                nlen=1;
+            else
+                production_info.([segments{n1},'_duration'])=[production_info1.([segments{n1},'_duration'])(1:end-1) production_info1.([segments{n1},'_duration'])(end)+nlen+production_info2.([segments{n1},'_duration'])(1) production_info2.([segments{n1},'_duration'])(2:end)];
+                production_info.([segments{n1},'_name'])=[production_info1.([segments{n1},'_name']) production_info2.([segments{n1},'_name'])(2:end)];
+                production_info.([segments{n1},'_durationfixed'])=[production_info1.([segments{n1},'_durationfixed']) production_info2.([segments{n1},'_durationfixed'])(2:end)];
+                nlen=-1;
+            end
+        end
+
         %timeseries <- timeseries1 & timeseries2;
         timeseries=diva_targets('timeseries',production_info,'header');
         if ~isempty(timeseries1),
@@ -305,6 +382,7 @@ end
 function production_info=diva_targets_format(production_info,doextend)
 if nargin<2||isempty(doextend), doextend=false; end
 temp=[];
+allx0=[];
 params=diva_vocaltract;
 for n0=1:numel(params.Output),
     for n1=1:numel(params.Output(n0).Plots_dim)
@@ -327,8 +405,37 @@ for n0=1:numel(params.Output),
             production_info.([params.Output(n0).Plots_label{n1},'_control'])=x0(:)';
             production_info.([params.Output(n0).Plots_label{n1},'_min'])=x1(:)';
             production_info.([params.Output(n0).Plots_label{n1},'_max'])=x2(:)';
+            allx0=union(allx0,x0);
         end
     end
+end
+nsegments=max(0,numel(allx0)-1);
+segments={'gestures','phonemes','syllables','words'};
+for n1=1:numel(segments)
+    if n1==1, production_info.([segments{n1},'_duration'])=diff(allx0(:)'); end
+    if ~isfield(production_info, [segments{n1},'_duration']), production_info.([segments{n1},'_duration'])=nsegments; end
+    if ~isfield(production_info, [segments{n1},'_name'])||isempty(production_info.([segments{n1},'_name'])), production_info.([segments{n1},'_name'])=repmat({'undefined'},1,numel(production_info.([segments{n1},'_duration']))); end
+    if ~isfield(production_info, [segments{n1},'_durationfixed'])||isempty(production_info.([segments{n1},'_durationfixed'])), production_info.([segments{n1},'_durationfixed'])=false(size(production_info.([segments{n1},'_duration']))); end
+    x0=production_info.([segments{n1},'_duration']);
+    x1=production_info.([segments{n1},'_name']);
+    x2=production_info.([segments{n1},'_durationfixed']);
+    if n1>1, 
+        if isempty(x0),x0=nsegments; end
+        x0=max(1,round(x0));
+        while sum(x0)>nsegments, if x0(end)>nsegments-sum(x0), x0(end)=x0(end)-nsegments+sum(x0); else x0=x0(1:end-1); end; end 
+        if sum(x0)<nsegments, x0(end)=x0(end)+nsegments-sum(x0); end
+        %while sum(x0)>nsegments, x0=x0(1:end-1); end
+        %if sum(x0)<nsegments, x0=[x0 nsegments-sum(x0)]; end
+    end
+    if ischar(x1), x1={x1}; end
+    if numel(x1)>numel(x0), x1=x1(1:numel(x0)); end
+    if numel(x1)<numel(x0), x1=x1(min(numel(x1),1:numel(x0))); end
+    if numel(x2)>numel(x0), x2=x2(1:numel(x0)); end
+    if numel(x2)<numel(x0), x2=x2(min(numel(x2),1:numel(x0))); end
+    production_info.([segments{n1},'_duration'])=x0(:)';
+    production_info.([segments{n1},'_name'])=x1(:)';
+    production_info.([segments{n1},'_durationfixed'])=x2(:)';
+    nsegments=numel(x0);
 end
 if isfield(production_info,'sampling')&&isequal(production_info.sampling,'fixedrate'), production_info.sampling='fixed rate'; end
 if ~isfield(production_info,'sampling'), production_info.sampling='sparse'; end
@@ -371,9 +478,9 @@ end
 function varargout=diva_targets_resampletime(production_info,t1,t2)
 varargout={};
 fnames=fieldnames(production_info);
-fnames=fnames(cellfun('length',regexp(fnames,'_control$'))>0);
+fnames=fnames(strcmp(fnames,'gestures_duration')|cellfun('length',regexp(fnames,'_control$'))>0);
 for n0=1:numel(fnames)
-    production_info.(fnames{n0})=interp1(t1,t2,production_info.(fnames{n0}),'linear');
+    production_info.(fnames{n0})=round(1*interp1(t1,t2,production_info.(fnames{n0}),'linear'))/1; % note: rounded ms units 
 end
 production_info.length=max(t2);
 production_info=diva_targets_format(production_info);
@@ -498,6 +605,7 @@ for n1=1:length(s),
         n=str2double(s{n1});
         if ~isnan(n)&&all(ismember(s{n1},'0123456789.+-')), newvalue=n; 
         elseif isnan(n)&&~isempty(regexp(fieldname,'_min$|_max$')), newvalue=NaN; 
+        elseif any(s{n1}==','), newvalue=regexp(s{n1},'\s*,\s*','split'); newvalue=newvalue(cellfun('length',newvalue)>0);
         else newvalue=s{n1}; 
         end; %{s{n1}}; end
         if isfield(out,fieldname) && ~isempty(out.(fieldname)),
@@ -515,7 +623,9 @@ fh=fopen(filename,'wt');
 s=fieldnames(out);
 for n1=1:length(s),
     fprintf(fh,'#%s\n',s{n1});
-    if ischar(out.(s{n1}))
+    if iscell(out.(s{n1}))
+        fprintf(fh,'%s\n',regexprep(sprintf('%s,',out.(s{n1}){:}),',$',''));
+    elseif ischar(out.(s{n1}))
         fprintf(fh,'%s\n',out.(s{n1}));
     else
         x=out.(s{n1});
