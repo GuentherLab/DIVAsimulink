@@ -1,13 +1,15 @@
 function varargout=diva_programs(option,varargin)
 % DIVA_PROGRAMS provides external access to DIVA motor programs
 % 
+% -------------------------------------------------------
 % PRODUCING A MOTOR PROGRAM OR SEQUENCE OF MOTOR PROGRAMS
+% -------------------------------------------------------
 %
-% diva_programs('run', programID [, transition_durations]); 
-% diva_programs('run_gestures', programID  [, transition_durations, gesture_durations]); 
-% diva_programs('run_phonemes', programID  [, transition_durations, phoneme_durations]); 
-% diva_programs('run_syllables', programID  [, transition_durations, syllable_durations]); 
-% diva_programs('run_words', programID  [, transition_durations, word_durations]); 
+% [s,fs] = diva_programs('play', programID [, transition_durations]); 
+% [s,fs] = diva_programs('play_gestures', programID  [, transition_durations, gesture_durations]); 
+% [s,fs] = diva_programs('play_phonemes', programID  [, transition_durations, phoneme_durations]); 
+% [s,fs] = diva_programs('play_syllables', programID  [, transition_durations, syllable_durations]); 
+% [s,fs] = diva_programs('play_words', programID  [, transition_durations, word_durations]); 
 %   produces programID, optionally specifying durations of each phoneme/syllable/word
 %       programID             : cell array indicating of N existing DIVA programs (in diva_targets directory) to be produced 
 %       transition_durations  : vector of length N-1, with durations{n} in ms units specifying the duration of the transition between programID{n} and programID{n+1}  
@@ -15,11 +17,26 @@ function varargout=diva_programs(option,varargin)
 %       phoneme_durations     : cell array of length N, with durations{n} in ms units specifying the durations of each phoneme in programID{n} (one value per phoneme) 
 %       syllable_durations    : cell array of length N, with durations{n} in ms units specifying the durations of each syllable in programID{n} (one value per syllable) 
 %       word_durations        : cell array of length N, with durations{n} in ms units specifying the durations of each word in programID{n} (one value per word) 
+%       s                     : audio signal output
+%       fs                    : sampling frequency (Hz)
 %
-% diva_programs('run_####', ..., 'saveas', newprogramID)
-%    same as corresponding 'run' option but also saving the result as a new program with name newprogramID
+% diva_programs('play####', ...)
+%    same as corresponding 'play' option but playing the output over the speakers
 %
+% diva_programs('play####', ..., 'saveas', newprogramID)
+%    same as corresponding 'play' option but also saving the result as a new program with name <newprogramID> 
+%
+% [target,timeseries] = diva_programs('combine####', ...)
+%    same as corresponding 'play' option but returning all information of the resulting new motor program
+%
+% ----------------------------------------------------
 % VIEWING/EDITING TEMPORAL PROPERTIES OF DIVA PROGRAMS
+% ----------------------------------------------------
+%
+% [target, timeseries] = diva_programs('load', programID);
+%   loads all information from program <programID>
+%       target               : target structure (see "help diva_target") 
+%       timeseries           : learned motor program
 %
 % [names, durations, fixed] = diva_programs('get_gestures', programID);
 % diva_programs('set_gestures', programID, names, durations [, fixed]);
@@ -66,6 +83,12 @@ function varargout=diva_programs(option,varargin)
 
 segments={'gestures','phonemes','syllables','words'};
 switch(lower(option))
+    case 'load'
+        targetID=varargin{1};
+        target=diva_targets('load','txt',targetID);
+        timeseries=diva_targets('load','mat',targetID);
+        varargout={target, timeseries};
+
     case cellfun(@(x)['get_',x],segments,'uni',0)
         targetID=varargin{1};
         segmentID=regexprep(lower(option),'get_','');
@@ -109,6 +132,12 @@ switch(lower(option))
         [varargout{1:nargout}]=diva_programs('combine_gestures',varargin{:});
 
     case cellfun(@(x)['combine_',x],segments,'uni',0)
+        targetname=[];
+        saveas=find(cellfun(@(x)isequal(x,'saveas'),varargin),1);
+        if ~isempty(saveas), 
+            targetname=varargin{saveas+1}; 
+            varargin(saveas+[0 1])=[];
+        end
         segmentID=regexprep(lower(option),'combine_','');
         targetID=varargin{1};
         if ~iscell(targetID), targetID={targetID}; end
@@ -145,29 +174,29 @@ switch(lower(option))
             [target,timeseries] = diva_targets('combine', target, target2, duration_transition, [], timeseries, timeseries2, segmentID);
         end
         varargout={target,timeseries};
-
-    case 'run'
-        [varargout{1:nargout}]=diva_programs('run_gestures',varargin{:});
-
-    case cellfun(@(x)['run_',x],segments,'uni',0)
-        targetname=[];
-        saveas=find(cellfun(@(x)isequal(x,'saveas'),varargin),1);
-        if ~isempty(saveas), 
-            targetname=varargin{saveas+1}; 
-            varargin(saveas+[0 1])=[];
+        if ~isempty(targetname)
+            diva_targets('save','txt',targetname,target);
+            diva_targets('save','matoverwrite',targetname,timeseries);
         end
-        [target,timeseries] = diva_programs(regexprep(lower(option),'run_','combine_'),varargin{:});
+
+    case 'play'
+        if ~nargout, diva_programs('play_gestures',varargin{:});
+        else [varargout{1:nargout}]=diva_programs('play_gestures',varargin{:});
+        end
+
+    case cellfun(@(x)['play_',x],segments,'uni',0)
+        [target,timeseries] = diva_programs(regexprep(lower(option),'play_','combine_'),varargin{:});
 
         t0 = 0:5:max(timeseries.time);
         Art = interp1(timeseries.time,timeseries.Art,t0);
         s = diva_synth(Art','sound');
         fs=4*11025;
-        varargout={s,fs};
-        if ~isempty(targetname)
-            diva_targets('save','txt',targetname,target);
-            diva_targets('save','matoverwrite',targetname,timeseries);
+        if ~nargout, soundsc(s,fs);
+        else varargout={s,fs};
         end
-        
+
+    otherwise
+        error('unrecognized option %s',option);
 end
 
 end
