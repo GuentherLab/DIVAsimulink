@@ -477,10 +477,25 @@ end
 
 function varargout=diva_targets_resampletime(production_info,t1,t2)
 varargout={};
+% deals with fixed time-segments
+[nill,nill,tfixed,tall1]=diva_programs('get_gestures',production_info);
+tall2=interp1(t1,t2,tall1,'linear');
+isfixed=find(tfixed);
+nofixed=find(~tfixed);
+if ~isempty(isfixed)&~isempty(nofixed)
+    dtall1=diff(tall1);
+    for nrepeat=1:100,
+        dtall2=diff(tall2);
+        dtall2(nofixed)=dtall2(nofixed)+sum(dtall2(isfixed)-dtall1(isfixed))/numel(nofixed);
+        dtall2(isfixed)=dtall1(isfixed);
+        tall2=[0 cumsum(max(eps,dtall2))];
+    end
+end
+% inteterpolates control points
 fnames=fieldnames(production_info);
 fnames=fnames(strcmp(fnames,'gestures_duration')|cellfun('length',regexp(fnames,'_control$'))>0);
 for n0=1:numel(fnames)
-    production_info.(fnames{n0})=round(1*interp1(t1,t2,production_info.(fnames{n0}),'linear'))/1; % note: rounded ms units 
+    production_info.(fnames{n0})=round(1*interp1(tall1,tall2,production_info.(fnames{n0}),'linear'))/1; % note: rounded ms units 
 end
 production_info.length=max(t2);
 production_info=diva_targets_format(production_info);

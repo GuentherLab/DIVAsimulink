@@ -7,7 +7,7 @@ function varargout=diva_programs(option,varargin)
 %
 % [s,fs] = diva_programs('play', programID [, transition_durations]); 
 %   produces programID, optionally specifying durations of transitions between each program 
-%       programID             : cell array indicating of N existing DIVA programs (in diva_targets directory) to be produced 
+%       programID             : cell array indicating N existing DIVA programs (in diva_targets directory) to be produced 
 %       transition_durations  : vector of length N-1, with durations{n} in ms units specifying the duration of the transition between programID{n} and programID{n+1}  
 %       s                     : audio signal output
 %       fs                    : sampling frequency (Hz)
@@ -38,6 +38,9 @@ function varargout=diva_programs(option,varargin)
 % ----------------------------------------------------
 % VIEWING/EDITING TEMPORAL PROPERTIES OF DIVA PROGRAMS
 % ----------------------------------------------------
+%
+% [programIDs] = diva_programs('list');
+%   lists all motor programs available
 %
 % [target, timeseries] = diva_programs('load', programID);
 %   loads all information from program <programID>
@@ -95,10 +98,17 @@ switch(lower(option))
         timeseries=diva_targets('load','mat',targetID);
         varargout={target, timeseries};
 
+    case 'list'
+        if nargout, [varargout{1:nargout}]=diva_targets(option,varargin{:});
+        else diva_targets(option,varargin{:});
+        end
+
     case cellfun(@(x)['get_',x],segments,'uni',0)
         targetID=varargin{1};
         segmentID=regexprep(lower(option),'get_','');
-        target=diva_targets('load','txt',targetID);
+        if isstruct(targetID), target=targetID;
+        else target=diva_targets('load','txt',targetID);
+        end
         varargout={...
             target.([segmentID, '_name']),...
             target.([segmentID, '_duration']),...
