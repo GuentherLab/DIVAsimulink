@@ -42,53 +42,46 @@ function varargout=diva_programs(option,varargin)
 % [programIDs] = diva_programs('list');
 %   lists all motor programs available
 %
-% [target, timeseries] = diva_programs('load', programID);
-%   loads all information from program <programID>
-%       target               : target structure (see "help diva_target") 
-%       timeseries           : learned motor program
+% [name, length, fixed] = diva_programs('get_gestures', programID);
+% [name, length, fixed] = diva_programs('get_phonemes', programID);
+% [name, length, fixed] = diva_programs('get_syllables', programID);
+% [name, length, fixed] = diva_programs('get_words', programID);
+%   reads gesture/phoneme/syllable/word segments in program <programID>
+%       programID             : name of existing DIVA program (in diva_targets directory)
+%                                alternatively, programStruct structure with DIVA program fields (e.g. from diva_target('load',...))
+%       length (get_gestures) : [1xNg] vector of durations (in ms units) of each gesture 
+%                                (note: each gesture is the segment between two consecutive via-points in a production)
+%                                (note: if via-points are defined separately for each target dimension, gestures are defined from the union of all via-points) 
+%       length (get_phonemes) : [1xNp] vector of durations (number of individual gestures) of each phoneme 
+%                                (note: the values in "length" must add up to the total number of gestures in this program) 
+%       length (get_syllables): [1xNs] vector of durations (number of phonemes) of each syllable 
+%                                (note: the values in "length" must add up to the total number of phonemes in this program) 
+%       length (get_words)    : [1xNw] vector of durations (number of syllables) of each word 
+%                                (note: the values in "length" must add up to the total number of syllables in this program) 
+%       name                  : [1xN] cell array of gesture/phoneme/syllable/word names 
+%       fixed                 : [1xN] vector of 0/1 values indicating whether the duration of this gesture/phoneme/syllable/word is fixed irrespective of production speed  
 %
-% [names, durations, fixed] = diva_programs('get_gestures', programID);
-% diva_programs('set_gestures', programID, names, durations [, fixed]);
-%   specifies gesture segments in program <programID>
-%       programID            : name of existing DIVA program (in diva_targets directory)
-%                              alternatively, structure of DIVA program fields (e.g. from diva_target('load',...))
-%       durations            : [1xNg] vector of durations (in ms units) of each gesture 
-%                              (note: each gesture is the segment between two consecutive via-points in a production)
-%                              (note: if via-points are defined separately for each target dimension, gestures are defined from the union of all via-points) 
-%       names                : [1xNg] cell array of gesture names 
-%       fixed                : [1xNg] vector of 0/1 values indicating whether the duration of this gesture is fixed irrespective of production speed  
-%
-% [names, durations, fixed] = diva_programs('get_phonemes', programID);
-% diva_programs('set_phonemes', programID, names, durations [, fixed]);
-%   specifies phoneme segments in program <programID>
-%       programID            : name of existing DIVA program (in diva_targets directory)
-%                              alternatively, structure of DIVA program fields (e.g. from diva_target('load',...))
-%       durations            : [1xNp] vector of durations (number of individual gestures) of each phoneme 
-%                              (note: the values in "durations" must add up to the total number of gestures in this program) 
-%       names                : [1xNp] cell array of phoneme names 
-%       fixed                : [1xNp] vector of 0/1 values indicating whether the duration of this phoneme is fixed irrespective of production speed  
-%
-% [names, durations, fixed] = diva_programs('get_syllables', programID);
-% diva_programs('set_syllables', programID, names, durations [, fixed]) 
-%   specifies syllable segments in program <programID>
-%       programID            : name of existing DIVA program (in diva_targets directory)
-%                              alternatively, structure of DIVA program fields (e.g. from diva_target('load',...))
-%       durations            : [1xNs] vector of durations (number of phonemes) of each syllable 
-%                              (note: the values in "durations" must add up to the total number of phonemes in this program) 
-%       names                : [1xNs] cell array of syllable names
-%       fixed                : [1xNs] vector of 0/1 values indicating whether the duration of this syllable is fixed irrespective of production speed  
-%
-% [names, durations, fixed] = diva_programs('get_words', programID);
-% diva_programs('set_words', programID, names, durations [, fixed]) 
-%   specifies word segments in program <programID>
-%       programID            : name of existing DIVA program (in diva_targets directory)
-%                              alternatively, structure of DIVA program fields (e.g. from diva_target('load',...))
-%       durations            : [1xNw] vector of durations (number of syllables) of each word 
-%                              (note: the values in "durations" must add up to the total number of syllables in this program) 
-%       names                : [1xNw] cell array of word names
-%       fixed                : [1xNw] vector of 0/1 values indicating whether the duration of this word is fixed irrespective of production speed  
+% diva_programs('set_####', programID, name, length [, fixed]);
+%   specifies gesture/phoneme/syllable/word segments in program <programID>
+%   note: output stored in diva_targets directory
+%       
+% [programStruct] = diva_programs('set_####', programStruct, name, length [, fixed]);
+%   returns modified structure (without changing any files in diva_targets) 
 %
 
+% ---------------------
+% FOR INTERNAL USE ONLY
+% ---------------------
+%
+% [programStruct, timeseries] = diva_programs('load', programID);
+%   loads all information from program <programID>
+%       programID            : name of existing DIVA program (in diva_targets directory)
+%       programStruct        : structure with DIVA program information (see "help diva_target") 
+%       timeseries           : sequence of learned motor program targets 
+%
+% diva_programs('save', programID, programStruct [, timeseries]);
+%   saves all information from program <programID>
+%
 
 segments={'gestures','phonemes','syllables','words'};
 switch(lower(option))
@@ -97,6 +90,21 @@ switch(lower(option))
         target=diva_targets('load','txt',targetID);
         timeseries=diva_targets('load','mat',targetID);
         varargout={target, timeseries};
+
+    case 'save'
+        targetID=varargin{1};
+        if numel(varargin)>=2&&~isempty(varargin{2}), 
+            target = varargin{2};
+            if isstruct(targetID), varargout{1}=target;
+            else diva_targets('save','txt',targetID,target);
+            end
+        end
+        if numel(varargin)>=3&&~isempty(varargin{3}), 
+            timeseries = varargin{3};
+            if isstruct(targetID), varargout{2}=timeseries;
+            else diva_targets('save','matoverwrite',targetID,timeseries);
+            end
+        end
 
     case 'list'
         if nargout, [varargout{1:nargout}]=diva_targets(option,varargin{:});
@@ -191,8 +199,7 @@ switch(lower(option))
         end
         varargout={target,timeseries};
         if ~isempty(targetname)
-            diva_targets('save','txt',targetname,target);
-            diva_targets('save','matoverwrite',targetname,timeseries);
+            diva_programs('save',targetname,target,timeseries);
         end
 
     case 'play'
