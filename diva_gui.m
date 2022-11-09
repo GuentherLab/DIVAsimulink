@@ -120,8 +120,8 @@ switch(lower(option)),
                     n1=N1(n2);
                     m0=cs(n2);
                     idxdims=DIVA_x.params.(var)(n0).Plots_dim{n1};
-                    DIVA_x.figure.handles.ax3{nvar}(n2)=axes('units','norm','position',[coords-.07,.175+.55*(1-.3*extendinfo)*tcs(n2),.03,.5*(1-.3*extendinfo)*(tcs(n2+1)-tcs(n2))],'color',DIVA_x.color(2,:),'fontsize',8,'visible','off');
-                    DIVA_x.figure.handles.ax2{nvar}(n2)=axes('units','norm','position',[coords,.175+.55*(1-.3*extendinfo)*tcs(n2),.2*(1+extendinfo),.5*(1-.3*extendinfo)*(tcs(n2+1)-tcs(n2))],'fontsize',8,'color',DIVA_x.color(2,:));
+                    DIVA_x.figure.handles.ax3{nvar}(n2)=axes('units','norm','position',[coords-.07,.175+.45*(1-.3*extendinfo)*tcs(n2),.03,.4*(1-.3*extendinfo)*(tcs(n2+1)-tcs(n2))],'color',DIVA_x.color(2,:),'fontsize',8,'visible','off');
+                    DIVA_x.figure.handles.ax2{nvar}(n2)=axes('units','norm','position',[coords,.175+.45*(1-.3*extendinfo)*tcs(n2),.2*(1+extendinfo),.4*(1-.3*extendinfo)*(tcs(n2+1)-tcs(n2))],'fontsize',8,'color',DIVA_x.color(2,:));
                     set(gca,'xcolor',.75*DIVA_x.color(2,:),'ycolor',.75*DIVA_x.color(2,:));
                     if ~isempty(ylim)&&isfield(DIVA_x.params.(var)(n0),'Range'), set(gca,'ylim',[min(DIVA_x.params.(var)(n0).Range(idxdims,1)),max(DIVA_x.params.(var)(n0).Range(idxdims,2))]); end
                     if 0&&m0==1, ylabel(DIVA_x.params.(var)(n0).Plots_label{n1},'rotation',0,'horizontalalignment','right','interpreter','none'); end
@@ -477,7 +477,7 @@ switch(lower(option)),
         idxremove=[DIVA_x.figure.handles.list1,DIVA_x.figure.handles.list2,DIVA_x.figure.handles.buttonlist1,DIVA_x.figure.handles.buttonlist2,DIVA_x.figure.handles.button4,DIVA_x.figure.handles.field1,DIVA_x.figure.handles.field2,DIVA_x.figure.handles.ax1,DIVA_x.figure.handles.ax0,DIVA_x.figure.handles.pl0,DIVA_x.figure.handles.pl3,DIVA_x.figure.handles.ax2{2},DIVA_x.figure.handles.ax3{2},DIVA_x.figure.handles.text1,DIVA_x.figure.handles.text2,DIVA_x.figure.handles.button6,DIVA_x.figure.handles.button8,DIVA_x.figure.handles.button9,DIVA_x.figure.handles.slider];
         delete(idxremove(ishandle(idxremove)));
         if isfield(DIVA_x.figure,'thandles')
-            idxremove={DIVA_x.figure.thandles.button6,DIVA_x.figure.thandles.button9,DIVA_x.figure.thandles.text1,DIVA_x.figure.thandles.field1,DIVA_x.figure.thandles.text2,DIVA_x.figure.thandles.field2,DIVA_x.figure.thandles.text3,DIVA_x.figure.thandles.field3,DIVA_x.figure.thandles.text4,DIVA_x.figure.thandles.field4,DIVA_x.figure.thandles.text5,DIVA_x.figure.thandles.field5,DIVA_x.figure.thandles.buttonfield5,DIVA_x.figure.thandles.text6,DIVA_x.figure.thandles.field6,DIVA_x.figure.thandles.text7,DIVA_x.figure.thandles.field7,DIVA_x.figure.thandles.text9,DIVA_x.figure.thandles.field9,DIVA_x.figure.thandles.button2field5,DIVA_x.figure.thandles.text8,DIVA_x.figure.thandles.field8,DIVA_x.figure.thandles.frame8};
+            idxremove={DIVA_x.figure.thandles.button6,DIVA_x.figure.thandles.button9,DIVA_x.figure.thandles.text1,DIVA_x.figure.thandles.field1,DIVA_x.figure.thandles.text2,DIVA_x.figure.thandles.field2,DIVA_x.figure.thandles.text3,DIVA_x.figure.thandles.field3,DIVA_x.figure.thandles.text4,DIVA_x.figure.thandles.field4,DIVA_x.figure.thandles.text5,DIVA_x.figure.thandles.field5,DIVA_x.figure.thandles.buttonfield5,DIVA_x.figure.thandles.text6,DIVA_x.figure.thandles.field6,DIVA_x.figure.thandles.text7,DIVA_x.figure.thandles.field7,DIVA_x.figure.thandles.text9,DIVA_x.figure.thandles.field9,DIVA_x.figure.thandles.drop10,DIVA_x.figure.thandles.field10,DIVA_x.figure.thandles.button2field5,DIVA_x.figure.thandles.button2field10,DIVA_x.figure.thandles.text8,DIVA_x.figure.thandles.field8,DIVA_x.figure.thandles.frame8};
             for n1=1:numel(idxremove), delete(idxremove{n1}(ishandle(idxremove{n1}))); end
         end
         %if ~isfield(DIVA_x,'resetff'), DIVA_x.resetff=1; end
@@ -527,9 +527,12 @@ switch(lower(option)),
         DIVA_x.figure.thandles.text7=[];%uicontrol('units','norm','position',[.35,.35,.25,.05],'style','text','string','Maximum value within target (for each control point)','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','visible','off');
         DIVA_x.figure.thandles.field7=[];%uicontrol('units','norm','position',[.35,.15,.25,.2],'style','edit','string','','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','max',2,'callback','diva_gui(''update_targetdown'');','visible','off');
         DIVA_x.figure.thandles.button2field5=[];
+        DIVA_x.figure.thandles.button2field10=[];
         DIVA_x.figure.thandles.frame8=[];
         DIVA_x.figure.thandles.text9=[];
         DIVA_x.figure.thandles.field9=[];
+        DIVA_x.figure.thandles.drop10=[];
+        DIVA_x.figure.thandles.field10=[];
         
         if ~isfield(DIVA_x,'production'), DIVA_x.production='new@default'; end
         diva_gui('targetsgui_load',DIVA_x.production);
@@ -695,27 +698,39 @@ switch(lower(option)),
         delete(DIVA_x.figure.thandles.text7(ishandle(DIVA_x.figure.thandles.text7)));DIVA_x.figure.thandles.text7=[]; 
         delete(DIVA_x.figure.thandles.frame8(ishandle(DIVA_x.figure.thandles.frame8)));DIVA_x.figure.thandles.frame8=[]; 
         delete(DIVA_x.figure.thandles.button2field5(ishandle(DIVA_x.figure.thandles.button2field5)));DIVA_x.figure.thandles.button2field5=[]; 
+        delete(DIVA_x.figure.thandles.button2field10(ishandle(DIVA_x.figure.thandles.button2field10)));DIVA_x.figure.thandles.button2field10=[]; 
         delete(DIVA_x.figure.thandles.field9(ishandle(DIVA_x.figure.thandles.field9)));DIVA_x.figure.thandles.field9=[]; 
+        delete(DIVA_x.figure.thandles.field10(ishandle(DIVA_x.figure.thandles.field10)));DIVA_x.figure.thandles.field10=[]; 
+        delete(DIVA_x.figure.thandles.drop10(ishandle(DIVA_x.figure.thandles.drop10)));DIVA_x.figure.thandles.drop10=[]; 
         delete(DIVA_x.figure.thandles.text9(ishandle(DIVA_x.figure.thandles.text9)));DIVA_x.figure.thandles.text9=[]; 
+        if ~isfield(DIVA_x.figure.thandles,'field10value'), DIVA_x.figure.thandles.field10value=1; end
         DIVA_x.figure.thandles.button2field5collapsed=false(1,numel(a)-1);
+        DIVA_x.figure.thandles.button2field10collapsed=false(1,numel(a)-2);
         %if ~any(a<=0), a=[0 a]; b=[b(:,1) b]; c=[c(:,1) c]; end
         %if ~any(a>=DIVA_x.production_info.length), a=[a DIVA_x.production_info.length]; b=[b b(:,end)]; c=[c c(:,end)]; end
-        DIVA_x.figure.thandles.text5=uicontrol('units','norm','position',[.31,.70,.13,.05],'style','text','string','segment duration (ms)','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
+        DIVA_x.figure.thandles.text5=uicontrol('units','norm','position',[.31,.60,.13,.05],'style','text','string','gesture duration (ms)','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
         for n1=1:numel(a)-1
-            DIVA_x.figure.thandles.field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a),.70,.40/numel(a),.05],'style','edit','string',num2str(a(n1+1)-a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_newduration',n1),'tooltipstring','<HTML>Duration (in ms) of each segment<br/> - enter 0 (or leave empty) to remove this segment<br/> - enter multiple duration values to partition this segment into multiple segments<br/> - note: changes in duration values will typically affect the total duration of the target</HTML>');
-            DIVA_x.figure.thandles.button2field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1)/numel(a)-0.01/2,.85,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapse',n1),'tooltipstring','<HTML>expand/collapse control points</HTML>'); 
+            DIVA_x.figure.thandles.field10(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a),.80,.40/numel(a),.05],'style','edit','string','','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Gesture/phoneme/syllable/word labels</HTML>');
+        end
+        DIVA_x.figure.thandles.drop10=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.80,.10,.05],'style','popupmenu','string',{'gesture labels','phoneme labels','syllable labels','word labels'},'value',DIVA_x.figure.thandles.field10value,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right','callback','diva_gui(''update_labels'');');
+        for n1=1:numel(a)-2
+            DIVA_x.figure.thandles.button2field10(n1)=uicontrol('units','norm','position',[.45+.40*(n1+.5)/numel(a)-0.01/2,.85,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapselabels',n1),'tooltipstring','<HTML>expand/collapse label segments</HTML>'); 
+        end
+        for n1=1:numel(a)-1
+            DIVA_x.figure.thandles.field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a),.60,.40/numel(a),.05],'style','edit','string',num2str(a(n1+1)-a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_newduration',n1),'tooltipstring','<HTML>Duration (in ms) of each segment<br/> - enter 0 (or leave empty) to remove this segment<br/> - enter multiple duration values to partition this segment into multiple segments<br/> - note: changes in duration values will typically affect the total duration of the target</HTML>');
+            DIVA_x.figure.thandles.button2field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1)/numel(a)-0.01/2,.75,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapse',n1),'tooltipstring','<HTML>expand/collapse control points</HTML>'); 
             %if ~isequalwithequalnans(b(:,n1+1),b(:,n1))||~isequalwithequalnans(c(:,n1+1),c(:,n1))||(n1>1&&DIVA_x.figure.thandles.button2field5collapsed(n1-1)), set(DIVA_x.figure.thandles.button2field5(n1),'visible','off'); 
             %elseif n1<=1||~DIVA_x.figure.thandles.button2field5collapsed(n1-1), DIVA_x.figure.thandles.button2field5collapsed(n1)=true;
             %end
         end
-        if true||~DIVA_x.guioptions.editableduration, DIVA_x.figure.thandles.buttonfield5=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.70,2*min(.02,1/2*.40/numel(a)),.05],'style','pushbutton','string','new','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback','diva_gui(''update_newsegment'');','tooltipstring','<HTML>Add a new segment after the last segment, extending the duration of this target<br/> - note: the new segment will be created for the selected target field(s) only, other fields will extend their last segment to accomodate the new total target duration</HTML>'); end
-        DIVA_x.figure.thandles.text7=uicontrol('units','norm','position',[.31,.80,.13,.05],'style','text','string','target field(s) value','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
-        DIVA_x.figure.thandles.text6=uicontrol('units','norm','position',[.31,.75,.13,.05],'style','text','string','target field(s) range','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
-        DIVA_x.figure.thandles.text9=uicontrol('units','norm','position',[.31,.65,.13,.05],'style','text','string','absolute time (ms)','backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','right');
+        if true||~DIVA_x.guioptions.editableduration, DIVA_x.figure.thandles.buttonfield5=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.60,2*min(.02,1/2*.40/numel(a)),.05],'style','pushbutton','string','new','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback','diva_gui(''update_newsegment'');','tooltipstring','<HTML>Add a new segment after the last segment, extending the duration of this target<br/> - note: the new segment will be created for the selected target field(s) only, other fields will extend their last segment to accomodate the new total target duration</HTML>'); end
+        DIVA_x.figure.thandles.text7=uicontrol('units','norm','position',[.31,.70,.13,.05],'style','text','string','target field(s) value','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
+        DIVA_x.figure.thandles.text6=uicontrol('units','norm','position',[.31,.65,.13,.05],'style','text','string','target field(s) range','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
+        DIVA_x.figure.thandles.text9=uicontrol('units','norm','position',[.31,.55,.13,.05],'style','text','string','absolute time (ms)','backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','right');
         for n1=1:numel(a)
-            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.80,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the point target value of the target field(s) during each segment<br/> - enter X to indicate the entire range of this parameter</HTML>');
-            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.75,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the tolerance/range of the target field(s) during each segment (valid target values would range between value-range to value+range)<br/></HTML>');
-            DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a)-min(.02,.95/2*.40/numel(a)),.65,2*min(.02,.95/2*.40/numel(a)),.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Absolute time (ms) of each boundary between two adjacent segments<br/> - leave empty to remove this boundary (merge the two corresponding adjacent segments)<br/> - note: changes in these values do not typically affect the total duration of the target</HTML>');
+            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.70,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the point target value of the target field(s) during each segment<br/> - enter X to indicate the entire range of this parameter</HTML>');
+            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.65,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the tolerance/range of the target field(s) during each segment (valid target values would range between value-range to value+range)<br/></HTML>');
+            DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a)-min(.02,.95/2*.40/numel(a)),.55,2*min(.02,.95/2*.40/numel(a)),.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Absolute time (ms) of each boundary between two adjacent segments<br/> - leave empty to remove this boundary (merge the two corresponding adjacent segments)<br/> - note: changes in these values do not typically affect the total duration of the target</HTML>');
             if n1==1||n1==numel(a), set(DIVA_x.figure.thandles.field9(n1),'enable','off'); end
             %DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*a(n1)/max(a)-.02,.11,.04,.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown_control'');');
         end
@@ -753,14 +768,130 @@ switch(lower(option)),
                 end
             end
             diva_gui update_expandcollapse
+            diva_gui update_labels
             diva_gui('init_inputoutputplots',1,'ylim');
             diva_gui update_targetplot; 
         end
-        DIVA_x.figure.thandles.frame8=axes('units','norm','position',[.45,.175,.40,.475]);
+        DIVA_x.figure.thandles.frame8=axes('units','norm','position',[.45,.175,.40,.375]);
         plot([((1:numel(a))-.5)/numel(a);a/max(a);a/max(a)],repmat([1;.8;0],1,numel(a)),'k-','linewidth',2,'parent',DIVA_x.figure.thandles.frame8);
         set(DIVA_x.figure.thandles.frame8,'visible','off','xlim',[0,1],'ylim',[0,1]);
         DIVA_x.changed=1;
         if isempty(DIVA_x.production_info.name), set([DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7],'enable','off'); else set([DIVA_x.figure.handles.button5,DIVA_x.figure.handles.button7],'enable','on'); end
+
+    case 'update_labels'
+        DIVA_x.figure.thandles.field10value=get(DIVA_x.figure.thandles.drop10,'value');
+        visible=false(size(DIVA_x.figure.thandles.button2field10));
+        switch(DIVA_x.figure.thandles.field10value)
+            case 1, 
+                tname='gestures';
+                t=[];
+                [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info); u=1:numel(Slength);
+            case 2, 
+                tname='phonemes';
+                [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info); t=1:numel(Slength);
+                [Sname,Slength,Sfixed] = diva_programs('get_phonemes', DIVA_x.production_info); u=t(cumsum(Slength));
+            case 3, 
+                tname='syllables';
+                [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info); t=1:numel(Slength);
+                [Sname,Slength,Sfixed] = diva_programs('get_phonemes', DIVA_x.production_info); t=t(cumsum(Slength));
+                [Sname,Slength,Sfixed] = diva_programs('get_syllables', DIVA_x.production_info); u=t(cumsum(Slength));
+            case 4, 
+                tname='words';
+                [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info); t=1:numel(Slength);
+                [Sname,Slength,Sfixed] = diva_programs('get_phonemes', DIVA_x.production_info); t=t(cumsum(Slength));
+                [Sname,Slength,Sfixed] = diva_programs('get_syllables', DIVA_x.production_info); t=t(cumsum(Slength));
+                [Sname,Slength,Sfixed] = diva_programs('get_words', DIVA_x.production_info); u=t(cumsum(Slength));
+        end
+        visible(t(1:end-1))=true;
+        set(DIVA_x.figure.thandles.button2field10(~visible),'visible','off');
+        set(DIVA_x.figure.thandles.button2field10(visible),'visible','on','string','-');
+        set(DIVA_x.figure.thandles.button2field10(t(~ismember(t,u))),'string','+');
+        for n1=1:numel(t)-1
+            [ok,idx]=ismember(t(n1),u);
+            if ok, set(DIVA_x.figure.thandles.button2field10(t(n1)),'callback',@(varargin)diva_gui('update_labels_collapse',tname,idx));
+            else set(DIVA_x.figure.thandles.button2field10(t(n1)),'callback',@(varargin)diva_gui('update_labels_expand',tname,n1));
+            end
+        end
+        a=numel(DIVA_x.figure.thandles.field10)+1;
+        u0=[0,u];
+        set(DIVA_x.figure.thandles.field10,'visible','off');
+        for n1=1:numel(u)
+            set(DIVA_x.figure.thandles.field10(n1),'position',[.45+.40*(u0(n1)+.5)/a,.80,.40/a*(u0(n1+1)-u0(n1)),.05],'visible','on','string',Sname{n1},'callback',@(varargin)diva_gui('update_labels_edit',tname,n1));
+        end
+
+    case 'update_labels_expand',
+        tname=varargin{1};
+        idx=varargin{2}; % adds a new break at n-th sub-element
+        allchanges={};
+
+        [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
+        n1=find(cumsum(Slength)>idx,1); % add a new unit between n1-1 and n1
+
+        ibreak=find(Sname{n1}=='-');
+        if ~isempty(ibreak), ibreak=ibreak(ceil(numel(ibreak)/2)); Sname=[Sname(1:n1-1) {Sname{n1}(1:ibreak-1), Sname{n1}(ibreak+1:end)} Sname(n1+1:end)];
+        else  Sname=[Sname(1:n1-1) {Sname{n1}(1:ceil(numel(Sname{n1})/2)) Sname{n1}(ceil(numel(Sname{n1})/2)+1:end)} Sname(n1+1:end)];
+        end
+        Slength=[Slength(1:n1-1), idx-sum(Slength(1:n1-1)), Slength(n1)-(idx-sum(Slength(1:n1-1))), Slength(n1+1:end)];
+        Sfixed=[Sfixed(1:n1), Sfixed(n1), Sfixed(n1+1:end)];
+        %DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info, Sname, Slength, Sfixed);
+        allchanges{end+1}={tname, Sname, Slength, Sfixed};
+
+        while ~isequal(tname,'words')
+            switch(tname)
+                case 'gestures',    tname='phonemes';
+                case 'phonemes',    tname='syllables';
+                case 'syllables',   tname='words';
+                otherwise,          error('unrecognized label %s',tname);
+            end
+            [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
+            idx=find(cumsum(Slength)>n1,1);
+            if isempty(idx), break; end
+            Slength(idx)=Slength(idx)+1;
+            %DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info, Sname, Slength, Sfixed);
+            allchanges{end+1}={tname, Sname, Slength, Sfixed};
+            n1=idx;
+        end
+        for n1=numel(allchanges):-1:1, DIVA_x.production_info=diva_programs(sprintf('set_%s',allchanges{n1}{1}), DIVA_x.production_info, allchanges{n1}{2:4}); end
+
+        diva_gui update_labels;
+
+    case 'update_labels_collapse',
+        tname=varargin{1};
+        n1=varargin{2}; % collapses [n,n+1] elements
+        allchanges={};
+
+        [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
+        Sname=[Sname(1:n1-1) {[Sname{n1} '' Sname{n1+1}]} Sname(n1+2:end)];
+        Slength=[Slength(1:n1-1), Slength(n1)+Slength(n1+1), Slength(n1+2:end)];
+        Sfixed=[Sfixed(1:n1-1), Sfixed(n1)|Sfixed(n1+1), Sfixed(n1+2:end)];
+        %DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info, Sname, Slength, Sfixed);
+        allchanges{end+1}={tname, Sname, Slength, Sfixed};
+
+        while ~isequal(tname,'words')
+            switch(tname)
+                case 'gestures',    tname='phonemes';
+                case 'phonemes',    tname='syllables';
+                case 'syllables',   tname='words';
+                otherwise,          error('unrecognized label %s',tname);
+            end
+            [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
+            idx=find(cumsum(Slength)>n1,1);
+            if isempty(idx), break; end
+            Slength(idx)=Slength(idx)-1;
+            %DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info, Sname, Slength, Sfixed);
+            allchanges{end+1}={tname, Sname, Slength, Sfixed};
+            n1=idx;
+        end
+        for n1=numel(allchanges):-1:1, DIVA_x.production_info=diva_programs(sprintf('set_%s',allchanges{n1}{1}), DIVA_x.production_info, allchanges{n1}{2:4}); end
+
+        diva_gui update_labels;
+
+    case 'update_labels_edit',
+        tname=varargin{1};
+        n1=varargin{2};
+        [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
+        Sname{n1}=get(DIVA_x.figure.thandles.field10(n1),'string');
+        DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info,Sname,Slength,Sfixed);
 
     case 'update_expandcollapse'
         na=numel(DIVA_x.figure.thandles.field7);
@@ -785,14 +916,14 @@ switch(lower(option)),
                 end
             end
             if n1<=length(DIVA_x.figure.thandles.button2field5collapsed)&&DIVA_x.figure.thandles.button2field5collapsed(n1) % collapsed (show centered-right)
-                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-.5)/na,.80,.40/na,.05],'visible','on');
-                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-.5)/na,.75,.40/na,.05],'visible','on');
+                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-.5)/na,.70,.40/na,.05],'visible','on');
+                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-.5)/na,.65,.40/na,.05],'visible','on');
             elseif n1>1&&DIVA_x.figure.thandles.button2field5collapsed(n1-1) % collapsed (not shown)
-                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.80,.95*.40/na,.05],'visible','off');
-                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.75,.95*.40/na,.05],'visible','off');
+                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.70,.95*.40/na,.05],'visible','off');
+                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.65,.95*.40/na,.05],'visible','off');
             else % do not collapse
-                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.80,.95*.40/na,.05],'visible','on');
-                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.75,.95*.40/na,.05],'visible','on');
+                set(DIVA_x.figure.thandles.field7(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.70,.95*.40/na,.05],'visible','on');
+                set(DIVA_x.figure.thandles.field6(n1),'position',[.45+.40*(n1-1)/na+.05/2*.40/na,.65,.95*.40/na,.05],'visible','on');
             end
         end
         

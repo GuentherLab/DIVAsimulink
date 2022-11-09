@@ -108,7 +108,7 @@ switch(lower(option))
 
     case 'list'
         if nargout, [varargout{1:nargout}]=diva_targets(option,varargin{:});
-        else diva_targets(option,varargin{:});
+        else disp(char(diva_targets(option,varargin{:})))
         end
 
     case cellfun(@(x)['get_',x],segments,'uni',0)

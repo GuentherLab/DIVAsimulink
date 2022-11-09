@@ -422,7 +422,7 @@ for n1=1:numel(segments)
     if n1>1, 
         if isempty(x0),x0=nsegments; end
         x0=max(1,round(x0));
-        while sum(x0)>nsegments, if x0(end)>nsegments-sum(x0), x0(end)=x0(end)-nsegments+sum(x0); else x0=x0(1:end-1); end; end 
+        while sum(x0)>nsegments, if x0(end)>sum(x0)-nsegments, x0(end)=x0(end)-(sum(x0)-nsegments); else x0=x0(1:end-1); end; end 
         if sum(x0)<nsegments, x0(end)=x0(end)+nsegments-sum(x0); end
         %while sum(x0)>nsegments, x0=x0(1:end-1); end
         %if sum(x0)<nsegments, x0=[x0 nsegments-sum(x0)]; end
