@@ -875,11 +875,12 @@ switch(lower(option)),
                 otherwise,          error('unrecognized label %s',tname);
             end
             [Sname,Slength,Sfixed] = diva_programs(sprintf('get_%s',tname), DIVA_x.production_info);
-            idx=find(cumsum(Slength)>n1,1);
+            idx=find(cumsum(Slength)>=n1,1);
             if isempty(idx), break; end
             Slength(idx)=Slength(idx)-1;
             %DIVA_x.production_info=diva_programs(sprintf('set_%s',tname), DIVA_x.production_info, Sname, Slength, Sfixed);
-            allchanges{end+1}={tname, Sname, Slength, Sfixed};
+            allchanges{end+1}={tname, Sname(Slength>0), Slength(Slength>0), Sfixed(Slength>0)};
+            if Slength(idx)>0, break; end
             n1=idx;
         end
         for n1=numel(allchanges):-1:1, DIVA_x.production_info=diva_programs(sprintf('set_%s',allchanges{n1}{1}), DIVA_x.production_info, allchanges{n1}{2:4}); end
@@ -992,7 +993,7 @@ switch(lower(option)),
                 forcerefresh=true;
             end
         elseif strcmpi(option,'update_newduration')
-            a0=0; i0=1;
+            a0=0; i0=1; gestureremove=[];
             set(DIVA_x.figure.thandles.field5,'foregroundcolor','k');
             for nval=2:numel(DIVA_x.figure.thandles.field6)
                 temp=char(get(DIVA_x.figure.thandles.field5(nval-1),'string'));
@@ -1000,20 +1001,25 @@ switch(lower(option)),
                 if isempty(temp), doffset=0;
                 elseif isempty(doffset), ok=0;set(DIVA_x.figure.thandles.field5(nval-1),'foregroundcolor','r');
                 end
+                if doffset==0, gestureremove=nval-1; end
                 a0=[a0 onset+cumsum(doffset(:)')];
                 i0=[i0 repmat(nval,1,numel(doffset))];
                 onset=onset+sum(doffset);
                 a=[a onset];
             end
             if ok
-                DIVA_x.production_info=diva_targets('resampletime',DIVA_x.production_info,DIVA_x.production_info.([fieldname{1},'_control']),a);
-                if numel(a0)~=numel(a)
-                    for n1=1:numel(fieldname),
-                        DIVA_x.production_info.([fieldname{n1},'_control'])=a0;
-                        DIVA_x.production_info.([fieldname{n1},'_min'])=DIVA_x.production_info.([fieldname{n1},'_min'])(:,i0);
-                        DIVA_x.production_info.([fieldname{n1},'_max'])=DIVA_x.production_info.([fieldname{n1},'_max'])(:,i0);
+                if ~isempty(gestureremove), 
+                    diva_gui('update_labels_collapse','gestures',gestureremove); 
+                else 
+                    DIVA_x.production_info=diva_targets('resampletime',DIVA_x.production_info,DIVA_x.production_info.([fieldname{1},'_control']),a);
+                    if numel(a0)~=numel(a)
+                        for n1=1:numel(fieldname),
+                            DIVA_x.production_info.([fieldname{n1},'_control'])=a0;
+                            DIVA_x.production_info.([fieldname{n1},'_min'])=DIVA_x.production_info.([fieldname{n1},'_min'])(:,i0);
+                            DIVA_x.production_info.([fieldname{n1},'_max'])=DIVA_x.production_info.([fieldname{n1},'_max'])(:,i0);
+                        end
+                        a=a0;
                     end
-                    a=a0;
                 end
                 forcerefresh=true;
             end

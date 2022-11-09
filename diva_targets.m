@@ -129,11 +129,20 @@ switch(lower(option))
                                 x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
                                 oldx0=union(oldx0,x0);
                     end; end; end
-                    assert(numel(oldx0)==numel(newx0),'incorrect size of field ''gestures_duration''');
+                    isremove=numel(oldx0)>numel(newx0)&&all(ismember(newx0,oldx0));
+                    if isremove, [oldkeep,oldtonew]=ismember(oldx0,newx0); end
+                    assert(isremove | numel(oldx0)==numel(newx0),'incorrect size of field ''gestures_duration''');
                     for n0=1:numel(params.Output), for n1=1:numel(params.Output(n0).Plots_dim), if numel(params.Output(n0).Plots_dim{n1})==1&&isfield(production_info, [params.Output(n0).Plots_label{n1},'_control']),
                                 x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
                                 [nill,idx]=ismember(x0,oldx0);
-                                production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(idx);
+                                if isremove, 
+                                    production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(oldtonew(idx(oldkeep(idx))));
+                                    x1=production_info.([params.Output(n0).Plots_label{n1},'_min']);
+                                    production_info.([params.Output(n0).Plots_label{n1},'_min'])=x1(oldkeep(idx));
+                                    x2=production_info.([params.Output(n0).Plots_label{n1},'_max']);
+                                    production_info.([params.Output(n0).Plots_label{n1},'_max'])=x2(oldkeep(idx));
+                                else production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(idx);
+                                end
                     end; end; end
                     production_info.length=newx0(end);
                 end
