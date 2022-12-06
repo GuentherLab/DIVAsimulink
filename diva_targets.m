@@ -73,11 +73,11 @@ switch(lower(option))
             idx=idx(1);
             if isnan(production_ids(idx)), 
                 filename_mat1=fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'_targets'],production_labels{idx});
-                filename_mat2=fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'_targets'],['bak_',production_labels{idx}]);
+                filename_mat2=fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'_targets'],'bak',production_labels{idx});
                 if ~isdir(fileparts(filename_mat1)), [nill,nill]=mkdir(fileparts(filename_mat1)); end
             else 
                 filename_mat1=fullfile(fileparts(which(DIVA_x.model)),[DIVA_x.model,'_',num2str(production_ids(idx),'%06d')]);
-                filename_mat2=fullfile(fileparts(which(DIVA_x.model)),['bak_',DIVA_x.model,'_',num2str(production_ids(idx),'%06d')]);
+                filename_mat2=fullfile(fileparts(which(DIVA_x.model)),'bak',[DIVA_x.model,'_',num2str(production_ids(idx),'%06d')]);
             end
             production_ids=production_ids([1:idx-1,idx+1:numel(production_ids)]);
             production_labels=production_labels([1:idx-1,idx+1:numel(production_labels)]);
@@ -599,11 +599,20 @@ filepath=regexprep(filename,'\.csv$','_targets');
 production_id=[];
 production_label={};
 if isdir(filepath) % targets in diva_targets folder
-    fname=dir(fullfile(filepath,'*.txt'));
-    [nill,tname,nill]=cellfun(@fileparts,{fname.name}','uni',0);
-    tname=tname(cellfun('length',regexp(tname,'^bak_'))==0);
-    production_label=[production_label;tname(:)];
-    production_id=[production_id; nan(numel(tname),1)];
+    fdirs=dir(fullfile(filepath));
+    fdirs=fdirs([fdirs.isdir]>0);
+    fdirs=fdirs(cellfun('length',regexp({fdirs.name},'^\.+$'))==0);
+    for ndir=0:numel(fdirs)
+        if ndir==0, fname=dir(fullfile(filepath,'*.txt'));
+        else fname=dir(fullfile(filepath,fdirs(ndir).name,'*.txt'));
+        end
+        [nill,tname,nill]=cellfun(@fileparts,{fname.name}','uni',0);
+        tname=tname(cellfun('length',regexp(tname,'^bak_'))==0);
+        if ndir==0, production_label=[production_label;tname(:)];
+        else production_label=[production_label;regexprep(tname(:),'.*',[fdirs(ndir).name,'/','$0'])];
+        end
+        production_id=[production_id; nan(numel(tname),1)];
+    end
 end
 if ~isempty(dir(filename)) % targets listed in diva.csv file
     [tproduction_id,tproduction_label]=textread(filename,'%n%s','delimiter',',','headerlines',1);
