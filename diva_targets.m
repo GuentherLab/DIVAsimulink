@@ -130,18 +130,32 @@ switch(lower(option))
                                 oldx0=union(oldx0,x0);
                     end; end; end
                     isremove=numel(oldx0)>numel(newx0)&&all(ismember(newx0,oldx0));
-                    if isremove, [oldkeep,oldtonew]=ismember(oldx0,newx0); end
-                    assert(isremove | numel(oldx0)==numel(newx0),'incorrect size of field ''gestures_duration''');
+                    isadd=numel(oldx0)<numel(newx0)&&all(ismember(oldx0,newx0));
+                    if isremove, [oldkeep,oldtonew]=ismember(oldx0,newx0); 
+                    elseif isadd, [nill,newtoold]=min(abs(repmat(newx0(:)',numel(oldx0),1)-repmat(oldx0(:),1,numel(newx0))),[],1); 
+                    end
+                    assert(isremove | isadd | numel(oldx0)==numel(newx0),'incorrect size of field ''gestures_duration''');
                     for n0=1:numel(params.Output), for n1=1:numel(params.Output(n0).Plots_dim), if numel(params.Output(n0).Plots_dim{n1})==1&&isfield(production_info, [params.Output(n0).Plots_label{n1},'_control']),
                                 x0=production_info.([params.Output(n0).Plots_label{n1},'_control']);
-                                [nill,idx]=ismember(x0,oldx0);
                                 if isremove, 
+                                    [nill,idx]=ismember(x0,oldx0);
                                     production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(oldtonew(idx(oldkeep(idx))));
                                     x1=production_info.([params.Output(n0).Plots_label{n1},'_min']);
                                     production_info.([params.Output(n0).Plots_label{n1},'_min'])=x1(oldkeep(idx));
                                     x2=production_info.([params.Output(n0).Plots_label{n1},'_max']);
                                     production_info.([params.Output(n0).Plots_label{n1},'_max'])=x2(oldkeep(idx));
-                                else production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(idx);
+                                elseif isadd, % note: adding a control point this way forces all target variables to include all control points
+                                    if isequal(x0,newx0), idx=newtoold;
+                                    else [nill,idx]=min(abs(repmat(newx0(:)',numel(x0),1)-repmat(x0(:),1,numel(newx0))),[],1); 
+                                    end
+                                    production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0;
+                                    x1=production_info.([params.Output(n0).Plots_label{n1},'_min']);
+                                    production_info.([params.Output(n0).Plots_label{n1},'_min'])=x1(idx);
+                                    x2=production_info.([params.Output(n0).Plots_label{n1},'_max']);
+                                    production_info.([params.Output(n0).Plots_label{n1},'_max'])=x2(idx);
+                                else 
+                                    [nill,idx]=ismember(x0,oldx0);
+                                    production_info.([params.Output(n0).Plots_label{n1},'_control'])=newx0(idx);
                                 end
                     end; end; end
                     production_info.length=newx0(end);

@@ -504,7 +504,7 @@ switch(lower(option)),
         DIVA_x.figure.thandles.text3=uicontrol('units','norm','position',[.025,.35,.125,.05],'style','text','string','Interpolation','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
         DIVA_x.figure.thandles.field3=uicontrol('units','norm','position',[.025,.30,.125,.05],'style','popupmenu','string',{'nearest','linear','spline'},'value',2,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','callback','diva_gui(''update_targetdown'');','tooltipstring','select method to interpolate target values outside or between control points (only applicable for dynamic targets)');
         DIVA_x.figure.thandles.text8=uicontrol('units','norm','position',[.025,.50,.125,.05],'style','text','string','Sampling','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        DIVA_x.figure.thandles.field8=uicontrol('units','norm','position',[.025,.45,.125,.05],'style','popupmenu','string',{'sparse','fixed rate'},'value',1,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','callback','diva_gui(''update_targetdown'');','tooltipstring','select method to sample&learn targets ("sparse" defines&learns one target per segment; "fixed rate" defines&learns one target per 5ms window)');
+        DIVA_x.figure.thandles.field8=uicontrol('units','norm','position',[.025,.45,.125,.05],'style','popupmenu','string',{'sparse','fixed rate'},'value',1,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','callback','diva_gui(''update_targetdown'');','tooltipstring','select method to sample&learn targets ("sparse" defines&learns one target per gesture; "fixed rate" defines&learns one target per 5ms window)');
 
         str={};fieldidx=[];value=[];
         for n0=1:numel(DIVA_x.params.Output),
@@ -714,23 +714,26 @@ switch(lower(option)),
         end
         DIVA_x.figure.thandles.drop10=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.80,.10,.05],'style','popupmenu','string',{'gesture labels','phoneme labels','syllable labels','word labels'},'value',DIVA_x.figure.thandles.field10value,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right','callback','diva_gui(''update_labels'');');
         for n1=1:numel(a)-2
-            DIVA_x.figure.thandles.button2field10(n1)=uicontrol('units','norm','position',[.45+.40*(n1+.5)/numel(a)-0.01/2,.85,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapselabels',n1),'tooltipstring','<HTML>expand/collapse label segments</HTML>'); 
+            DIVA_x.figure.thandles.button2field10(n1)=uicontrol('units','norm','position',[.45+.40*(n1+.5)/numel(a)-0.01/2,.85,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapselabels',n1),'tooltipstring','<HTML>expand/collapse the segments associated with each label</HTML>'); 
         end
+        [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info);
         for n1=1:numel(a)-1
-            DIVA_x.figure.thandles.field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a),.60,.40/numel(a),.05],'style','edit','string',num2str(a(n1+1)-a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_newduration',n1),'tooltipstring','<HTML>Duration (in ms) of each segment<br/> - enter 0 (or leave empty) to remove this segment<br/> - enter multiple duration values to partition this segment into multiple segments<br/> - note: changes in duration values will typically affect the total duration of the target</HTML>');
+            fval=num2str(a(n1+1)-a(n1));
+            if Sfixed(n1), fval=[fval,'*']; end
+            DIVA_x.figure.thandles.field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a),.60,.40/numel(a),.05],'style','edit','string',fval,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_newduration',n1),'tooltipstring','<HTML>Duration (in ms) of each gesture/segment<br/> - enter 0 (or leave empty) to remove this gesture<br/> - enter multiple duration values to partition this gesture into multiple segments<br/> - enter an asterisk after the duration to indicate that this duration is fixed irrespective of speech rate<br/> - note: changes in duration values will typically affect the total duration of the target</HTML>');
             DIVA_x.figure.thandles.button2field5(n1)=uicontrol('units','norm','position',[.45+.40*(n1)/numel(a)-0.01/2,.75,.01,.03],'style','pushbutton','string','-','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback',@(varargin)diva_gui('update_expandcollapse',n1),'tooltipstring','<HTML>expand/collapse control points</HTML>'); 
             %if ~isequalwithequalnans(b(:,n1+1),b(:,n1))||~isequalwithequalnans(c(:,n1+1),c(:,n1))||(n1>1&&DIVA_x.figure.thandles.button2field5collapsed(n1-1)), set(DIVA_x.figure.thandles.button2field5(n1),'visible','off'); 
             %elseif n1<=1||~DIVA_x.figure.thandles.button2field5collapsed(n1-1), DIVA_x.figure.thandles.button2field5collapsed(n1)=true;
             %end
         end
-        if true||~DIVA_x.guioptions.editableduration, DIVA_x.figure.thandles.buttonfield5=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.60,2*min(.02,1/2*.40/numel(a)),.05],'style','pushbutton','string','new','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback','diva_gui(''update_newsegment'');','tooltipstring','<HTML>Add a new segment after the last segment, extending the duration of this target<br/> - note: the new segment will be created for the selected target field(s) only, other fields will extend their last segment to accomodate the new total target duration</HTML>'); end
+        if true||~DIVA_x.guioptions.editableduration, DIVA_x.figure.thandles.buttonfield5=uicontrol('units','norm','position',[.45+.40*(numel(a)-.5)/numel(a),.60,2*min(.02,1/2*.40/numel(a)),.05],'style','pushbutton','string','new','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','callback','diva_gui(''update_newsegment'');','tooltipstring','<HTML>Add a new gesture after the last gesture, extending the duration of this target<br/> - note: the new gesture will be created for the selected target field(s) only, other fields will extend their last gesture to accomodate the new total target duration</HTML>'); end
         DIVA_x.figure.thandles.text7=uicontrol('units','norm','position',[.31,.70,.13,.05],'style','text','string','target field(s) value','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
         DIVA_x.figure.thandles.text6=uicontrol('units','norm','position',[.31,.65,.13,.05],'style','text','string','target field(s) range','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','right');
         DIVA_x.figure.thandles.text9=uicontrol('units','norm','position',[.31,.55,.13,.05],'style','text','string','absolute time (ms)','backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','right');
         for n1=1:numel(a)
-            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.70,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the point target value of the target field(s) during each segment<br/> - enter X to indicate the entire range of this parameter</HTML>');
-            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.65,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the tolerance/range of the target field(s) during each segment (valid target values would range between value-range to value+range)<br/></HTML>');
-            DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a)-min(.02,.95/2*.40/numel(a)),.55,2*min(.02,.95/2*.40/numel(a)),.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Absolute time (ms) of each boundary between two adjacent segments<br/> - leave empty to remove this boundary (merge the two corresponding adjacent segments)<br/> - note: changes in these values do not typically affect the total duration of the target</HTML>');
+            DIVA_x.figure.thandles.field7(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.70,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(c(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the point target value of the target field(s) during each gesture<br/> - enter X to indicate the entire range of this parameter</HTML>');
+            DIVA_x.figure.thandles.field6(n1)=uicontrol('units','norm','position',[.45+.40*(n1-1)/numel(a)+.05/2*.40/numel(a),.65,.95*.40/numel(a),.05],'style','edit','string',regexprep(num2str(b(:,n1)'),{'NaN','\s+'},{'X',' '}),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown'');','tooltipstring','<HTML>Enter the tolerance/range of the target field(s) during each gesture (valid target values would range between value-range to value+range)<br/></HTML>');
+            DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*(n1-.5)/numel(a)-min(.02,.95/2*.40/numel(a)),.55,2*min(.02,.95/2*.40/numel(a)),.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'foregroundcolor',.5*[1 1 1],'horizontalalignment','center','max',1,'callback','diva_gui(''update_newtime'');','tooltipstring','<HTML>Absolute time (ms) of each boundary between two adjacent gestures<br/> - leave empty to remove this boundary (merge the two corresponding adjacent gestures)<br/> - note: changes in these values do not typically affect the total duration of the target</HTML>');
             if n1==1||n1==numel(a), set(DIVA_x.figure.thandles.field9(n1),'enable','off'); end
             %DIVA_x.figure.thandles.field9(n1)=uicontrol('units','norm','position',[.45+.40*a(n1)/max(a)-.02,.11,.04,.05],'style','edit','string',num2str(a(n1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center','max',1,'callback','diva_gui(''update_targetdown_control'');');
         end
@@ -828,7 +831,7 @@ switch(lower(option)),
         n1=find(cumsum(Slength)>idx,1); % add a new unit between n1-1 and n1
 
         ibreak=find(Sname{n1}=='-');
-        if ~isempty(ibreak), ibreak=ibreak(ceil(numel(ibreak)/2)); Sname=[Sname(1:n1-1) {Sname{n1}(1:ibreak-1), Sname{n1}(ibreak+1:end)} Sname(n1+1:end)];
+        if 0,%~isempty(ibreak), ibreak=ibreak(ceil(numel(ibreak)/2)); Sname=[Sname(1:n1-1) {Sname{n1}(1:ibreak-1), Sname{n1}(ibreak+1:end)} Sname(n1+1:end)];
         else  Sname=[Sname(1:n1-1) {Sname{n1}(1:ceil(numel(Sname{n1})/2)) Sname{n1}(ceil(numel(Sname{n1})/2)+1:end)} Sname(n1+1:end)];
         end
         Slength=[Slength(1:n1-1), idx-sum(Slength(1:n1-1)), Slength(n1)-(idx-sum(Slength(1:n1-1))), Slength(n1+1:end)];
@@ -853,7 +856,7 @@ switch(lower(option)),
         end
         for n1=numel(allchanges):-1:1, DIVA_x.production_info=diva_programs(sprintf('set_%s',allchanges{n1}{1}), DIVA_x.production_info, allchanges{n1}{2:4}); end
 
-        diva_gui update_labels;
+        if ~isequal(varargin{1},'gestures'), diva_gui update_labels; end
 
     case 'update_labels_collapse',
         tname=varargin{1};
@@ -993,24 +996,40 @@ switch(lower(option)),
                 forcerefresh=true;
             end
         elseif strcmpi(option,'update_newduration')
-            a0=0; i0=1; gestureremove=[];
+            a0=0; i0=1; gestureremove=[]; gestureadd=[]; isfixed=[];
             set(DIVA_x.figure.thandles.field5,'foregroundcolor','k');
             for nval=2:numel(DIVA_x.figure.thandles.field6)
                 temp=char(get(DIVA_x.figure.thandles.field5(nval-1),'string'));
+                isfixed(nval-1)=any(temp=='*');
+                temp=regexprep(temp,'\*',' ');
                 doffset=max(0,str2num(temp));
                 if isempty(temp), doffset=0;
                 elseif isempty(doffset), ok=0;set(DIVA_x.figure.thandles.field5(nval-1),'foregroundcolor','r');
                 end
                 if doffset==0, gestureremove=nval-1; end
+                if numel(doffset)>1, gestureadd=nval-1; end
                 a0=[a0 onset+cumsum(doffset(:)')];
                 i0=[i0 repmat(nval,1,numel(doffset))];
                 onset=onset+sum(doffset);
                 a=[a onset];
             end
             if ok
+                if 1,%DIVA_x.figure.thandles.field10value==1
+                    [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info);
+                    DIVA_x.production_info = diva_programs('set_gestures', DIVA_x.production_info, Sname,Slength,isfixed);
+                end
                 if ~isempty(gestureremove), 
                     diva_gui('update_labels_collapse','gestures',gestureremove); 
-                else 
+                elseif ~isempty(gestureadd)
+                    diva_gui('update_labels_expand','gestures',gestureadd); 
+                    [Sname,Slength,Sfixed] = diva_programs('get_gestures', DIVA_x.production_info);
+                    DIVA_x.production_info = diva_programs('set_gestures', DIVA_x.production_info, Sname,diff(a0),Sfixed);
+%                     [Sname1,Slength1,Sfixed1] = diva_programs('get_gestures', DIVA_x.production_info);
+%                     [Sname2,Slength2,Sfixed2] = diva_programs('get_phonemes', DIVA_x.production_info);
+%                     DIVA_x.production_info=diva_targets('resampletime',DIVA_x.production_info,DIVA_x.production_info.([fieldname{1},'_control']),a);
+%                     DIVA_x.production_info = diva_programs('set_gestures', DIVA_x.production_info, Sname1,Slength1,isfixed1);
+%                     DIVA_x.production_info = diva_programs('set_phonemes', DIVA_x.production_info, Sname2,Slength2,isfixed2);
+                else
                     DIVA_x.production_info=diva_targets('resampletime',DIVA_x.production_info,DIVA_x.production_info.([fieldname{1},'_control']),a);
                     if numel(a0)~=numel(a)
                         for n1=1:numel(fieldname),
@@ -1026,7 +1045,7 @@ switch(lower(option)),
         else
             for nval=1:numel(DIVA_x.figure.thandles.field6)
                 if nval>1,
-                    doffset=str2num(char(get(DIVA_x.figure.thandles.field5(nval-1),'string')));
+                    doffset=str2num(regexprep(char(get(DIVA_x.figure.thandles.field5(nval-1),'string')),'\*',' '));
                     tonset=onset+doffset;
                     if fixedtime
                         if strcmpi(option,'update_newsegment')&&nval==numel(DIVA_x.figure.thandles.field6), tonset=.5*onset+.5*DIVA_x.production_info.length; % adds new control point
