@@ -83,11 +83,13 @@ switch(lower(option))
             production_labels=production_labels([1:idx-1,idx+1:numel(production_labels)]);
             diva_targets_writecsvfile(filename,production_ids,production_labels);
             if isunix
+                [nill,nill]=mkdir(fileparts(filename_mat2));
                 [nill,ok]=system(['mv ',filename_mat1,'.mat ',filename_mat2,'.mat']); if nill,disp(ok); end
                 [nill,ok]=system(['mv ',filename_mat1,'.txt ',filename_mat2,'.txt']); if nill,disp(ok); end
                 fprintf('Target %s deleted (backup stored as %s)\n',filename_mat1,filename_mat2);
 
             else
+                [nill,nill]=mkdir(fileparts(filename_mat2));
                 [nill,ok]=system(['move ',filename_mat1,'.mat ',filename_mat2,'.mat']); if nill,disp(ok); end
                 [nill,ok]=system(['move ',filename_mat1,'.txt ',filename_mat2,'.txt']); if nill,disp(ok); end
                 fprintf('Target %s deleted (backup stored as %s)\n',filename_mat1,filename_mat2);
