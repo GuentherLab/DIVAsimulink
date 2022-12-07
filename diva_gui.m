@@ -601,27 +601,33 @@ switch(lower(option)),
         DIVA_x.changed=0;
         
     case 'targetsgui_combine'
-        hfig=figure('units','norm','position',[.4 .4 .3 .2],'menubar','none','numbertitle','off','name','Combine current target with new target','color','w');
-        thandles.text1=uicontrol('units','norm','position',[.1,.8,.5,.1],'style','text','string','Transition duration (ms) :','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.field1=uicontrol('units','norm','position',[.6,.8,.3,.1],'style','edit','string','40','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.text2=uicontrol('units','norm','position',[.1,.6,.5,.1],'style','text','string','New Target name :','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.field2=uicontrol('units','norm','position',[.6,.6,.3,.1],'style','popupmenu','string',DIVA_x.production_list,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.text3=uicontrol('units','norm','position',[.1,.4,.5,.1],'style','text','string','New Target duration (ms) :','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.field3=uicontrol('units','norm','position',[.6,.4,.3,.1],'style','edit','string','','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
-        thandles.button1=uicontrol('units','norm','position',[.5,.05,.4,.2],'style','pushbutton','string','Add target','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','callback','uiresume(gcbf)');
-        set(thandles.field2,'callback','str=get(gcbo,''string''); val=get(gcbo,''value''); h=get(gcbo,''userdata''); info=diva_targets(''load'',''txt'',str{val}); set(h,''string'',num2str(info.length));','userdata',thandles.field3);
-        if ~isempty(DIVA_x.production_list), set(thandles.field3,'string',num2str(getfield(diva_targets('load','txt',DIVA_x.production_list{1}),'length'))); end
+        answ=questdlg('Current target needs to be saved before proceeding:','','save and continue','cancel','save and continue');
+        if ~isequal(answ,'save and continue'), return; end
+        diva_gui('targetsgui_save');
+        hfig=figure('units','norm','position',[.4 .4 .3 .3],'menubar','none','numbertitle','off','name','Combine current target with other target','color','w');
+        thandles.text1=uicontrol(hfig,'units','norm','position',[.1,.8,.5,.07],'style','text','string','Transition duration (ms) :','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
+        thandles.field1=uicontrol(hfig,'units','norm','position',[.6,.8,.3,.07],'style','edit','string','40','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
+        thandles.text2=uicontrol(hfig,'units','norm','position',[.1,.65,.5,.07],'style','text','string','Other target name :','backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left');
+        thandles.field2=uicontrol(hfig,'units','norm','position',[.6,.65,.3,.07],'style','popupmenu','string',DIVA_x.production_list,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','callback',@diva_gui_callback2);
+        segments={'gesture durations: (ms)','phoneme durations: (ms)','syllable durations: (ms)','word durations: (ms)'};
+        thandles.field4=uicontrol(hfig,'units','norm','position',[.6,.35,.3,.07],'style','popupmenu','string',segments,'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','left','Callback',@diva_gui_callback2);
+        thandles.text5=[];thandles.field5=[];
+        uicontrol(hfig,'style','pushbutton','string','Combine targets','units','norm','position',[.1,.01,.38,.10],'callback','uiresume');
+        uicontrol(hfig,'style','pushbutton','string','Cancel','units','norm','position',[.51,.01,.38,.10],'callback','delete(gcbf)');
+        if ~isempty(DIVA_x.production_list), diva_gui_callback2; end
         uiwait(hfig);
         if ishandle(hfig)
-            duration_transition=str2num(get(thandles.field1,'string'));
+            transition_durations=str2num(get(thandles.field1,'string'));
             production2=DIVA_x.production_list{get(thandles.field2,'value')};
-            duration2=str2num(get(thandles.field3,'string'));
-            production_info2=diva_targets('load','txt',production2);
-            production_art1=[];
-            try, production_art1=DIVA_x.production_art; end
-            production_art2=[];
-            try, production_art2=diva_targets('load','mat',production2); end
-            [production_info,timeseries]=diva_targets('combine',DIVA_x.production_info,production_info2,duration_transition,duration2,production_art1,production_art2);
+            gesture_durations=[]; for n1=1:numel(thandles.field5), gesture_durations(n1)=str2num(get(thandles.field5(n1),'string')); end
+            segment=segments{get(thandles.field4,'value')};
+            [production_info,timeseries] = diva_programs(regexprep(segment,'(.*)\sdurations.*','combine_$1s'), {DIVA_x.production, production2}, transition_durations, {[],gesture_durations}); %, 'saveas', newprogramID)
+            %production_info2=diva_targets('load','txt',production2);
+%             production_art1=[];
+%             try, production_art1=DIVA_x.production_art; end
+%             production_art2=[];
+%             try, production_art2=diva_targets('load','mat',production2); end
+%             [production_info,timeseries]=diva_targets('combine',DIVA_x.production_info,production_info2,duration_transition,duration2,production_art1,production_art2);
             production_info.name=[DIVA_x.production,'-',production2];
             DIVA_x.production_info=production_info;
             DIVA_x.production=production_info.name;
@@ -1159,7 +1165,23 @@ switch(lower(option)),
         
 end
         
-        
+
+        function diva_gui_callback2(varargin)
+            tstr1=get(thandles.field2,'string'); 
+            tval1=get(thandles.field2,'value'); 
+            tstr2=get(thandles.field4,'string');
+            tval2=get(thandles.field4,'value');
+            [tSname,tSlength,tSfixed,tStimes] = diva_programs(regexprep(tstr2{tval2},'(.*)\sdurations.*','get_$1s'), tstr1{tval1});
+            tStimes=diff(tStimes);
+            delete(thandles.field5);
+            delete(thandles.text5);
+            thandles.text5=[];
+            thandles.field5=[];
+            for tn1=1:numel(tSname)
+                thandles.text5=[thandles.text5, uicontrol(hfig,'units','norm','position',[.2+.7/numel(tSname)*(tn1-1),.5,.7/numel(tSname),.07],'style','text','string',tSname{tn1},'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center')];
+                thandles.field5=[thandles.field5, uicontrol(hfig,'units','norm','position',[.2+.7/numel(tSname)*(tn1-1),.43,.7/numel(tSname),.07],'style','edit','string',num2str(tStimes(tn1)),'backgroundcolor',DIVA_x.color(2,:),'horizontalalignment','center')];
+            end
+        end
 end
 
 

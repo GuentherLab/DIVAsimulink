@@ -502,18 +502,16 @@ function varargout=diva_targets_resampletime(production_info,t1,t2)
 varargout={};
 % deals with fixed time-segments
 [nill,nill,tfixed,tall1]=diva_programs('get_gestures',production_info);
-tall2=interp1(t1,t2,tall1,'linear');
 isfixed=find(tfixed);
-nofixed=find(~tfixed);
-if ~isempty(isfixed)&~isempty(nofixed)
-    dtall1=diff(tall1);
-    for nrepeat=1:100,
-        dtall2=diff(tall2);
-        dtall2(nofixed)=dtall2(nofixed)+sum(dtall2(isfixed)-dtall1(isfixed))/numel(nofixed);
-        dtall2(isfixed)=dtall1(isfixed);
-        tall2=[0 cumsum(max(eps,dtall2))];
-    end
+if ~isempty(isfixed), % creates extended list of t1/t2 timepoints to map, incorporating the constrains imposed by the fixed gestures
+    [T1,nill,I1]=unique([t1,tall1(isfixed),tall1(isfixed+1)]);
+    A=sparse([1:numel(t1),repmat(numel(t1)+(1:numel(isfixed)),1,2)], reshape(I1,1,[]), [ones(1,numel(t1)),-ones(1,numel(isfixed)),ones(1,numel(isfixed))], numel(t1)+numel(isfixed), numel(T1));
+    Y=[t2, tall1(isfixed+1)-tall1(isfixed)];                                % linear equation A*X=Y:    X=f(T1);      f(t1)=t2;     f(tall1(isfixed+1))-f(tall1(isfixed)) = tall1(isfixed+1)-tall1(isfixed) 
+    Y=[Y,1e-6*reshape(diff(T1),1,[])]; A=[A; 1e-6*diff(eye(size(A,2)))];    % adds regularization terms to address underconstrained cases
+    t1=T1;
+    t2=full((A\Y')');
 end
+tall2=interp1(t1,t2,tall1,'linear');
 % inteterpolates control points
 fnames=fieldnames(production_info);
 fnames=fnames(strcmp(fnames,'gestures_duration')|cellfun('length',regexp(fnames,'_control$'))>0);
