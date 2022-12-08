@@ -509,9 +509,17 @@ if ~isempty(isfixed), % creates extended list of t1/t2 timepoints to map, incorp
     [T1,nill,I1]=unique([t1,tall1(isfixed),tall1(isfixed+1)]);
     A=sparse([1:numel(t1),repmat(numel(t1)+(1:numel(isfixed)),1,2)], reshape(I1,1,[]), [ones(1,numel(t1)),-ones(1,numel(isfixed)),ones(1,numel(isfixed))], numel(t1)+numel(isfixed), numel(T1));
     Y=[t2, tall1(isfixed+1)-tall1(isfixed)];                                % linear equation A*X=Y:    X=f(T1);      f(t1)=t2;     f(tall1(isfixed+1))-f(tall1(isfixed)) = tall1(isfixed+1)-tall1(isfixed) 
-    Y=[Y,1e-6*reshape(diff(T1),1,[])]; A=[A; 1e-6*diff(eye(size(A,2)))];    % adds regularization terms to address underconstrained cases
-    t1=T1;
-    t2=full((A\Y')');
+    if size(A,1)<size(A,2), % adds regularization terms to address underconstrained cases
+        nofixed=setdiff(1:size(A,2)-1, I1(numel(t1)+(1:numel(isfixed))));
+        dT2=max(t2)/max(t1)*max(1,T1(nofixed+1)-T1(nofixed));
+        Y=[Y,1e-3*ones(1,numel(nofixed))];                                  % linear equation regularization: f(tall(nofixed+1))-f(tal(nofixed)) ~= tall(nofixed+1)-tall(nofixed) 
+        A=[A; 1e-3*sparse(repmat(1:numel(nofixed),1,2),[nofixed+1, nofixed],[1./dT2,-1./dT2], numel(nofixed), numel(T1))];
+    end   
+    T2=full((A\Y')');
+    if ~any(diff(T2)<0) % disregard constrains to address overconstrained/impossible cases
+        t1=T1;
+        t2=T2;
+    end
 end
 tall2=interp1(t1,t2,tall1,'linear');
 % inteterpolates control points
